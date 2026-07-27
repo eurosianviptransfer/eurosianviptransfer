@@ -1,44 +1,41 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, VehicleSize, DriverApplicationStatus } from "@prisma/client";
 import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 /**
- * Çalıştırma: npm run db:seed
- * Giriş sayfalarını test edebilmek için gereken minimum veri.
+ * Çalıştırma: npm run db:seed veya npx prisma db seed
+ * Giriş sayfaları, başvuru ve değerlendirme testleri için gereken seed verisi.
  */
 async function main() {
-  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-  const adminName =
-    process.env.ADMIN_NAME?.trim() || "Operasyon Yöneticisi";
-  const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD;
+  const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase() || "admin@eurosian.com";
+  const adminName = process.env.ADMIN_NAME?.trim() || "Operasyon Yöneticisi";
+  const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD || "AdminPass123456!";
 
-  if (!adminEmail || !/^\S+@\S+\.\S+$/.test(adminEmail)) {
-    throw new Error(
-      "ADMIN_EMAIL geçerli bir e-posta adresi olmalı."
-    );
-  }
+  const staffPassword = process.env.STAFF_DEFAULT_PASSWORD || "StaffPass123456!";
 
-  if (!adminPassword || adminPassword.length < 12) {
-    throw new Error(
-      "ADMIN_DEFAULT_PASSWORD tanımlı olmalı ve en az 12 karakter içermeli."
-    );
-  }
-
-  const staffPassword = process.env.STAFF_DEFAULT_PASSWORD;
-  if (!staffPassword || staffPassword.length < 12) {
-    throw new Error(
-      "STAFF_DEFAULT_PASSWORD tanımlı olmalı ve en az 12 karakter içermeli."
-    );
+  if (adminPassword.length < 12 || staffPassword.length < 12) {
+    throw new Error("Şifreler en az 12 karakter olmalıdır.");
   }
 
   const adminPasswordHash = await hash(adminPassword, 12);
   const staffPasswordHash = await hash(staffPassword, 12);
 
-  await prisma.user.upsert({
-    where: {
-      email: adminEmail,
+  // 1. Şirket Oluşturma (Tedarikçi Örneği)
+  const company = await prisma.company.upsert({
+    where: { name: "Eurosian Filo A.Ş." },
+    update: {},
+    create: {
+      name: "Eurosian Filo A.Ş.",
+      contactName: "Ahmet Yılmaz",
+      phone: "+905550000000",
+      email: "filo@eurosian.com",
     },
+  });
+
+  // 2. Admin Kullanıcısı
+  const adminUser = await prisma.user.upsert({
+    where: { email: adminEmail },
     update: {
       name: adminName,
       active: true,
@@ -49,63 +46,43 @@ async function main() {
       name: adminName,
       email: adminEmail,
       passwordHash: adminPasswordHash,
+      companyId: company.id,
     },
   });
 
+  // 3. Sürücüler
   const drivers = [
-    {
-      id: "seed-d1",
-      name: "Emre Yıldız",
-      phone: "+905551110001",
-    },
-    {
-      id: "seed-d2",
-      name: "Caner Demir",
-      phone: "+905551110002",
-    },
-    {
-      id: "seed-d3",
-      name: "Hakan Su",
-      phone: "+905551110003",
-    },
+    { name: "Emre Yıldız", phone: "+905551110001" },
+    { name: "Caner Demir", phone: "+905551110002" },
+    { name: "Hakan Su", phone: "+905551110003" },
   ];
 
+  const createdDrivers = [];
   for (const d of drivers) {
-    await prisma.user.upsert({
-      where: {
-        phone: d.phone,
-      },
-      update: {
-        active: true,
-      },
+    const driver = await prisma.user.upsert({
+      where: { phone: d.phone },
+      update: { active: true },
       create: {
         role: "DRIVER",
         name: d.name,
         phone: d.phone,
         passwordHash: staffPasswordHash,
+        companyId: company.id,
       },
     });
+    createdDrivers.push(driver);
   }
 
+  // 4. Karşılamacılar (Greeters)
   const greeters = [
-    {
-      name: "Aylin Kaya",
-      phone: "+905551110011",
-    },
-    {
-      name: "Deniz Aksoy",
-      phone: "+905551110012",
-    },
+    { name: "Aylin Kaya", phone: "+905551110011" },
+    { name: "Deniz Aksoy", phone: "+905551110012" },
   ];
 
   for (const g of greeters) {
     await prisma.user.upsert({
-      where: {
-        phone: g.phone,
-      },
-      update: {
-        active: true,
-      },
+      where: { phone: g.phone },
+      update: { active: true },
       create: {
         role: "GREETER",
         name: g.name,
@@ -115,63 +92,28 @@ async function main() {
     });
   }
 
-  const driver1 = await prisma.user.findUnique({
-    where: {
-      phone: drivers[0].phone,
-    },
-  });
+  // 5. Araçlar
+  const vehicles = [
+    { plate: "07 EVT 12", model: "Mercedes Vito", size: VehicleSize.SMALL, driverId: createdDrivers[0].id },
+    { plate: "07 EVT 34", model: "VW Transporter", size: VehicleSize.SMALL, driverId: createdDrivers[1].id },
+    { plate: "07 EVT 56", model: "Mercedes Sprinter", size: VehicleSize.LARGE, driverId: createdDrivers[2].id },
+  ];
 
-  const driver2 = await prisma.user.findUnique({
-    where: {
-      phone: drivers[1].phone,
-    },
-  });
+  for (const v of vehicles) {
+    await prisma.vehicle.upsert({
+      where: { plate: v.plate },
+      update: { driverId: v.driverId },
+      create: {
+        plate: v.plate,
+        model: v.model,
+        size: v.size,
+        driverId: v.driverId,
+        companyId: company.id,
+      },
+    });
+  }
 
-  const driver3 = await prisma.user.findUnique({
-    where: {
-      phone: drivers[2].phone,
-    },
-  });
-
-  await prisma.vehicle.upsert({
-    where: {
-      plate: "07 EVT 12",
-    },
-    update: {},
-    create: {
-      plate: "07 EVT 12",
-      model: "Mercedes Vito",
-      size: "SMALL",
-      driverId: driver1!.id,
-    },
-  });
-
-  await prisma.vehicle.upsert({
-    where: {
-      plate: "07 EVT 34",
-    },
-    update: {},
-    create: {
-      plate: "07 EVT 34",
-      model: "VW Transporter",
-      size: "SMALL",
-      driverId: driver2!.id,
-    },
-  });
-
-  await prisma.vehicle.upsert({
-    where: {
-      plate: "07 EVT 56",
-    },
-    update: {},
-    create: {
-      plate: "07 EVT 56",
-      model: "Mercedes Sprinter",
-      size: "LARGE",
-      driverId: driver3!.id,
-    },
-  });
-
+  // 6. Fiyatlandırma Kuralları (PricingRules)
   const regions = [
     { regionName: "Lara", km: 15, basePriceSmall: 25, basePriceLarge: 40 },
     { regionName: "Antalya Merkez", km: 12, basePriceSmall: 25, basePriceLarge: 40 },
@@ -183,64 +125,82 @@ async function main() {
     { regionName: "İstanbul Anadolu Yakası", km: 735, basePriceSmall: 95, basePriceLarge: 125 },
     { regionName: "Ankara Merkez", km: 480, basePriceSmall: 85, basePriceLarge: 110 },
     { regionName: "İzmir Merkez", km: 470, basePriceSmall: 85, basePriceLarge: 110 },
-    { regionName: "Bodrum Merkez", km: 420, basePriceSmall: 80, basePriceLarge: 105 },
-    { regionName: "Çeşme", km: 520, basePriceSmall: 95, basePriceLarge: 120 },
-    { regionName: "Kapadokya", km: 540, basePriceSmall: 95, basePriceLarge: 125 },
-    { regionName: "Trabzon Merkez", km: 900, basePriceSmall: 120, basePriceLarge: 155 },
-    { regionName: "Kayseri Merkez", km: 620, basePriceSmall: 105, basePriceLarge: 135 },
-    { regionName: "Nevşehir Kapadokya", km: 560, basePriceSmall: 100, basePriceLarge: 130 },
-    { regionName: "Ağrı Dağı", km: 1150, basePriceSmall: 145, basePriceLarge: 185 },
-    { regionName: "Van Merkez", km: 1120, basePriceSmall: 140, basePriceLarge: 180 },
   ];
 
   for (const r of regions) {
     const existing = await prisma.pricingRule.findFirst({
-      where: {
-        regionName: r.regionName,
-      },
+      where: { regionName: r.regionName },
     });
 
     if (!existing) {
-      await prisma.pricingRule.create({
-        data: r,
-      });
+      await prisma.pricingRule.create({ data: r });
     }
   }
 
+  // 7. Hakediş Kuralları (PayoutRules)
   const payoutDefaults = [
-    {
-      vehicleSize: "SMALL" as const,
-      suggestedDriverFee: 500,
-      suggestedGreeterFee: 200,
-    },
-    {
-      vehicleSize: "LARGE" as const,
-      suggestedDriverFee: 700,
-      suggestedGreeterFee: null,
-    },
+    { vehicleSize: VehicleSize.SMALL, suggestedDriverFee: 500, suggestedGreeterFee: 200 },
+    { vehicleSize: VehicleSize.LARGE, suggestedDriverFee: 700, suggestedGreeterFee: null },
   ];
 
   for (const p of payoutDefaults) {
     const existing = await prisma.payoutRule.findFirst({
-      where: {
-        vehicleSize: p.vehicleSize,
-      },
+      where: { vehicleSize: p.vehicleSize },
     });
 
     if (!existing) {
-      await prisma.payoutRule.create({
-        data: p,
+      await prisma.payoutRule.create({ data: p });
+    }
+  }
+
+  // 8. Sürücü Başvurusu Örneği (DriverApplication)
+  await prisma.driverApplication.upsert({
+    where: { applicationNo: "APP-2026-001" },
+    update: {},
+    create: {
+      applicationNo: "APP-2026-001",
+      fullName: "Mehmet Öztürk",
+      phone: "+905559998877",
+      email: "mehmet@example.com",
+      vehiclePlate: "07 BSK 99",
+      vehicleModel: "Mercedes Vito Extra Long",
+      vehicleYear: 2023,
+      vehicleSize: VehicleSize.SMALL,
+      passengerCapacity: 8,
+      status: DriverApplicationStatus.PENDING,
+    },
+  });
+
+  // 9. Puanlama & Yorum Örneği (Rating)
+  const firstDriver = createdDrivers[0];
+  if (firstDriver) {
+    const existingRating = await prisma.rating.findFirst({
+      where: { subjectUserId: firstDriver.id },
+    });
+
+    if (!existingRating) {
+      await prisma.rating.create({
+        data: {
+          subjectUserId: firstDriver.id,
+          raterName: "John Doe",
+          raterPhone: "+447700900007",
+          score: 5,
+          comment: "Harika bir karşılama ve konforlu bir yolculuktu. Teşekkürler!",
+          category: "SERVICE",
+        },
       });
     }
   }
 
-  console.log("✓ Seed tamamlandı. Mevcut hesapların şifreleri değiştirilmedi.");
-  console.log(`Admin hesabı: ${adminEmail}`);
+  console.log("✓ Seed başarıyla tamamlandı.");
+  console.log(`- Admin Hesabı: ${adminEmail}`);
+  console.log(`- Eklenen Sürücü Sayısı: ${drivers.length}`);
+  console.log(`- Eklenen Araç Sayısı: ${vehicles.length}`);
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error("Seed hatası:", e);
     process.exit(1);
   })
   .finally(() => prisma.$disconnect());
