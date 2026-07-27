@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { useLocale } from "@/components/LanguageProvider";
@@ -18,7 +19,17 @@ export default function HomePage() {
   const bookingHref = `/rezervasyon?${bookingParams.toString()}`;
   return <main className="ev-home">
     <header className="ev-site-header ev-container">
-      <Link href="/" className="ev-brand" aria-label="Eurosian VIP Transfer home"><span className="ev-brand-mark">E</span><span>EUROSIAN <small>VIP TRANSFER</small></span></Link>
+      <Link href="/" className="ev-brand" aria-label="Eurosian VIP Transfer home" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <Image
+          src="/logo.png"
+          alt="Eurosian VIP Transfer Logo"
+          width={180}
+          height={60}
+          style={{ height: "36px", width: "auto", objectFit: "contain" }}
+          priority
+        />
+        <span>EUROSIAN <small>VIP TRANSFER</small></span>
+      </Link>
       <nav className="ev-main-nav" aria-label="Main navigation"><Link href="/rezervasyon">{t.navBook}</Link><Link href="/takip">{t.navTrack}</Link><Link href="/sofor-basvuru">Şoför ol</Link><Link href="/basvuru-takip">Başvuru takip</Link><Link href="/giris">{t.navTeam}</Link></nav>
       <LocaleSwitcher />
     </header>
