@@ -95,47 +95,15 @@ export default async function AdminPage() {
       <section id="rezervasyon-yonetimi">
         <div className="ev-section-title">Rezervasyon Yönetimi ({bookings.length})</div>
         <div className="ev-card-row" style={{ gap: 12, flexWrap: "wrap" }}>
-          <span className="ev-badge ev-badge--gold">Onay bekleyen: {pending.length}</span>
+          <span className="ev-badge ev-badge--gold">Canlı: {live.length}</span>
+          <span className="ev-badge">Onay bekleyen: {pending.length}</span>
           <span className="ev-badge">Atama bekleyen: {approved.length}</span>
-          <span className="ev-badge">Canlı: {live.length}</span>
           <span className="ev-badge">Tamamlanan: {completed.length}</span>
         </div>
       </section>
 
-      <div className="ev-section-title">Rezervasyonlar — Onay Bekleyenler ({pending.length})</div>
-      {pending.length === 0 && <div className="ev-empty">Yok.</div>}
-      {pending.map((b) => (
-        <div key={b.id} className="ev-card ev-card-row">
-          <div>
-            <b>{b.guestName}</b> · {b.destinationText || b.regionName}
-            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>€{b.price} · {b.vehicleSize}</div>
-          </div>
-          <ApproveButton bookingId={b.id} />
-        </div>
-      ))}
-
-      <div className="ev-section-title">Atama Bekleyenler ({approved.length})</div>
-      {approved.length === 0 && <div className="ev-empty">Yok.</div>}
-      {approved.map((b) => (
-        <div key={b.id} className="ev-card ev-card-row">
-          <div>
-            <b>{b.guestName}</b> · {b.destinationText || b.regionName}
-            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-              {b.vehicleSize === "SMALL" ? "Küçük araç — karşılamacı zorunlu" : "Büyük araç — karşılamacı opsiyonel"}
-            </div>
-          </div>
-          <AssignForm
-            bookingId={b.id}
-            vehicleSize={b.vehicleSize}
-            vehicles={fleet.map((v) => ({ id: v.id, label: `${v.plate} (${v.driver?.name ?? "?"})`, size: v.size, driverId: v.driverId }))}
-            drivers={drivers.map((d) => ({ id: d.id, name: d.name }))}
-            greeters={greeters.map((g) => ({ id: g.id, name: g.name }))}
-            suggestedFee={payoutRules.find((r) => r.vehicleSize === b.vehicleSize)}
-          />
-        </div>
-      ))}
-
-      <div className="ev-section-title">Canlı Operasyon ({live.length})</div>
+      {/* CANLI OPERASYON */}
+      <div className="ev-section-title" style={{ marginTop: 24 }}>Canlı Operasyon ({live.length})</div>
       {live.length === 0 && <div className="ev-empty">Yok.</div>}
       {live.map((b) => (
         <div key={b.id} className="ev-card ev-card-row">
@@ -163,6 +131,42 @@ export default async function AdminPage() {
         </div>
       ))}
 
+      {/* ONAY BEKLEYENLER */}
+      <div className="ev-section-title">Rezervasyonlar — Onay Bekleyenler ({pending.length})</div>
+      {pending.length === 0 && <div className="ev-empty">Yok.</div>}
+      {pending.map((b) => (
+        <div key={b.id} className="ev-card ev-card-row">
+          <div>
+            <b>{b.guestName}</b> · {b.destinationText || b.regionName}
+            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>€{b.price} · {b.vehicleSize}</div>
+          </div>
+          <ApproveButton bookingId={b.id} />
+        </div>
+      ))}
+
+      {/* ATAMA BEKLEYENLER */}
+      <div className="ev-section-title">Atama Bekleyenler ({approved.length})</div>
+      {approved.length === 0 && <div className="ev-empty">Yok.</div>}
+      {approved.map((b) => (
+        <div key={b.id} className="ev-card ev-card-row">
+          <div>
+            <b>{b.guestName}</b> · {b.destinationText || b.regionName}
+            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+              {b.vehicleSize === "SMALL" ? "Küçük araç — karşılamacı zorunlu" : "Büyük araç — karşılamacı opsiyonel"}
+            </div>
+          </div>
+          <AssignForm
+            bookingId={b.id}
+            vehicleSize={b.vehicleSize}
+            vehicles={fleet.map((v) => ({ id: v.id, label: `${v.plate} (${v.driver?.name ?? "?"})`, size: v.size, driverId: v.driverId }))}
+            drivers={drivers.map((d) => ({ id: d.id, name: d.name }))}
+            greeters={greeters.map((g) => ({ id: g.id, name: g.name }))}
+            suggestedFee={payoutRules.find((r) => r.vehicleSize === b.vehicleSize)}
+          />
+        </div>
+      ))}
+
+      {/* TAMAMLANANLAR */}
       <div className="ev-section-title">Tamamlananlar ({completed.length})</div>
       {completed.length === 0 && <div className="ev-empty">Yok.</div>}
       {completed.map((b) => (
