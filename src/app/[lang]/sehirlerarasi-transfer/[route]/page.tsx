@@ -1,0 +1,10 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { SeoDetail } from "@/components/seo/SeoDetail";
+import { allSeoKeywords } from "@/lib/seo-keywords";
+import { findRoute, intercityRoutes, seoLocales } from "@/lib/site-content";
+import { languageAlternates, SITE_NAME } from "@/lib/seo";
+
+export function generateStaticParams() { return seoLocales.flatMap(lang => intercityRoutes.map(route => ({ lang, route: route.slug }))); }
+export async function generateMetadata({ params }: { params: Promise<{ lang: string; route: string }> }): Promise<Metadata> { const { lang, route: slug } = await params; const route = findRoute(slug); if (!route) return {}; const formattedRoute = `${route.from} to ${route.to}`; return { title: `${formattedRoute} VIP Transfer | ${SITE_NAME} Turkey`, description: `Book 24/7 private VIP transfer for ${formattedRoute}. Fixed prices, Mercedes Maybach and V-Class vehicles, professional chauffeurs across Turkey.`, keywords: allSeoKeywords.filter(keyword => keyword.includes(route.from.toLowerCase()) || keyword.includes(route.to.toLowerCase()) || keyword.includes("intercity")), alternates: { canonical: `/${lang}/sehirlerarasi-transfer/${slug}`, languages: languageAlternates(`sehirlerarasi-transfer/${slug}`) }, openGraph: { title: `${formattedRoute} VIP Transfer | ${SITE_NAME}`, description: route.description, url: `/${lang}/sehirlerarasi-transfer/${slug}`, siteName: SITE_NAME, type: "website" } }; }
+export default async function RouteDetailPage({ params }: { params: Promise<{ lang: string; route: string }> }) { const { lang, route: slug } = await params; const route = findRoute(slug); if (!route) notFound(); return <SeoDetail locale={lang} parentPath="sehirlerarasi-transfer" parentLabel="Intercity transfers" title={`${route.from} to ${route.to} VIP Transfer`} description={route.description}><h2>Private {route.from} to {route.to} transfer</h2><p className="ev-muted">Your chauffeur meets you at the agreed pickup point, manages the route and delivers you directly to your destination. The route distance is approximately {route.distance}.</p></SeoDetail>; }

@@ -1,0 +1,7 @@
+import type { Metadata } from "next";
+import { SeoCollection } from "@/components/seo/SeoCollection";
+import { seoLocales, type SeoLocale } from "@/lib/site-content";
+
+export function generateStaticParams() { return seoLocales.map(lang => ({ lang })); }
+export const metadata: Metadata = { title: "Corporate Chauffeur Service Turkey | Eurasian VIP Transfer", description: "Hourly, daily and event chauffeur services for companies, executives and production teams across Turkey." };
+export default async function CorporatePage({ params }: { params: Promise<{ lang: string }> }) { const { lang } = await params; const locale = seoLocales.includes(lang as SeoLocale) ? lang as SeoLocale : "en"; return <SeoCollection locale={locale} breadcrumb="Corporate services" title="Corporate Chauffeur Services" description="Reliable executive transportation for meetings, events, roadshows and airport programs across Turkey."><div className="ev-grid ev-grid--3"><article className="ev-card"><h2>Hourly chauffeur</h2><p className="ev-muted">Keep a dedicated vehicle and chauffeur available for your schedule.</p></article><article className="ev-card"><h2>Airport programs</h2><p className="ev-muted">Coordinate multi-guest pickups and flight changes from one operations desk.</p></article><article className="ev-card"><h2>Event transport</h2><p className="ev-muted">Professional fleet planning for conferences, weddings and incentive trips.</p></article></div></SeoCollection>; }

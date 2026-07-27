@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<title>Eurosian VIP Transfer</title>
+<style>
+  :root { --ink:#0E2A34; --panel:#153B47; --line:rgba(233,226,210,.12); --text:#F3ECDD; --muted:#9FBAC2; --gold:#E3AA55; --rose:#D9714E; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--ink); color:var(--text); font-family: -apple-system, "IBM Plex Sans", sans-serif; }
+  header { padding: 20px 24px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;}
+  h1 { font-size:18px; margin:0; }
+  .sub { font-size:11px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; }
+  nav { display:flex; gap:6px; background:#0000002a; border-radius:999px; padding:4px; }
+  nav button { border:none; background:transparent; color:var(--muted); padding:8px 14px; border-radius:999px; font-size:13px; cursor:pointer; }
+  nav button.active { background:var(--gold); color:var(--ink); }
+  main { max-width: 640px; margin: 0 auto; padding: 24px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:12px; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+  input, select, button.act { background:#0E2A3499; border:1px solid var(--line); color:var(--text); border-radius:8px; padding:10px 12px; font-size:14px; width:100%; }
+  label.chk { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  button.act { cursor:pointer; background:var(--gold); color:var(--ink); border:none; font-weight:600; }
+  button.act.ghost { background:transparent; color:var(--text); border:1px solid var(--line); width:auto; }
+  .price { font-size:22px; color:var(--gold); font-weight:600; }
+  .muted { color:var(--muted); font-size:12px; }
+  .badge { display:inline-block; padding:3px 10px; border-radius:999px; font-size:11px; background:#E3AA5522; color:var(--gold); }
+  .log { font-size:12px; color:var(--muted); border-top:1px solid var(--line); padding-top:10px; margin-top:14px; }
+  .log div { padding:4px 0; }
+  .empty { border:1px dashed var(--line); border-radius:10px; padding:14px; color:var(--muted); font-size:13px; text-align:center; }
+  .err { color: var(--rose); font-size: 13px; margin: 4px 0 0; }
+  a.link { color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; }
+  .logout { font-size: 12px; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer; width: auto; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Eurosian VIP Transfer</h1>
+    <div class="sub" id="subtitle">Misafir rezervasyon</div>
+  </div>
+  <div id="headerRight"></div>
+</header>
+<main id="app"></main>
+
+<script>
+let currentUser = null; // { id, role, name } — null ise kimse giriş yapmamış
+let loginRole = null;   // giriş ekranında seçilen rol: "admin" | "driver" | "greeter" | null
+let state = null;       // rol bazlı state (adminState/driverState/greeterState) veya null
+
+const STAGE_LABEL = {
+  PENDING_APPROVAL: "Onay Bekliyor", APPROVED: "Atama Bekleniyor", ASSIGNED: "Atandı",
+  GREETER_CONFIRMED: "Karşılamacıda", EN_ROUTE: "Yolda", DROPPED_OFF: "Otelde Bırakıldı", COMPLETED: "Tamamlandı",
+};
+
+async function api(path, method = "GET", body) {
+  const res = await fetch(path, {
+    method,
+    headers: body ? { "Content-Type": "application/json" } : undefined,
+    body: body ? JSON.stringify(body) : undefined,
+    credentials: "include",
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || "Hata");
+  return json;
+}
+
+async function refreshMe() {
+  const { user } = await api("/api/auth/me");
+  currentUser = user;
+}
+
+async function refreshRoleState() {
+  if (!currentUser) { state = null; return; }
+  if (currentUser.role === "ADMIN") state = await api("/api/admin/state");
+  if (currentUser.role === "DRIVER") state = await api("/api/driver/state");
+  if (currentUser.role === "GREETER") state = await api("/api/greeter/state");
+}
+
+function renderHeader() {
+  const right = document.getElementById("headerRight");
+  const sub = document.getElementById("subtitle");
+  right.innerHTML = "";
+  if (currentUser) {
+    sub.textContent = ROLE_LABEL[currentUser.role] + " · " + currentUser.name;
+    const btn = document.createElement("button");
+    btn.className = "logout";
+    btn.textContent = "Çıkış Yap";
+    btn.onclick = async () => { await api("/api/auth/logout", "POST"); currentUser = null; state = null; loginRole = null; render(); };
+    right.appendChild(btn);
+  } else {
+    sub.textContent = "Misafir rezervasyon";
+  }
+}
+
+const ROLE_LABEL = { ADMIN: "Admin", DRIVER: "Şoför", GREETER: "Karşılamacı" };
+
+async function render() {
+  renderHeader();
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+
+  if (currentUser) {
+    try { await refreshRoleState(); } catch (e) { currentUser = null; state = null; }
+  }
+
+  if (!currentUser) {
+    renderGuestAndLogin(app);
+    return;
+  }
+  if (currentUser.role === "ADMIN") return renderAdmin(app);
+  if (currentUser.role === "DRIVER") return renderDriver(app);
+  if (currentUser.role === "GREETER") return renderGreeter(app);
+}
+
+/* ============ Giriş yapılmamış: Misafir rezervasyon formu + Ekip Girişi linki ============ */
+function renderGuestAndLogin(app) {
+  if (loginRole) return renderLoginForm(app);
+
+  renderGuestBooking(app);
+
+  const teamCard = document.createElement("div");
+  teamCard.className = "card";
+  teamCard.innerHTML = `<div class="row"><span class="muted">Ekip misiniz?</span></div>
+    <div class="grid2" style="margin-top:8px">
+      <button class="act ghost" data-role="admin">Admin Girişi</button>
+      <button class="act ghost" data-role="driver">Şoför Girişi</button>
+      <button class="act ghost" data-role="greeter" style="grid-column:span 2">Karşılamacı Girişi</button>
+    </div>`;
+  teamCard.querySelectorAll("button").forEach((b) => {
+    b.onclick = () => { loginRole = b.dataset.role; render(); };
+  });
+  app.appendChild(teamCard);
+}
+
+function renderLoginForm(app) {
+  const card = document.createElement("div");
+  card.className = "card";
+  const title = loginRole === "admin" ? "Admin Girişi" : loginRole === "driver" ? "Şoför Girişi" : "Karşılamacı Girişi";
+
+  if (loginRole === "admin") {
+    card.innerHTML = `
+      <h3 style="margin-top:0">${title}</h3>
+      <input id="username" placeholder="Kullanıcı adı" style="margin-bottom:8px" />
+      <input id="password" placeholder="Şifre" type="password" />
+      <p class="err" id="loginErr" style="display:none"></p>
+      <div class="row" style="margin-top:12px">
+        <a class="link" id="back">← Geri</a>
+        <button class="act" id="submit" style="width:auto">Giriş Yap</button>
+      </div>`;
+  } else {
+    card.innerHTML = `
+      <h3 style="margin-top:0">${title}</h3>
+      <input id="phone" placeholder="Telefon (05xx xxx xx xx)" style="margin-bottom:8px" />
+      <input id="pin" placeholder="4 haneli PIN" type="password" maxlength="4" />
+      <p class="err" id="loginErr" style="display:none"></p>
+      <div class="row" style="margin-top:12px">
+        <a class="link" id="back">← Geri</a>
+        <button class="act" id="submit" style="width:auto">Giriş Yap</button>
+      </div>`;
+  }
+  app.appendChild(card);
+
+  card.querySelector("#back").onclick = () => { loginRole = null; render(); };
+  card.querySelector("#submit").onclick = async () => {
+    const errEl = card.querySelector("#loginErr");
+    errEl.style.display = "none";
+    try {
+      if (loginRole === "admin") {
+        await api("/api/auth/login/admin", "POST", {
+          username: card.querySelector("#username").value,
+          password: card.querySelector("#password").value,
+        });
+      } else {
+        await api(`/api/auth/login/${loginRole}`, "POST", {
+          phone: card.querySelector("#phone").value,
+          pin: card.querySelector("#pin").value,
+        });
+      }
+      loginRole = null;
+      await refreshMe();
+      render();
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = "block";
+    }
+  };
+}
+
+/* ============ Misafir: giriş gerektirmeyen rezervasyon ============ */
+let guestForm = {
+  name: "", phone: "", regionId: "Belek", vehicleSize: "SMALL", passengers: 2,
+  flightNumber: "", language: "TR", hasReturn: false, paymentMethod: "PAY_IN_VEHICLE",
+};
+const REGIONS = [
+  { name: "Lara", small: 25, large: 40 }, { name: "Antalya Merkez", small: 25, large: 40 },
+  { name: "Belek", small: 40, large: 55 }, { name: "Kemer", small: 60, large: 75 },
+  { name: "Side", small: 65, large: 80 }, { name: "Alanya", small: 110, large: 125 },
+];
+let lastBookingCode = null;
+
+function renderGuestBooking(app) {
+  const region = REGIONS.find((r) => r.name === guestForm.regionId) || REGIONS[0];
+  const base = guestForm.vehicleSize === "LARGE" ? region.large : region.small;
+  const price = guestForm.hasReturn ? base * 2 : base;
+
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `
+    <h3 style="margin-top:0">Havalimanı Transferi Rezervasyonu</h3>
+    <div class="grid2">
+      <select id="region">${REGIONS.map(r => `<option value="${r.name}" ${r.name===guestForm.regionId?"selected":""}>${r.name}</option>`).join("")}</select>
+      <select id="size">
+        <option value="SMALL" ${guestForm.vehicleSize==="SMALL"?"selected":""}>Vito/Transporter (küçük)</option>
+        <option value="LARGE" ${guestForm.vehicleSize==="LARGE"?"selected":""}>Sprinter (büyük)</option>
+      </select>
+      <input id="name" placeholder="Ad Soyad" value="${guestForm.name}" />
+      <input id="phone" placeholder="WhatsApp Telefon" value="${guestForm.phone}" />
+      <input id="flight" placeholder="Uçuş No (opsiyonel)" value="${guestForm.flightNumber}" />
+      <select id="lang">${["TR","EN","DE","RU"].map(l => `<option ${l===guestForm.language?"selected":""}>${l}</option>`).join("")}</select>
+    </div>
+    <label class="chk" style="margin-top:10px"><input type="checkbox" id="returnLeg" ${guestForm.hasReturn?"checked":""}/> Dönüş transferi ekle</label>
+    <div class="grid2" style="margin-top:8px">
+      <button class="act ghost" id="payVehicle" style="border-color:${guestForm.paymentMethod==="PAY_IN_VEHICLE"?"var(--gold)":"var(--line)"}">Araçta Öde</button>
+      <button class="act ghost" id="payCard" style="border-color:${guestForm.paymentMethod==="PAY_NOW_CARD"?"var(--gold)":"var(--line)"}">Şimdi Öde (Kart)</button>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <div><div class="muted">Toplam Fiyat</div><div class="price">€${price}</div></div>
+      <button class="act" id="submitBooking" style="width:auto">Rezervasyonu Onayla</button>
+    </div>
+  `;
+  app.appendChild(card);
+
+  card.querySelector("#region").onchange = (e) => { guestForm.regionId = e.target.value; render(); };
+  card.querySelector("#size").onchange = (e) => { guestForm.vehicleSize = e.target.value; render(); };
+  card.querySelector("#name").oninput = (e) => guestForm.name = e.target.value;
+  card.querySelector("#phone").oninput = (e) => guestForm.phone = e.target.value;
+  card.querySelector("#flight").oninput = (e) => guestForm.flightNumber = e.target.value;
+  card.querySelector("#lang").onchange = (e) => guestForm.language = e.target.value;
+  card.querySelector("#returnLeg").onchange = (e) => { guestForm.hasReturn = e.target.checked; render(); };
+  card.querySelector("#payVehicle").onclick = () => { guestForm.paymentMethod = "PAY_IN_VEHICLE"; render(); };
+  card.querySelector("#payCard").onclick = () => { guestForm.paymentMethod = "PAY_NOW_CARD"; render(); };
+
+  card.querySelector("#submitBooking").onclick = async () => {
+    if (!guestForm.name || !guestForm.phone) return alert("Ad ve telefon gerekli.");
+    try {
+      const res = await api("/api/bookings", "POST", {
+        guestName: guestForm.name, guestPhone: guestForm.phone,
+        regionName: guestForm.regionId, vehicleSize: guestForm.vehicleSize,
+        passengers: guestForm.passengers, flightNumber: guestForm.flightNumber,
+        guestLanguage: guestForm.language, hasReturnLeg: guestForm.hasReturn,
+        paymentMethod: guestForm.paymentMethod,
+      });
+      lastBookingCode = res.booking.code;
+      guestForm = { ...guestForm, name: "", phone: "", flightNumber: "" };
+      render();
+    } catch (e) { alert(e.message); }
+  };
+
+  if (lastBookingCode) {
+    const track = document.createElement("div");
+    track.className = "card";
+    track.innerHTML = `<div class="muted">Son rezervasyonunuz</div><b>${lastBookingCode}</b> <span class="badge">Onay Bekliyor</span>
+      <div class="muted" style="margin-top:6px">Bu kodu not edin — durumunu takip için kullanılacak.</div>`;
+    app.appendChild(track);
+  }
+}
+
+/* ============ Admin ============ */
+function renderAdmin(app) {
+  const pending = state.bookings.filter(b => b.status === "PENDING_APPROVAL");
+  const approved = state.bookings.filter(b => b.status === "APPROVED");
+  const live = state.bookings.filter(b => !["PENDING_APPROVAL","APPROVED","COMPLETED"].includes(b.status));
+  const done = state.bookings.filter(b => b.status === "COMPLETED");
+
+  const section = (title, items, renderItem) => {
+    const wrap = document.createElement("div");
+    wrap.innerHTML = `<div class="muted" style="margin:16px 0 8px">${title} (${items.length})</div>`;
+    if (items.length === 0) wrap.innerHTML += "<div class='empty'>Yok.</div>";
+    items.forEach(b => wrap.appendChild(renderItem(b)));
+    app.appendChild(wrap);
+  };
+
+  section("ONAY BEKLEYENLER", pending, b => {
+    const c = document.createElement("div"); c.className = "card";
+    c.innerHTML = `<div class="row"><div><b>${b.guestName}</b> · AYT → ${b.regionName}<div class="muted">€${b.price} · ${b.vehicleSize}</div></div><button class="act" style="width:auto">Onayla</button></div>`;
+    c.querySelector("button").onclick = async () => { await api(`/api/bookings/${b.id}/approve`, "POST"); render(); };
+    return c;
+  });
+
+  section("ATAMA BEKLEYENLER", approved, b => {
+    const c = document.createElement("div"); c.className = "card";
+    const vehicles = state.vehicles.filter(v => v.size === b.vehicleSize);
+    const greeterRequired = b.vehicleSize === "SMALL";
+    c.innerHTML = `
+      <div><b>${b.guestName}</b> · AYT → ${b.regionName}
+      <div class="muted">${greeterRequired ? "Küçük araç — karşılamacı zorunlu" : "Büyük araç — karşılamacı opsiyonel"}</div></div>
+      <div class="grid2" style="margin-top:8px">
+        <select class="vehicle"><option value="">Araç/Şoför seç</option>${vehicles.map(v => `<option value="${v.id}">${v.plate} (${(state.users.find(u=>u.id===v.driverId)||{}).name||""})</option>`).join("")}</select>
+        <select class="greeter"><option value="">${greeterRequired ? "Karşılamacı seç (zorunlu)" : "Karşılamacı (opsiyonel)"}</option>${state.users.filter(u=>u.role==="GREETER").map(g=>`<option value="${g.id}">${g.name}</option>`).join("")}</select>
+        <input class="driverFee" placeholder="Şoför ücreti ₺" />
+        <input class="greeterFee" placeholder="Karşılamacı ücreti ₺" />
+      </div>
+      <div class="row" style="margin-top:8px"><span></span><button class="act" style="width:auto">Ata</button></div>
+    `;
+    c.querySelector("button").onclick = async () => {
+      try {
+        await api(`/api/bookings/${b.id}/assign`, "POST", {
+          vehicleId: c.querySelector(".vehicle").value,
+          greeterId: c.querySelector(".greeter").value || null,
+          driverFee: c.querySelector(".driverFee").value,
+          greeterFee: c.querySelector(".greeterFee").value,
+        });
+        render();
+      } catch (e) { alert(e.message); }
+    };
+    return c;
+  });
+
+  section("CANLI OPERASYON", live, b => {
+    const c = document.createElement("div"); c.className = "card";
+    c.innerHTML = `<div class="row"><div><b>${b.guestName}</b> · ${b.regionName}<span class="badge" style="margin-left:8px">${STAGE_LABEL[b.status]}</span></div>${b.status === "DROPPED_OFF" ? "<button class='act' style='width:auto'>Tamamla</button>" : ""}</div>`;
+    const btn = c.querySelector("button");
+    if (btn) btn.onclick = async () => { await api(`/api/bookings/${b.id}/complete`, "POST"); render(); };
+    return c;
+  });
+
+  section("TAMAMLANANLAR", done, b => {
+    const c = document.createElement("div"); c.className = "card";
+    const driver = state.users.find(u => u.id === b.driverId);
+    const greeter = state.users.find(u => u.id === b.greeterId);
+    c.innerHTML = `<div><b>${b.guestName}</b><div class="muted">${driver?driver.name:""} → ₺${b.driverFee}${greeter ? ` · ${greeter.name} → ₺${b.greeterFee}` : ""}</div></div>`;
+    return c;
+  });
+
+  const log = document.createElement("div");
+  log.className = "card log";
+  log.innerHTML = "<div class='muted' style='margin-bottom:6px'>Aktivite akışı:</div>" +
+    state.events.slice(0, 8).map(e => `<div>• ${e.text}</div>`).join("");
+  app.appendChild(log);
+}
+
+/* ============ Şoför ============ */
+function renderDriver(app) {
+  const jobs = state.jobs;
+  if (jobs.length === 0) { const e = document.createElement("div"); e.className="empty"; e.textContent="Atanmış işiniz yok."; app.appendChild(e); return; }
+  jobs.forEach(b => {
+    const needsPickupSelf = b.vehicleSize === "LARGE" && b.status === "ASSIGNED";
+    const canDropOff = b.status === "EN_ROUTE";
+    const c = document.createElement("div"); c.className = "card";
+    c.innerHTML = `<div class="row"><div><b>${b.guestName}</b><div class="muted">AYT → ${b.regionName}</div></div><span class="badge">${STAGE_LABEL[b.status]}</span></div>
+      <div style="margin-top:8px">${needsPickupSelf ? "<button class='act' style='width:auto'>Misafiri Teslim Aldım</button>" : ""}${canDropOff ? "<button class='act' style='width:auto'>Otele Bıraktım</button>" : ""}${!needsPickupSelf && !canDropOff ? "<span class='muted'>Karşılamacı bekleniyor…</span>" : ""}</div>`;
+    const btns = c.querySelectorAll("button");
+    if (needsPickupSelf) btns[0].onclick = async () => { await api(`/api/bookings/${b.id}/driver/pickup`, "POST"); render(); };
+    if (canDropOff) btns[needsPickupSelf ? 1 : 0].onclick = async () => { await api(`/api/bookings/${b.id}/driver/dropoff`, "POST"); render(); };
+    app.appendChild(c);
+  });
+}
+
+/* ============ Karşılamacı ============ */
+function renderGreeter(app) {
+  const jobs = state.jobs;
+  if (jobs.length === 0) { const e = document.createElement("div"); e.className="empty"; e.textContent="Atanmış karşılama işiniz yok."; app.appendChild(e); return; }
+  jobs.forEach(b => {
+    const c = document.createElement("div"); c.className = "card";
+    c.innerHTML = `<div class="row"><div><b>${b.guestName}</b></div><span class="badge">${STAGE_LABEL[b.status]}</span></div>
+      <div style="margin-top:8px">${b.status === "ASSIGNED" ? "<button class='act' style='width:auto'>Misafiri Karşıladım</button>" : "<button class='act' style='width:auto'>Şoföre Teslim Ettim</button>"}</div>`;
+    c.querySelector("button").onclick = async () => {
+      const action = b.status === "ASSIGNED" ? "meet" : "handover";
+      await api(`/api/bookings/${b.id}/greeter/${action}`, "POST");
+      render();
+    };
+    app.appendChild(c);
+  });
+}
+
+(async () => {
+  try { await refreshMe(); } catch (e) { currentUser = null; }
+  render();
+})();
+</script>
+</body>
+</html>

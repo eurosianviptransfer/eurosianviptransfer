@@ -1,0 +1,6 @@
+import Link from "next/link";
+import { Breadcrumbs } from "./Breadcrumbs";
+import { HeroBookingWidget } from "@/components/booking/HeroBookingWidget";
+import { TrustBanner } from "./TrustBanner";
+
+export function SeoDetail({ locale, parentPath, parentLabel, title, description, children }: { locale: string; parentPath: string; parentLabel: string; title: string; description: string; children?: React.ReactNode }) { return <main className="ev-page ev-page--wide"><Breadcrumbs items={[{ label: "Eurasian VIP Transfer", href: `/${locale}` }, { label: parentLabel, href: `/${locale}/${parentPath}` }, { label: title }]} /><div className="ev-eyebrow">Eurasian VIP Transfer · 24/7 private chauffeur</div><h1 className="ev-h1">{title}</h1><p className="ev-muted" style={{ maxWidth: 820 }}>{description}</p><div className="ev-grid" style={{ gridTemplateColumns: "minmax(0, 1.4fr) minmax(280px, .8fr)", marginTop: 26 }}><div className="ev-card">{children || <><h2>Premium door-to-door service</h2><p className="ev-muted">Professional chauffeurs, flight delay tracking, child seats on request and a clean private vehicle for every route.</p></>}</div><HeroBookingWidget /></div><TrustBanner /><div className="ev-actions" style={{ marginTop: 24 }}><Link className="ev-btn" href="/rezervasyon">Book this route →</Link></div></main>; }

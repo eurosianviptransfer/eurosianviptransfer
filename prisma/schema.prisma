@@ -1,0 +1,333 @@
+// Eurosian VIP Transfer — Prisma Şema
+// Bölüm 3 (roller/varlıklar), 6 (fiyatlandırma), 7 (hakediş), 15.4 (genişleme alanları)
+// Varsayım: Her aracın tek sabit şoförü var (şartname Bölüm 3 notu) — Vehicle.driverId 1-1.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  DRIVER
+  GREETER
+}
+
+enum VehicleSize {
+  SMALL // Vito / Transporter / Caravelle — karşılamacı zorunlu
+  LARGE // Sprinter / midibüs / otobüs — karşılamacı opsiyonel
+}
+
+enum BookingStatus {
+  PENDING_APPROVAL
+  APPROVED
+  ASSIGNED
+  GREETER_CONFIRMED // sadece SMALL akışında kullanılır
+  EN_ROUTE
+  DROPPED_OFF
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  PAY_NOW_CARD
+  PAY_IN_VEHICLE
+}
+
+enum PaymentStatus {
+  UNPAID
+  PENDING
+  AUTHORIZED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// Faz 3'te kanal entegrasyonu için hazır alan (Bölüm 15.4) — şimdilik tek değer DIRECT.
+enum BookingSource {
+  DIRECT
+  BOOKING_COM
+  GETYOURGUIDE
+  VIATOR
+}
+
+enum AssetAuditAction {
+  CREATED
+  UPDATED
+  ACTIVATED
+  DEACTIVATED
+}
+
+enum DriverApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  role         Role
+  name         String
+  phone        String?  @unique // şoför/karşılamacı SMS OTP girişi için
+  email        String?  @unique // admin email+şifre girişi için
+  passwordHash String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  supplierName String?
+  companyId    String?
+
+  vehicle     Vehicle?         @relation("VehicleDriver")
+  driverJobs  Booking[]        @relation("DriverBookings")
+  greeterJobs Booking[]        @relation("GreeterBookings")
+  payouts     Payout[]
+  documents   DriverDocument[]
+  auditLogs   AssetAuditLog[]  @relation("AuditActor")
+  ratingsReceived Rating[]     @relation("RatedUser")
+  approvedApplications DriverApplication[] @relation("ApplicationApprovedUser")
+  company     Company?         @relation(fields: [companyId], references: [id])
+}
+
+model DriverApplication {
+  id                String                  @id @default(cuid())
+  applicationNo     String                  @unique
+  fullName          String
+  phone             String
+  email             String?
+  address           String?
+  licenseNumber     String?
+  vehiclePlate      String
+  vehicleModel      String
+  vehicleYear       Int?
+  vehicleSize       VehicleSize
+  passengerCapacity Int
+  luggageCapacity   Int?
+  features          String[]                @default([])
+  imageUrls         String[]                @default([])
+  notes             String?
+  status            DriverApplicationStatus @default(PENDING)
+  rejectionReason   String?
+  approvedAt        DateTime?
+  approvedUserId    String?                 @unique
+  approvedUser      User?                   @relation("ApplicationApprovedUser", fields: [approvedUserId], references: [id])
+  whatsappMessage   String?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+
+  @@index([phone, createdAt])
+  @@index([status, createdAt])
+  @@index([vehiclePlate])
+}
+
+model Vehicle {
+  id                   String               @id @default(cuid())
+  plate                String               @unique
+  model                String
+  size                 VehicleSize
+  hasChildSeat         Boolean              @default(false)
+  wheelchairAccessible Boolean              @default(false)
+  active               Boolean              @default(true)
+  driverId             String?              @unique
+  supplierName         String?
+  companyId            String?
+  driver               User?                @relation("VehicleDriver", fields: [driverId], references: [id])
+  bookings             Booking[]
+  maintenance          VehicleMaintenance[]
+  auditLogs            AssetAuditLog[]
+  company              Company?             @relation(fields: [companyId], references: [id])
+}
+
+model Company {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  contactName String?
+  phone       String?
+  email       String?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  users       User[]
+  vehicles    Vehicle[]
+}
+
+model VehicleMaintenance {
+  id            String    @id @default(cuid())
+  vehicleId     String
+  vehicle       Vehicle   @relation(fields: [vehicleId], references: [id])
+  insuranceEnd  DateTime?
+  inspectionEnd DateTime?
+  note          String?
+  updatedAt     DateTime  @updatedAt
+}
+
+model DriverDocument {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  docType   String // ehliyet | src | d2
+  expiresAt DateTime
+  fileUrl   String?
+}
+
+// Araç/personel yaşam döngüsü ve değişiklik geçmişi — raporlama için denetim izi.
+model AssetAuditLog {
+  id          String           @id @default(cuid())
+  entityType  String // VEHICLE veya USER
+  entityId    String
+  action      AssetAuditAction
+  beforeData  Json?
+  afterData   Json?
+  actorUserId String?
+  actor       User?            @relation("AuditActor", fields: [actorUserId], references: [id])
+  vehicle     Vehicle?         @relation(fields: [vehicleId], references: [id])
+  vehicleId   String?
+  createdAt   DateTime         @default(now())
+
+  @@index([entityType, entityId, createdAt])
+  @@index([action, createdAt])
+}
+
+// Bölüm 6 — bölge/otel bazlı km ve fiyat tablosu, admin tarafından güncellenebilir.
+model PricingRule {
+  id                 String   @id @default(cuid())
+  regionName         String
+  km                 Float
+  basePriceSmall     Float
+  basePriceLarge     Float
+  waitingFreeMinutes Int      @default(60)
+  active             Boolean  @default(true)
+  updatedAt          DateTime @updatedAt
+}
+
+// Bölüm 3 — şoför/karşılamacı hakediş kuralları (araç tipi bazlı öneri, admin override edebilir).
+model PayoutRule {
+  id                  String      @id @default(cuid())
+  vehicleSize         VehicleSize
+  suggestedDriverFee  Float
+  suggestedGreeterFee Float?
+  active              Boolean     @default(true)
+}
+
+model Booking {
+  id   String @id @default(cuid())
+  code String @unique // EVT-1001 gibi, misafir takip linki için
+  idempotencyKey String? @unique // Aynı submit tekrarlandığında aynı rezervasyonu döndürmek için
+
+  // Misafir bilgileri
+  guestName     String
+  guestPhone    String
+  guestEmail    String?
+  guestLanguage String  @default("TR") // TR/EN/DE/RU/...
+
+  // Güzergah
+  originAirport   String  @default("AYT")
+  destinationText String // Google Places sonucu (adres/otel adı)
+  destinationLat  Float?
+  destinationLng  Float?
+  regionName      String? // eşleşen PricingRule bölgesi (varsa)
+  km              Float?
+
+  flightNumber       String?
+  scheduledAt        DateTime
+  estimatedLandingAt DateTime? // AviationStack ile güncellenir (Bölüm 15.1)
+
+  passengers      Int
+  luggage         Int         @default(0)
+  vehicleSize     VehicleSize
+  needsChildSeat  Boolean     @default(false)
+  needsWheelchair Boolean     @default(false)
+  hasReturnLeg    Boolean     @default(false)
+
+  price         Float
+  currency      String        @default("EUR")
+  paymentMethod PaymentMethod
+  paymentStatus PaymentStatus @default(UNPAID)
+  paymentProviderReference String?
+  paidAt                 DateTime?
+
+  promoCode String?
+  source    BookingSource @default(DIRECT) // Bölüm 15.4 — kanal genişlemesi için hazır alan
+
+  status BookingStatus @default(PENDING_APPROVAL)
+
+  vehicleId String?
+  vehicle   Vehicle? @relation(fields: [vehicleId], references: [id])
+  driverId  String?
+  driver    User?    @relation("DriverBookings", fields: [driverId], references: [id])
+  greeterId String?
+  greeter   User?    @relation("GreeterBookings", fields: [greeterId], references: [id])
+
+  driverFee  Float?
+  greeterFee Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payouts      Payout[]
+  statusEvents BookingStatusEvent[]
+  paymentAttempts PaymentAttempt[]
+  ratings          Rating[]
+}
+
+model Rating {
+  id            String   @id @default(cuid())
+  bookingId     String?
+  booking       Booking? @relation(fields: [bookingId], references: [id])
+  subjectUserId String
+  subjectUser   User     @relation("RatedUser", fields: [subjectUserId], references: [id])
+  raterRole     Role?
+  raterName     String?
+  raterPhone    String?
+  score         Int
+  comment       String?
+  category      String   @default("SERVICE")
+  createdAt     DateTime @default(now())
+
+  @@index([subjectUserId, createdAt])
+  @@index([bookingId, createdAt])
+}
+
+model PaymentAttempt {
+  id                  String        @id @default(cuid())
+  bookingId           String
+  booking             Booking       @relation(fields: [bookingId], references: [id])
+  provider            String
+  providerReference   String?       @unique
+  checkoutUrl         String?
+  status              PaymentStatus @default(PENDING)
+  amount              Float
+  currency            String
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([bookingId, createdAt])
+}
+
+// Her durum geçişi loglanır — Canlı Operasyon Panosu ve denetim izi için.
+model BookingStatusEvent {
+  id        String        @id @default(cuid())
+  bookingId String
+  booking   Booking       @relation(fields: [bookingId], references: [id])
+  status    BookingStatus
+  actorRole Role?
+  createdAt DateTime      @default(now())
+}
+
+// Bölüm 7 — 15 günlük dönem hakediş kayıtları.
+model Payout {
+  id          String    @id @default(cuid())
+  bookingId   String
+  booking     Booking   @relation(fields: [bookingId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  amount      Float
+  periodStart DateTime
+  periodEnd   DateTime
+  paidAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([bookingId, userId])
+}
