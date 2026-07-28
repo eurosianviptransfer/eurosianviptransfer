@@ -1,3 +1,5 @@
+"use client";
+
 import { DriverApplicationForm } from "@/components/driver/DriverApplicationForm";
 import { useLocale } from "@/components/LanguageProvider";
 import { getDriverCopy } from "@/lib/driver-copy";
