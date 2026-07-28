@@ -22,7 +22,7 @@ describe("admin theme helpers", () => {
       getItem: vi.fn().mockReturnValue(null),
       setItem: vi.fn(),
     };
-    const documentElement = { dataset: {}, style: {} };
+    const documentElement = { dataset: {} as Record<string, string>, style: {} as Record<string, string> };
 
     vi.stubGlobal("window", { localStorage });
     vi.stubGlobal("document", { documentElement });

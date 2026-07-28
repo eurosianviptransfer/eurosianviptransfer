@@ -5,16 +5,22 @@ import { prisma } from "@/lib/db";
 import { compare, hash } from "bcryptjs";
 import { normalizeProfileUpdate } from "@/lib/profile";
 
+function getSessionUserId(session: unknown) {
+  const safeSession = session as any;
+  return safeSession?.user?.id;
+}
+
 function isImageDataUrl(value: string) {
   return /^data:image\/(png|jpeg|jpg|webp);base64,/.test(value);
 }
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Oturum gerekli." }, { status: 401 });
+  const userId = getSessionUserId(session);
+  if (!userId) return NextResponse.json({ error: "Oturum gerekli." }, { status: 401 });
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id: userId },
     select: {
       id: true,
       name: true,
@@ -36,7 +42,8 @@ export async function GET() {
 
 export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) return NextResponse.json({ error: "Oturum gerekli." }, { status: 401 });
+  const userId = getSessionUserId(session);
+  if (!userId) return NextResponse.json({ error: "Oturum gerekli." }, { status: 401 });
 
   const body = await req.json().catch(() => ({}));
   const normalized = normalizeProfileUpdate(body as Record<string, unknown>);
@@ -45,7 +52,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Güncellenecek alan yok." }, { status: 400 });
   }
 
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
 
   if (normalized.currentPassword || normalized.newPassword) {
@@ -78,7 +85,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Profil resmi boş olamaz." }, { status: 400 });
     }
 
-    const safeName = `${session.user.id}-${Date.now()}.png`;
+    const safeName = `${userId}-${Date.now()}.png`;
     const filePath = `${process.cwd()}/public/uploads/profiles/${safeName}`;
     await import("fs/promises").then(({ mkdir, writeFile }) => mkdir(`${process.cwd()}/public/uploads/profiles`, { recursive: true }).then(() => writeFile(filePath, buffer)));
     updateData.profileImageUrl = `/uploads/profiles/${safeName}`;
@@ -89,7 +96,7 @@ export async function PATCH(req: NextRequest) {
   delete updateData.profileImageData;
 
   const updatedUser = await prisma.user.update({
-    where: { id: session.user.id },
+    where: { id: userId },
     data: updateData,
     select: {
       id: true,
