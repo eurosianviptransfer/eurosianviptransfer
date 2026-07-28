@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/config";
 import { prisma } from "@/lib/db";
 import { OperationsDashboard, type OperationsJob } from "@/components/operations/OperationsDashboard";
+import { OnlineTracker } from "@/components/OnlineTracker";
 
 export const dynamic = "force-dynamic";
 
@@ -29,5 +30,12 @@ export default async function DriverPage() {
     vehicle: job.vehicle,
   }));
 
-  return <OperationsDashboard role="DRIVER" name={session?.user?.name || "Şoför"} jobs={serializedJobs} />;
+  return (
+    <>
+      {/* Şoför sisteme girdiğinde admin paneline aktiflik sinyali gönderir */}
+      <OnlineTracker currentUserId={driverId} />
+      
+      <OperationsDashboard role="DRIVER" name={session?.user?.name || "Şoför"} jobs={serializedJobs} />
+    </>
+  );
 }
