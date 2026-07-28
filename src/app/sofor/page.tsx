@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth/config";
 import { prisma } from "@/lib/db";
 import { OperationsDashboard, type OperationsJob } from "@/components/operations/OperationsDashboard";
 import { OnlineTracker } from "@/components/OnlineTracker";
+import { ProfileSettingsCard } from "@/components/profile/ProfileSettingsCard";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,7 @@ export default async function DriverPage() {
       <OnlineTracker currentUserId={driverId} />
       
       <OperationsDashboard role="DRIVER" name={session?.user?.name || "Şoför"} jobs={serializedJobs} />
+      <ProfileSettingsCard />
     </>
   );
 }

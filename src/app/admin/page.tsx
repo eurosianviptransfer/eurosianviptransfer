@@ -7,6 +7,8 @@ import { AdminReportDashboard, type AdminReportBooking } from "@/components/admi
 import { DriverApplicationsPanel } from "@/components/admin/DriverApplicationsPanel";
 import { RatingSummary } from "@/components/admin/RatingSummary";
 import { OnlineUsersWidget } from "@/components/admin/OnlineUsersWidget";
+import { ThemeToggle } from "@/components/admin/ThemeToggle";
+import { ProfileSettingsCard } from "@/components/profile/ProfileSettingsCard";
 import { unseal } from "@/lib/security/sealed";
 
 export const dynamic = "force-dynamic";
@@ -71,7 +73,10 @@ export default async function AdminPage() {
       <div className="ev-eyebrow">Eurosian VIP Transfer</div>
       <div className="ev-card-row" style={{ alignItems: "center" }}>
         <h1 className="ev-h1">Admin — Operasyon Panosu</h1>
-        <div className="ev-actions"><a href="/admin/fiyatlar" className="ev-btn ev-btn--ghost">Fiyat Tablosu →</a><SignOutButton /></div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+          <ThemeToggle />
+          <div className="ev-actions"><a href="/admin/fiyatlar" className="ev-btn ev-btn--ghost">Fiyat Tablosu →</a><SignOutButton /></div>
+        </div>
       </div>
 
       <nav className="ev-card-row" aria-label="Admin bölümleri" style={{ gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
@@ -87,6 +92,8 @@ export default async function AdminPage() {
       </div>
 
       <AdminReportDashboard bookings={reportBookings} />
+
+      <ProfileSettingsCard />
 
       <DriverApplicationsPanel applications={applications.map((application) => ({ ...application, whatsappMessage: application.whatsappMessage ? unseal(application.whatsappMessage) : null, createdAt: application.createdAt.toISOString() }))} />
       <RatingSummary />

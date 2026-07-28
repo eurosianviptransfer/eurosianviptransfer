@@ -78,8 +78,13 @@ model User {
   active        Boolean   @default(true)
   lastSeen      DateTime? // Anlık online takibi (Heartbeat) için son sinyal zamanı
   createdAt     DateTime  @default(now())
-  supplierName  String?
-  companyId     String?
+  supplierName       String?
+  companyId          String?
+  emailVerifiedAt    DateTime?
+  profileImageUrl    String?
+  preferredTheme     String?   @default("dark")
+  preferredLocale    String?   @default("tr")
+  bio                String?
 
   vehicle             Vehicle?              @relation("VehicleDriver")
   driverJobs          Booking[]             @relation("DriverBookings")

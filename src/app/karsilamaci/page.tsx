@@ -3,6 +3,7 @@ import { authOptions } from "@/lib/auth/config";
 import { prisma } from "@/lib/db";
 import { OperationsDashboard, type OperationsJob } from "@/components/operations/OperationsDashboard";
 import { OnlineTracker } from "@/components/OnlineTracker";
+import { ProfileSettingsCard } from "@/components/profile/ProfileSettingsCard";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +38,7 @@ export default async function GreeterPage() {
       <OnlineTracker currentUserId={greeterId} />
       
       <OperationsDashboard role="GREETER" name={session?.user?.name || "Karşılamacı"} jobs={serializedJobs} />
+      <ProfileSettingsCard />
     </>
   );
 }
