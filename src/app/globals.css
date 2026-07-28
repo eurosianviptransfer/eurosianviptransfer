@@ -431,16 +431,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /* ---------- Public landing / responsive system ---------- */
-.ev-home { min-height: 100vh; overflow: hidden; background: #f5f2ec; color: #17343d; }
+.ev-home { min-height: 100vh; overflow: hidden; background: radial-gradient(circle at 18% 10%, rgba(217,154,71,.12), transparent 18rem), radial-gradient(circle at 90% 10%, rgba(79,161,137,.12), transparent 18rem), #f5f2ec; color: #17343d; }
 .ev-container { width: min(1180px, calc(100% - 48px)); max-width: 100%; margin-inline: auto; }
-.ev-site-header { min-height: 86px; display: flex; align-items: center; justify-content: space-between; gap: 28px; }
+.ev-site-header { min-height: 86px; display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 16px 0; background: rgba(255,255,255,.72); border-radius: 28px; border: 1px solid rgba(27,64,73,.08); backdrop-filter: blur(10px); }
 .ev-brand { display: inline-flex; align-items: center; gap: 10px; color: #17343d; font-size: 13px; letter-spacing: .16em; font-weight: 600; text-decoration: none; white-space: nowrap; }
 .ev-brand small { display: block; color: #8c9b98; font-size: 8px; letter-spacing: .21em; margin-top: 4px; }
 .ev-brand-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: #f5f2ec; background: #d99a47; font-family: "Fraunces", serif; font-size: 21px; font-weight: 500; letter-spacing: 0; }
-.ev-main-nav { display: flex; align-items: center; gap: 28px; margin-inline-start: auto; }
+.ev-main-nav { display: flex; align-items: center; gap: 24px; margin-inline-start: auto; }
 .ev-main-nav a { color: #54706f; text-decoration: none; font-size: 13px; transition: color .2s ease; }
 .ev-main-nav a:hover { color: #17343d; }
-.ev-locale { display: inline-flex; align-items: center; gap: 7px; border: 1px solid #d8ddd8; border-radius: 999px; padding: 8px 11px; color: #54706f; background: rgba(255,255,255,.5); font-size: 12px; direction: ltr; unicode-bidi: isolate; position: relative; z-index: 20; flex: 0 0 auto; }
+.ev-locale { display: inline-flex; align-items: center; gap: 7px; border: 1px solid #d8ddd8; border-radius: 999px; padding: 8px 11px; color: #54706f; background: rgba(255,255,255,.6); font-size: 12px; direction: ltr; unicode-bidi: isolate; position: relative; z-index: 20; flex: 0 0 auto; }
 .ev-locale select { min-width: 128px; border: 0; background: transparent; color: inherit; font: inherit; outline: 0; cursor: pointer; direction: ltr; text-align: left; unicode-bidi: isolate; }
 .ev-locale option { color: #17343d; }
 .ev-landing-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, .72fr); gap: clamp(45px, 8vw, 115px); align-items: center; padding: clamp(70px, 10vw, 126px) 0 112px; position: relative; }
@@ -452,32 +452,33 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .ev-hero-copy h1 { max-width: 680px; margin: 20px 0 22px; color: #17343d; font: 500 clamp(50px, 7vw, 88px)/.98 "Fraunces", serif; letter-spacing: -.035em; }
 .ev-hero-copy p { max-width: 470px; margin: 0; color: #67817e; font-size: 17px; line-height: 1.7; }
 .ev-home .ev-actions { margin-top: 34px; gap: 25px; }
-.ev-home .ev-btn { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 50px; border-radius: 5px; padding: 13px 21px; background: #173f4a; color: #fff; box-shadow: 0 12px 24px rgba(23,63,74,.13); text-decoration: none; }
+.ev-home .ev-btn { display: inline-flex; align-items: center; justify-content: center; gap: 14px; min-height: 50px; border-radius: 14px; padding: 15px 24px; background: #173f4a; color: #fff; box-shadow: 0 16px 30px rgba(23,63,74,.16); text-decoration: none; }
 .ev-home .ev-btn:hover { background: #215765; }
 .ev-text-link { color: #4c6a69; font-size: 13px; text-decoration: none; border-bottom: 1px solid #bac8c3; padding-bottom: 4px; }
 .ev-text-link:hover { color: #17343d; border-color: #17343d; }
 .ev-hero-note { display: flex; align-items: center; gap: 9px; margin-top: 30px; color: #99a7a2; font-size: 11px; }
 .ev-hero-note span { color: #d99a47; font-size: 15px; }
-.ev-booking-card { padding: 30px; border: 1px solid rgba(27,64,73,.1); border-radius: 10px; background: #fff; box-shadow: 0 24px 60px rgba(39,61,60,.12); }
+.ev-booking-card { padding: 34px; border: 1px solid rgba(27,64,73,.1); border-radius: 24px; background: linear-gradient(180deg, #ffffff 0%, #f7f8f7 100%); box-shadow: 0 32px 80px rgba(39,61,60,.12); }
+.ev-booking-card:hover { transform: translateY(-1px); transition: transform .2s ease; }
 .ev-card-kicker { display: flex; justify-content: space-between; color: #b87b35; font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
 .ev-card-kicker span { color: #b3c0bb; font-family: "IBM Plex Mono", monospace; letter-spacing: .04em; }
-.ev-booking-card h2 { max-width: 310px; margin: 18px 0 28px; color: #17343d; font: 500 27px/1.12 "Fraunces", serif; }
-.ev-route-line { display: flex; align-items: center; gap: 13px; position: relative; }
-.ev-route-line label, .ev-booking-fields label { display: block; margin-bottom: 5px; color: #9aa9a3; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.ev-booking-card h2 { max-width: 320px; margin: 18px 0 28px; color: #17343d; font: 600 30px/1.08 "Fraunces", serif; }
+.ev-route-line { display: flex; align-items: center; gap: 14px; position: relative; padding: 18px; border-radius: 24px; background: #f8faf9; }
+.ev-route-line label, .ev-booking-fields label { display: block; margin-bottom: 6px; color: #8b9b95; font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
 .ev-route-line strong { color: #244850; font-size: 14px; font-weight: 500; }
-.ev-route-dot { flex: 0 0 auto; width: 10px; height: 10px; border: 2px solid #9fb6af; border-radius: 50%; }
+.ev-route-dot { flex: 0 0 auto; width: 12px; height: 12px; border: 2px solid #9fb6af; border-radius: 50%; }
 .ev-route-dot--gold { border-color: #d99a47; background: #d99a47; box-shadow: 0 0 0 4px #fbf0e3; }
-.ev-route-connector { height: 22px; border-inline-start: 1px dashed #ccd6d1; margin-inline-start: 4px; }
+.ev-route-connector { height: 24px; border-inline-start: 1px dashed #d7dfda; margin-inline-start: 6px; }
 .ev-route-field { flex: 1; }
-.ev-route-field input, .ev-booking-fields input, .ev-guest-select { width: 100%; min-width: 0; border: 0; outline: 0; padding: 0; background: transparent; color: #244850; font: 500 14px "IBM Plex Sans", sans-serif; }
+.ev-route-field input, .ev-booking-fields input, .ev-guest-select, .ev-origin-select { width: 100%; min-width: 0; border: 1px solid #d7e1dd; outline: 0; padding: 16px 14px; border-radius: 16px; background: #ffffff; color: #244850; font: 500 14px "IBM Plex Sans", sans-serif; }
 .ev-route-field input::placeholder { color: #9aa9a3; }
-.ev-origin-select { width: 100%; min-width: 0; border: 0; outline: 0; padding: 0; background: transparent; color: #244850; font: 500 14px "IBM Plex Sans", sans-serif; cursor: pointer; }
+.ev-origin-select { cursor: pointer; appearance: none; }
 .ev-field-arrow { color: #9aa9a3; font-size: 15px; }
-.ev-booking-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin: 28px 0; padding: 18px 0; border-block: 1px solid #edf0ed; }
-.ev-guest-select { display: flex; justify-content: space-between; text-align: start; cursor: pointer; }
+.ev-booking-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin: 28px 0; padding: 24px; border-radius: 24px; background: #f8faf9; border: 1px solid #e8efec; }
+.ev-guest-select { display: flex; justify-content: space-between; align-items: center; text-align: start; cursor: pointer; min-height: 52px; padding: 14px 16px; border-radius: 16px; background: #ffffff; border: 1px solid #d7e1dd; color: #244850; font: 500 14px "IBM Plex Sans", sans-serif; }
 .ev-guest-select span { color: #8fa29c; }
 .ev-btn--wide { width: 100%; }
-.ev-card-foot { margin: 15px 0 0; color: #a0aea8; font-size: 10px; text-align: center; }
+.ev-card-foot { margin: 20px 0 0; color: #8b9b95; font-size: 11px; text-align: center; }
 .ev-selected-location { margin-top: 12px; padding: 11px 12px; border: 1px solid rgba(79,161,137,.35); border-radius: 10px; background: rgba(79,161,137,.1); color: var(--teal); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
 .ev-selected-location strong { color: var(--text); font-weight: 600; }
 .ev-trust { display: grid; grid-template-columns: .8fr 1.2fr; gap: 80px; padding: 82px 0; border-top: 1px solid #dde3de; }
