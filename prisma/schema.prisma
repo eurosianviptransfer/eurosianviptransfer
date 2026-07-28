@@ -69,26 +69,27 @@ enum DriverApplicationStatus {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  role         Role
-  name         String
-  phone        String?  @unique // şoför/karşılamacı SMS OTP girişi için
-  email        String?  @unique // admin email+şifre girişi için
-  passwordHash String?
-  active       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  supplierName String?
-  companyId    String?
+  id            String    @id @default(cuid())
+  role          Role
+  name          String
+  phone         String?   @unique // şoför/karşılamacı SMS OTP girişi için
+  email         String?   @unique // admin email+şifre girişi için
+  passwordHash  String?
+  active        Boolean   @default(true)
+  lastSeen      DateTime? // Anlık online takibi (Heartbeat) için son sinyal zamanı
+  createdAt     DateTime  @default(now())
+  supplierName  String?
+  companyId     String?
 
-  vehicle     Vehicle?         @relation("VehicleDriver")
-  driverJobs  Booking[]        @relation("DriverBookings")
-  greeterJobs Booking[]        @relation("GreeterBookings")
-  payouts     Payout[]
-  documents   DriverDocument[]
-  auditLogs   AssetAuditLog[]  @relation("AuditActor")
-  ratingsReceived Rating[]     @relation("RatedUser")
-  approvedApplications DriverApplication[] @relation("ApplicationApprovedUser")
-  company     Company?         @relation(fields: [companyId], references: [id])
+  vehicle             Vehicle?              @relation("VehicleDriver")
+  driverJobs          Booking[]             @relation("DriverBookings")
+  greeterJobs         Booking[]             @relation("GreeterBookings")
+  payouts             Payout[]
+  documents           DriverDocument[]
+  auditLogs           AssetAuditLog[]       @relation("AuditActor")
+  ratingsReceived     Rating[]              @relation("RatedUser")
+  approvedApplications DriverApplication[]  @relation("ApplicationApprovedUser")
+  company             Company?              @relation(fields: [companyId], references: [id])
 }
 
 model DriverApplication {
@@ -212,8 +213,8 @@ model PayoutRule {
 }
 
 model Booking {
-  id   String @id @default(cuid())
-  code String @unique // EVT-1001 gibi, misafir takip linki için
+  id             String @id @default(cuid())
+  code           String @unique // EVT-1001 gibi, misafir takip linki için
   idempotencyKey String? @unique // Aynı submit tekrarlandığında aynı rezervasyonu döndürmek için
 
   // Misafir bilgileri
@@ -241,12 +242,12 @@ model Booking {
   needsWheelchair Boolean     @default(false)
   hasReturnLeg    Boolean     @default(false)
 
-  price         Float
-  currency      String        @default("EUR")
-  paymentMethod PaymentMethod
-  paymentStatus PaymentStatus @default(UNPAID)
+  price                    Float
+  currency                 String        @default("EUR")
+  paymentMethod            PaymentMethod
+  paymentStatus            PaymentStatus @default(UNPAID)
   paymentProviderReference String?
-  paidAt                 DateTime?
+  paidAt                   DateTime?
 
   promoCode String?
   source    BookingSource @default(DIRECT) // Bölüm 15.4 — kanal genişlemesi için hazır alan
@@ -266,10 +267,10 @@ model Booking {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  payouts      Payout[]
-  statusEvents BookingStatusEvent[]
+  payouts         Payout[]
+  statusEvents    BookingStatusEvent[]
   paymentAttempts PaymentAttempt[]
-  ratings          Rating[]
+  ratings         Rating[]
 }
 
 model Rating {
@@ -291,17 +292,17 @@ model Rating {
 }
 
 model PaymentAttempt {
-  id                  String        @id @default(cuid())
-  bookingId           String
-  booking             Booking       @relation(fields: [bookingId], references: [id])
-  provider            String
-  providerReference   String?       @unique
-  checkoutUrl         String?
-  status              PaymentStatus @default(PENDING)
-  amount              Float
-  currency            String
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  id                String        @id @default(cuid())
+  bookingId         String
+  booking           Booking       @relation(fields: [bookingId], references: [id])
+  provider          String
+  providerReference String?       @unique
+  checkoutUrl       String?
+  status            PaymentStatus @default(PENDING)
+  amount            Float
+  currency          String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   @@index([bookingId, createdAt])
 }

@@ -6,6 +6,7 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import { AdminReportDashboard, type AdminReportBooking } from "@/components/admin/AdminReportDashboard";
 import { DriverApplicationsPanel } from "@/components/admin/DriverApplicationsPanel";
 import { RatingSummary } from "@/components/admin/RatingSummary";
+import { OnlineUsersWidget } from "@/components/admin/OnlineUsersWidget";
 import { unseal } from "@/lib/security/sealed";
 
 export const dynamic = "force-dynamic";
@@ -74,10 +75,16 @@ export default async function AdminPage() {
       </div>
 
       <nav className="ev-card-row" aria-label="Admin bölümleri" style={{ gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+        <a className="ev-btn ev-btn--ghost" href="#canli-online">Canlı Online</a>
         <a className="ev-btn ev-btn--ghost" href="#arac-sofor-yonetimi">Araç & Şoför</a>
         <a className="ev-btn ev-btn--ghost" href="#karsilamaci-yonetimi">Karşılamacılar</a>
         <a className="ev-btn ev-btn--ghost" href="#rezervasyon-yonetimi">Rezervasyonlar</a>
       </nav>
+
+      {/* ANLIK ONLINE KULLANICILAR CANLI TAKİP WIDGET'I */}
+      <div id="canli-online">
+        <OnlineUsersWidget />
+      </div>
 
       <AdminReportDashboard bookings={reportBookings} />
 
@@ -175,7 +182,7 @@ export default async function AdminPage() {
             <b>{b.guestName}</b>
             <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
               {b.driver?.name} → ₺{b.driverFee}
-              {b.greeter ? ` · ${b.greeter.name} → ₺${b.greeterFee}` : ""}
+              {b.greeter ? ` · ${b.greeter.name} → ₺{b.greeterFee}` : ""}
             </div>
           </div>
         </div>
