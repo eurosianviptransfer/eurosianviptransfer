@@ -55,7 +55,7 @@ export const messages = {
     navTrack: "Rezervasyon takip",
     navTeam: "Ekip girişi",
     eyebrow: "Antalya Havalimanı · Executive VIP transfer",
-    title: "Antalya’ya varışınız\nprofesyonel bir karşılamayla başlar.",
+    title: "Antalya’ya ziyaretiniz\nprofesyonel bir karşılama ile başlar.",
     lead: "Havalimanından seçkin otellere ve villa bölgelerine, premium araçlar ve kurumsal transfer kalitesiyle ulaşın.",
     primary: "Transfer planla",
     secondary: "Rezervasyonunu takip et",
