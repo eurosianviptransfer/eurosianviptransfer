@@ -1,3 +1,5 @@
+import { promises as fs } from "fs";
+import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { createVehicleImageUpload } from "@/lib/providers/storage/r2";
 import { checkRateLimit, getClientIp } from "@/lib/security/request-controls";
@@ -10,6 +12,27 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const contentType = typeof body?.contentType === "string" ? body.contentType : "";
   if (!types[contentType]) return NextResponse.json({ error: "Sadece JPG, PNG veya WebP fotoğraf kabul edilir." }, { status: 400 });
-  try { return NextResponse.json(await createVehicleImageUpload(contentType, types[contentType])); }
-  catch (error) { return NextResponse.json({ error: (error as Error).message }, { status: 503 }); }
+  try {
+    return NextResponse.json(await createVehicleImageUpload(contentType, types[contentType]));
+  } catch (error) {
+    return NextResponse.json({ error: (error as Error).message }, { status: 503 });
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  const localKey = req.nextUrl.searchParams.get("localKey")?.trim();
+  if (!localKey) return NextResponse.json({ error: "Dosya anahtarı eksik." }, { status: 400 });
+  const contentType = req.headers.get("content-type") ?? "";
+  if (!types[contentType]) return NextResponse.json({ error: "Sadece JPG, PNG veya WebP fotoğraf kabul edilir." }, { status: 400 });
+
+  const root = process.cwd();
+  const targetPath = path.join(root, "public", ...localKey.split("/"));
+  const allowedRoot = path.join(root, "public", "driver-applications");
+  if (!targetPath.startsWith(allowedRoot)) return NextResponse.json({ error: "Geçersiz dosya yolu." }, { status: 400 });
+
+  const buffer = Buffer.from(await req.arrayBuffer());
+  await fs.mkdir(path.dirname(targetPath), { recursive: true });
+  await fs.writeFile(targetPath, buffer);
+
+  return NextResponse.json({ ok: true });
 }

@@ -8,8 +8,46 @@ export function DriverApplicationForm() {
   const [form, setForm] = useState(initial); const [files, setFiles] = useState<File[]>([]); const [result, setResult] = useState<any>(null); const [error, setError] = useState(""); const [loading, setLoading] = useState(false);
   const set = (key: keyof typeof initial, value: string) => setForm(current => ({ ...current, [key]: value }));
   function readFiles(list: FileList | null) { if (!list) return; const selected = Array.from(list).filter(file => file.size <= 5_000_000).slice(0, 3); setFiles(selected); }
-  async function uploadFiles() { return Promise.all(files.map(async file => { const presign = await fetch("/api/uploads/vehicle-image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contentType: file.type }) }); const body = await presign.json(); if (!presign.ok) throw new Error(body.error); const upload = await fetch(body.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file }); if (!upload.ok) throw new Error("Fotoğraf depolamaya yüklenemedi."); return body.publicUrl; })); }
-  async function submit(event: React.FormEvent) { event.preventDefault(); setLoading(true); setError(""); try { const imageUrls = await uploadFiles(); const res = await fetch("/api/driver-applications", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...form, vehicleYear: form.vehicleYear ? Number(form.vehicleYear) : null, passengerCapacity: Number(form.passengerCapacity), luggageCapacity: form.luggageCapacity ? Number(form.luggageCapacity) : null, features: form.features.split(",").map(item => item.trim()).filter(Boolean), imageUrls }) }); const body = await res.json(); if (!res.ok) throw new Error(body.error); setResult(body.application); setForm(initial); setFiles([]); } catch (e) { setError((e as Error).message); } finally { setLoading(false); } }
+  async function uploadFiles() {
+    if (files.length === 0) return [];
+    return Promise.all(files.map(async file => {
+      const presign = await fetch("/api/uploads/vehicle-image", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contentType: file.type }) });
+      const body = await presign.json();
+      if (!presign.ok) throw new Error(body.error || "Fotoğraf yükleme URL'i alınamadı.");
+      const upload = await fetch(body.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+      if (!upload.ok) throw new Error("Fotoğraf depolamaya yüklenemedi.");
+      return body.publicUrl;
+    }));
+  }
+  async function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const imageUrls = await uploadFiles();
+      const res = await fetch("/api/driver-applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          vehicleYear: form.vehicleYear ? Number(form.vehicleYear) : null,
+          passengerCapacity: Number(form.passengerCapacity),
+          luggageCapacity: form.luggageCapacity ? Number(form.luggageCapacity) : null,
+          features: form.features.split(",").map(item => item.trim()).filter(Boolean),
+          imageUrls,
+        }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || "Başvuru tamamlanamadı. Lütfen bilgileri kontrol edin.");
+      setResult(body.application);
+      setForm(initial);
+      setFiles([]);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
   if (result) return <section className="ev-card" style={{ marginTop: 24 }}><div className="ev-eyebrow">Başvurunuz alındı</div><h2 style={{ margin: "8px 0" }}>Takip numaranız: {result.applicationNo}</h2><p>Başvurunuz admin onayına gönderildi. Durumunuzu bu numara ve telefonunuzla takip edebilirsiniz.</p><a className="ev-btn" href={`/basvuru-takip?applicationNo=${result.applicationNo}`}>Başvuruyu takip et</a></section>;
   return <form className="ev-card" style={{ marginTop: 24 }} onSubmit={submit}><div className="ev-section-title">Kişisel bilgiler</div><div className="ev-field-grid"><Field label="Ad soyad" value={form.fullName} onChange={v => set("fullName", v)} required /><Field label="Telefon" value={form.phone} onChange={v => set("phone", v)} placeholder="+90" required /><Field label="E-posta" value={form.email} onChange={v => set("email", v)} type="email" /><Field label="Adres / ikamet" value={form.address} onChange={v => set("address", v)} /><Field label="Ehliyet / belge no" value={form.licenseNumber} onChange={v => set("licenseNumber", v)} /></div><div className="ev-section-title" style={{ marginTop: 26 }}>Araç bilgileri</div><div className="ev-field-grid"><Field label="Plaka" value={form.vehiclePlate} onChange={v => set("vehiclePlate", v)} required /><Field label="Marka / model" value={form.vehicleModel} onChange={v => set("vehicleModel", v)} required /><Field label="Model yılı" value={form.vehicleYear} onChange={v => set("vehicleYear", v)} type="number" /><label className="ev-field"><span className="ev-label">Araç sınıfı</span><select className="ev-select" value={form.vehicleSize} onChange={e => set("vehicleSize", e.target.value)}><option value="SMALL">Vito / Transporter / VIP araç</option><option value="LARGE">Sprinter / minibüs / otobüs</option></select></label><Field label="Yolcu kapasitesi" value={form.passengerCapacity} onChange={v => set("passengerCapacity", v)} type="number" required /><Field label="Bagaj kapasitesi" value={form.luggageCapacity} onChange={v => set("luggageCapacity", v)} type="number" /><Field label="Özellikler (virgülle ayırın)" value={form.features} onChange={v => set("features", v)} placeholder="Çocuk koltuğu, Wi-Fi, deri koltuk" /></div><label className="ev-field" style={{ marginTop: 12 }}><span className="ev-label">Araç fotoğrafları (en fazla 3)</span><input className="ev-input" type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={e => readFiles(e.target.files)} /><small className="ev-muted">En fazla 3 fotoğraf, her biri 5 MB.</small></label><label className="ev-field" style={{ marginTop: 12 }}><span className="ev-label">Ek açıklama</span><textarea className="ev-input" rows={4} value={form.notes} onChange={e => set("notes", e.target.value)} /></label>{error && <div className="ev-alert ev-alert--error">{error}</div>}<button className="ev-btn" disabled={loading}>{loading ? "Gönderiliyor…" : "Başvuruyu gönder"}</button></form>;
 }

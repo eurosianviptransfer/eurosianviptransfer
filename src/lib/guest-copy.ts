@@ -1,3 +1,4 @@
+import { messages } from "@/lib/i18n";
 import type { Locale } from "@/lib/i18n";
 
 export interface BookingCopy {
@@ -45,4 +46,19 @@ const zh: BookingCopy = { ...en, title: "机场接送预订", airport: "出发�
 const ja: BookingCopy = { ...en, title: "空港送迎の予約", airport: "出発空港", destination: "目的地 — ホテル / 住所", hotelSearch: "ホテルまたは住所を検索", region: "エリア", regionChoose: "エリアを選択", selectedAddress: "選択したホテル/住所", name: "氏名", phone: "WhatsApp 電話番号", passengers: "乗車人数", returnTrip: "復路送迎を追加", payVehicle: "車内で支払う", payCard: "今すぐ支払う（カード）", total: "合計金額", confirm: "予約を確定", required: "氏名、電話番号、日付は必須です。", destinationRequired: "目的地の住所が必要です。", regionRequired: "エリアを選択してください。", addressRequired: "ホテルまたは住所を入力してください。" };
 
 const copies: Partial<Record<Locale, BookingCopy>> = { tr, en, de, es, it, fr, ru, ar, zh, ja };
-export function getBookingCopy(locale: Locale) { return copies[locale] ?? en; }
+
+function buildFallbackBookingCopy(locale: Locale): BookingCopy {
+  const localized = messages[locale] ?? messages.en;
+  return {
+    ...en,
+    title: localized.title,
+    airport: localized.from,
+    destination: localized.to,
+    hotelSearch: localized.toPlaceholder,
+    passengers: localized.guests,
+  };
+}
+
+export function getBookingCopy(locale: Locale) {
+  return copies[locale] ?? buildFallbackBookingCopy(locale);
+}

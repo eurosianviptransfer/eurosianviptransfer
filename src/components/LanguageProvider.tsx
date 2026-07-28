@@ -4,17 +4,49 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { locales, messages, rtlLocales, type Locale, type Messages } from "@/lib/i18n";
 
 const LocaleContext = createContext<{ locale: Locale; setLocale: (locale: Locale) => void; t: Messages }>({
-  locale: "tr", setLocale: () => undefined, t: messages.tr,
+  locale: "en", setLocale: () => undefined, t: messages.en,
 });
 
+function resolveBrowserLocale(): Locale | undefined {
+  const available = new Set(locales);
+  const getMatch = (value: string | null | undefined) => {
+    if (!value) return undefined;
+    const normalized = value.toLowerCase().trim();
+    const exact = normalized.split("-")[0];
+    if (available.has(exact as Locale)) return exact as Locale;
+    if (normalized.startsWith("nl")) return "nl";
+    if (normalized.startsWith("de")) return "de";
+    if (normalized.startsWith("en")) return "en";
+    if (normalized.startsWith("ru")) return "ru";
+    if (normalized.startsWith("tr")) return "tr";
+    return undefined;
+  };
+
+  const navigatorLanguages = navigator.languages;
+  if (Array.isArray(navigatorLanguages)) {
+    for (const language of navigatorLanguages) {
+      const match = getMatch(language);
+      if (match) return match;
+    }
+  }
+
+  return getMatch(navigator.language || navigator.userLanguage || navigator.browserLanguage || navigator.systemLanguage);
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("tr");
+  const [locale, setLocaleState] = useState<Locale>("en");
 
   useEffect(() => {
     const saved = window.localStorage.getItem("ev-locale");
-    if (!saved || !locales.includes(saved as Locale)) return;
-    const timer = window.setTimeout(() => setLocaleState(saved as Locale), 0);
-    return () => window.clearTimeout(timer);
+    if (saved && locales.includes(saved as Locale)) {
+      setLocaleState(saved as Locale);
+      return;
+    }
+
+    const browserLocale = resolveBrowserLocale();
+    if (browserLocale) {
+      setLocaleState(browserLocale);
+    }
   }, []);
 
   useEffect(() => {

@@ -129,10 +129,10 @@ export default function RezervasyonPage() {
   }
 
   async function submit() {
-    if (!name || !phone || !scheduledAt) return alert("Ad, telefon ve tarih gerekli.");
-    if (googleMapsEnabled && !place) return alert("Varış adresi gerekli.");
-    if (!googleMapsEnabled && !selectedRegionName) return alert("Bölge seçimi gerekli.");
-    if (!destinationText.trim()) return alert("Otel veya adres bilgisi gerekli.");
+    if (!name || !phone || !scheduledAt) return alert(copy.required);
+    if (googleMapsEnabled && !place) return alert(copy.destinationRequired);
+    if (!googleMapsEnabled && !selectedRegionName) return alert(copy.regionRequired);
+    if (!destinationText.trim()) return alert(copy.addressRequired);
     setSubmitting(true);
     try {
       idempotencyKeyRef.current ??= crypto.randomUUID();
@@ -228,7 +228,7 @@ export default function RezervasyonPage() {
             }}
           />
           <div style={{ marginTop: 12 }}>
-            <label className="ev-label">Bölge</label>
+            <label className="ev-label">{copy.region}</label>
             <select
               className="ev-select"
               value={selectedRegionName}
@@ -239,7 +239,7 @@ export default function RezervasyonPage() {
                 setPlace(null);
               }}
             >
-              <option value="">{pricingRules.length === 0 ? "Bölge yükleniyor…" : "Bölge seçin"}</option>
+              <option value="">{pricingRules.length === 0 ? copy.regionLoading : copy.regionChoose}</option>
               {pricingRules.map((rule) => (
                 <option key={rule.regionName} value={rule.regionName}>
                   {rule.regionName}
@@ -248,36 +248,36 @@ export default function RezervasyonPage() {
             </select>
           </div>
           <div style={{ marginTop: 12 }}>
-            <label className="ev-label">Seçilen otel/adres</label>
+            <label className="ev-label">{copy.selectedAddress}</label>
             <input
               className="ev-input"
               value={destinationText}
               onChange={(e) => setDestinationText(e.target.value)}
-              placeholder="Arama sonucu veya manuel giriş"
+              placeholder={copy.addressPlaceholder}
             />
           </div>
         </>
       )}
       {!googleMapsEnabled && (
         <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8 }}>
-          Google Places anahtarı tanımlı değil. Bölge seçerek devam edebilirsiniz.
+          {copy.mapsNote}
         </p>
       )}
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-        <input className="ev-input" placeholder="Ad Soyad" value={name} onChange={(e) => setName(e.target.value)} />
-        <input className="ev-input" placeholder="WhatsApp Telefon" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        <input className="ev-input" placeholder="E-posta (opsiyonel)" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input className="ev-input" placeholder={copy.name} value={name} onChange={(e) => setName(e.target.value)} />
+        <input className="ev-input" placeholder={copy.phone} value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <input className="ev-input" placeholder={copy.email} value={email} onChange={(e) => setEmail(e.target.value)} />
         <input
           className="ev-input"
           type="number"
           min={1}
-          placeholder="Yolcu Sayısı"
+          placeholder={copy.passengers}
           value={passengers}
           onChange={(e) => setPassengers(Number.isFinite(e.currentTarget.valueAsNumber) ? e.currentTarget.valueAsNumber : 1)}
         />
         <input className="ev-input" type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
-        <input className="ev-input" placeholder="Uçuş No (opsiyonel)" value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} />
+        <input className="ev-input" placeholder={copy.flight} value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} />
         <select
           className="ev-select"
           value={vehicleSize}
@@ -287,8 +287,8 @@ export default function RezervasyonPage() {
             if (googleMapsEnabled && place) fetchQuote(place, size, hasReturnLeg);
           }}
         >
-          <option value="SMALL">Vito / Transporter (küçük)</option>
-          <option value="LARGE">Sprinter (büyük)</option>
+          <option value="SMALL">{copy.vehicleSmall}</option>
+          <option value="LARGE">{copy.vehicleLarge}</option>
         </select>
       </div>
 
@@ -301,7 +301,7 @@ export default function RezervasyonPage() {
             if (googleMapsEnabled && place) fetchQuote(place, vehicleSize, e.target.checked);
           }}
         />
-        <span style={{ fontSize: 14, color: "var(--text-muted)" }}>Dönüş transferi ekle</span>
+        <span style={{ fontSize: 14, color: "var(--text-muted)" }}>{copy.returnTrip}</span>
       </label>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
@@ -309,19 +309,19 @@ export default function RezervasyonPage() {
           className={`ev-btn ev-btn--ghost ${paymentMethod === "PAY_IN_VEHICLE" ? "ev-btn--ghost-active" : ""}`}
           onClick={() => setPaymentMethod("PAY_IN_VEHICLE")}
         >
-          Araçta Öde
+          {copy.payVehicle}
         </button>
         <button
           className={`ev-btn ev-btn--ghost ${paymentMethod === "PAY_NOW_CARD" ? "ev-btn--ghost-active" : ""}`}
           onClick={() => setPaymentMethod("PAY_NOW_CARD")}
         >
-          Şimdi Öde (Kart)
+          {copy.payCard}
         </button>
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20 }}>
         <div>
-          <div style={{ fontSize: 12, color: "var(--text-muted)" }}>Toplam Fiyat</div>
+          <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{copy.total}</div>
           <div className="ev-price">{loadingQuote ? "…" : displayedQuote ? `€${displayedQuote.total}` : "—"}</div>
           {displayedQuote?.km !== undefined && (
             <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
@@ -332,7 +332,7 @@ export default function RezervasyonPage() {
           {displayedQuote?.isEstimate && <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{displayedQuote.note}</div>}
         </div>
         <button className="ev-btn" onClick={submit} disabled={submitting}>
-          {submitting ? "…" : "Rezervasyonu Onayla"}
+          {submitting ? "…" : copy.confirm}
         </button>
       </div>
     </main>
