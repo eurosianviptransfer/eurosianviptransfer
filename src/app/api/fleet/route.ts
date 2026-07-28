@@ -117,6 +117,33 @@ export async function PATCH(req: Request) {
   try {
     const body = await req.json();
 
+    // Admin Şifre Sıfırlama İşlemi
+    if (body.action === "reset-password") {
+      const { id } = body;
+      if (!id) {
+        return NextResponse.json({ error: "Kullanıcı ID gereklidir." }, { status: 400 });
+      }
+
+      const generatedPassword = generateTempPassword();
+      const passwordHash = await hash(generatedPassword, 12);
+
+      const updatedUser = await prisma.user.update({
+        where: { id },
+        data: { passwordHash },
+      });
+
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: updatedUser.id,
+          name: updatedUser.name,
+          phone: updatedUser.phone,
+          role: updatedUser.role,
+        },
+        generatedPassword,
+      });
+    }
+
     if (body.type === "user") {
       const { id, name, phone, active } = body;
       if (!id) {
