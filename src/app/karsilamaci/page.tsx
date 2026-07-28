@@ -2,12 +2,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/config";
 import { prisma } from "@/lib/db";
 import { OperationsDashboard, type OperationsJob } from "@/components/operations/OperationsDashboard";
+import { OnlineTracker } from "@/components/OnlineTracker";
 
 export const dynamic = "force-dynamic";
 
 export default async function GreeterPage() {
   const session = await getServerSession(authOptions);
   const greeterId = (session!.user as any).id;
+  
   const jobs = await prisma.booking.findMany({
     where: { greeterId },
     include: { driver: { select: { name: true } }, vehicle: { select: { plate: true } } },
@@ -29,5 +31,12 @@ export default async function GreeterPage() {
     vehicle: job.vehicle,
   }));
 
-  return <OperationsDashboard role="GREETER" name={session?.user?.name || "Karşılamacı"} jobs={serializedJobs} />;
+  return (
+    <>
+      {/* Arka planda 30 saniyede bir admin paneline aktiflik sinyali gönderir */}
+      <OnlineTracker currentUserId={greeterId} />
+      
+      <OperationsDashboard role="GREETER" name={session?.user?.name || "Karşılamacı"} jobs={serializedJobs} />
+    </>
+  );
 }
