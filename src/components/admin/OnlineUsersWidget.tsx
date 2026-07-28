@@ -31,7 +31,7 @@ export function OnlineUsersWidget() {
 
   useEffect(() => {
     fetchOnlineUsers();
-    const timer = setInterval(fetchOnlineUsers, 10000); // Her 10 saniyede bir güncelle
+    const timer = setInterval(fetchOnlineUsers, 10000); // Her 10 saniyede bir listeyi güncelle
     return () => clearInterval(timer);
   }, []);
 
@@ -66,7 +66,7 @@ export function OnlineUsersWidget() {
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>{u.phone || "Telefon yok"}</div>
                 {u.supplierName && <div style={{ fontSize: 11, color: "#38bdf8", marginTop: 2 }}>Tedarikçi: {u.supplierName}</div>}
                 
-                <div style={{ marginTop: 8, pt: 8, borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(255,255,255,0.5)" }}>
+                <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", justifyContent: "space-between", fontSize: 11, color: "rgba(255,255,255,0.5)" }}>
                   <span>Durum: <strong style={{ color: "#22c55e" }}>Aktif</strong></span>
                   <span>Son Sinyal: Az önce</span>
                 </div>
