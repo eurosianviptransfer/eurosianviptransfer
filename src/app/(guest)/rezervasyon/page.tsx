@@ -25,7 +25,7 @@ function toDatetimeLocal(value: Date) {
 
 export default function RezervasyonPage() {
   const router = useRouter();
-  const { locale } = useLocale();
+  const { locale, t } = useLocale();
   const copy = getBookingCopy(locale);
   const googleMapsEnabled = Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim());
   const [place, setPlace] = useState<PlaceSelection | null>(null);
@@ -193,7 +193,7 @@ export default function RezervasyonPage() {
 
   return (
     <main className="ev-page">
-      <div className="ev-eyebrow">Eurosian VIP Transfer</div>
+      <div className="ev-eyebrow">{t.eyebrow}</div>
       <h1 className="ev-h1" style={{ marginBottom: 16 }}>{copy.title}</h1>
 
       <label className="ev-label" htmlFor="origin-airport">{copy.airport}</label>

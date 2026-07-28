@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { airports, type AirportCode } from "@/lib/airports";
+import { useLocale } from "@/components/LanguageProvider";
+import { getBookingCopy } from "@/lib/guest-copy";
 
 export interface PlaceSelection {
   label: string;
@@ -24,6 +26,8 @@ interface Props {
  * HTTP referrer kısıtlaması (sadece eurosianviptransfer.com) eklenmesi zorunludur.
  */
 export function AddressAutocomplete({ onSelect, originAirport = "AYT" }: Props) {
+  const { locale } = useLocale();
+  const copy = getBookingCopy(locale);
   const containerRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
   const hasApiKey = Boolean(process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim());
@@ -68,7 +72,7 @@ export function AddressAutocomplete({ onSelect, originAirport = "AYT" }: Props) 
     return (
       <input
         disabled
-        placeholder="Google adres araması için API anahtarı gerekiyor"
+        placeholder={copy.googleApiRequired}
         className="ev-body w-full rounded-lg px-3 py-2.5 text-sm opacity-50"
       />
     );
@@ -80,11 +84,11 @@ export function AddressAutocomplete({ onSelect, originAirport = "AYT" }: Props) 
       {!ready && (
         <input
           disabled
-          placeholder="Adres araması yükleniyor…"
+          placeholder={copy.loadingAddresses}
           className="ev-body w-full rounded-lg px-3 py-2.5 text-sm opacity-50"
         />
       )}
-      {selectedLabel && <div className="ev-selected-location" role="status">✓ Seçilen konum: <strong>{selectedLabel}</strong></div>}
+      {selectedLabel && <div className="ev-selected-location" role="status">✓ {copy.selectedAddressPrefix} <strong>{selectedLabel}</strong></div>}
     </div>
   );
 }

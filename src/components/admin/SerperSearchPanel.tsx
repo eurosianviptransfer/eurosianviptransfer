@@ -24,7 +24,7 @@ export function SerperSearchPanel() {
         body: JSON.stringify({ q }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Arama başarısız.");
+      if (!res.ok) throw new Error(json.error || (json?.message ?? "Arama başarısız."));
       setResults(Array.isArray(json.results) ? json.results : []);
     } catch (e) {
       setResults([]);

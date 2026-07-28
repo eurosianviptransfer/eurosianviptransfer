@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale } from "@/components/LanguageProvider";
+import { getBookingCopy } from "@/lib/guest-copy";
 import { inferRegionName } from "@/lib/search/infer-region";
 
 type PricingRule = { regionName: string };
@@ -12,6 +14,8 @@ interface Props {
 }
 
 export function DestinationSearch({ pricingRules, onPick }: Props) {
+  const { locale } = useLocale();
+  const copy = getBookingCopy(locale);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SerperResult[]>([]);
@@ -29,7 +33,7 @@ export function DestinationSearch({ pricingRules, onPick }: Props) {
         body: JSON.stringify({ q }),
       });
       const json = await res.json();
-      if (!res.ok) throw new Error(json.error || "Arama başarısız.");
+      if (!res.ok) throw new Error(json.error || copy.searchError);
       setResults(Array.isArray(json.results) ? json.results : []);
     } catch (e) {
       setResults([]);
@@ -41,20 +45,20 @@ export function DestinationSearch({ pricingRules, onPick }: Props) {
 
   return (
     <div className="ev-card" style={{ marginTop: 12 }}>
-      <div className="ev-label" style={{ marginBottom: 8 }}>Otel veya adres ara</div>
+      <div className="ev-label" style={{ marginBottom: 8 }}>{copy.hotelSearch}</div>
       <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 0 }}>
-        Serper ile otel/adres önerisi al, sonra sonucu seçerek formu doldur.
+        {copy.mapsNote}
       </p>
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
         <input
           className="ev-input"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Örn. Lara beach hotel"
+          placeholder={copy.searchExample}
           onKeyDown={(e) => e.key === "Enter" && search()}
         />
         <button className="ev-btn" onClick={search} disabled={loading || !q.trim()}>
-          {loading ? "…" : "Ara"}
+          {loading ? "…" : copy.searchButton}
         </button>
       </div>
       {error && <p style={{ color: "var(--rose)", fontSize: 13, marginTop: 8 }}>{error}</p>}
@@ -81,7 +85,7 @@ export function DestinationSearch({ pricingRules, onPick }: Props) {
                 <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>{result.snippet}</div>
                 {inferredRegion && (
                   <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
-                    Eşleşen bölge: {inferredRegion}
+                    {copy.region}: {inferredRegion}
                   </div>
                 )}
               </button>
@@ -89,7 +93,7 @@ export function DestinationSearch({ pricingRules, onPick }: Props) {
           })}
         </div>
       )}
-      {selectedDestination && <div className="ev-selected-location" role="status">✓ Seçilen konum: <strong>{selectedDestination}</strong></div>}
+      {selectedDestination && <div className="ev-selected-location" role="status">✓ {copy.selectedAddress}: <strong>{selectedDestination}</strong></div>}
     </div>
   );
 }
