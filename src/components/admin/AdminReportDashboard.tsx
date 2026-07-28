@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
+import { useLocale } from "@/components/LanguageProvider";
+import { getAdminCopy } from "@/lib/admin-copy";
 
 export interface AdminReportBooking {
   id: string;
@@ -101,6 +103,8 @@ function reportRows(bookings: AdminReportBooking[]) {
 }
 
 export function AdminReportDashboard({ bookings }: { bookings: AdminReportBooking[] }) {
+  const { locale } = useLocale();
+  const copy = getAdminCopy(locale);
   const [status, setStatus] = useState("ALL");
   const [paymentStatus, setPaymentStatus] = useState("ALL");
   const [vehicleSize, setVehicleSize] = useState("ALL");

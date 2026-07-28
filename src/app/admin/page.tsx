@@ -10,10 +10,19 @@ import { OnlineUsersWidget } from "@/components/admin/OnlineUsersWidget";
 import { ThemeToggle } from "@/components/admin/ThemeToggle";
 import { ProfileSettingsCard } from "@/components/profile/ProfileSettingsCard";
 import { unseal } from "@/lib/security/sealed";
+import { getAdminCopy } from "@/lib/admin-copy";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth/config";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as { id?: string } | undefined)?.id;
+  const user = userId ? await prisma.user.findUnique({ where: { id: userId }, select: { preferredLocale: true } }) : null;
+  const locale = typeof user?.preferredLocale === "string" && user.preferredLocale.trim() ? user.preferredLocale.trim() : "tr";
+  const copy = getAdminCopy(locale);
+
   const bookings = await prisma.booking.findMany({
     orderBy: { createdAt: "desc" },
     include: {
@@ -72,18 +81,17 @@ export default async function AdminPage() {
     <main className="ev-page ev-page--wide">
       <div className="ev-eyebrow">Eurosian VIP Transfer</div>
       <div className="ev-card-row" style={{ alignItems: "center" }}>
-        <h1 className="ev-h1">Admin — Operasyon Panosu</h1>
+        <h1 className="ev-h1">{copy.title}</h1>
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           <ThemeToggle />
-          <div className="ev-actions"><a href="/admin/fiyatlar" className="ev-btn ev-btn--ghost">Fiyat Tablosu →</a><SignOutButton /></div>
+          <div className="ev-actions"><a href="/admin/fiyatlar" className="ev-btn ev-btn--ghost">{copy.pricingTable}</a><SignOutButton /></div>
         </div>
       </div>
 
       <nav className="ev-card-row" aria-label="Admin bölümleri" style={{ gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-        <a className="ev-btn ev-btn--ghost" href="#canli-online">Canlı Online</a>
-        <a className="ev-btn ev-btn--ghost" href="#arac-sofor-yonetimi">Araç & Şoför</a>
-        <a className="ev-btn ev-btn--ghost" href="#karsilamaci-yonetimi">Karşılamacılar</a>
-        <a className="ev-btn ev-btn--ghost" href="#rezervasyon-yonetimi">Rezervasyonlar</a>
+        <a className="ev-btn ev-btn--ghost" href="#canli-online">{copy.sections.liveOnline}</a>
+        <a className="ev-btn ev-btn--ghost" href="#arac-sofor-yonetimi">{copy.sections.fleetDrivers}</a>
+        <a className="ev-btn ev-btn--ghost" href="#rezervasyon-yonetimi">{copy.sections.reservations}</a>
       </nav>
 
       {/* ANLIK ONLINE KULLANICILAR CANLI TAKİP WIDGET'I */}
@@ -107,25 +115,25 @@ export default async function AdminPage() {
       />
 
       <section id="rezervasyon-yonetimi">
-        <div className="ev-section-title">Rezervasyon Yönetimi ({bookings.length})</div>
+        <div className="ev-section-title">{copy.summary.title} ({bookings.length})</div>
         <div className="ev-card-row" style={{ gap: 12, flexWrap: "wrap" }}>
-          <span className="ev-badge ev-badge--gold">Canlı: {live.length}</span>
-          <span className="ev-badge">Onay bekleyen: {pending.length}</span>
-          <span className="ev-badge">Atama bekleyen: {approved.length}</span>
-          <span className="ev-badge">Tamamlanan: {completed.length}</span>
+          <span className="ev-badge ev-badge--gold">{copy.summary.live}: {live.length}</span>
+          <span className="ev-badge">{copy.summary.pending}: {pending.length}</span>
+          <span className="ev-badge">{copy.summary.approved}: {approved.length}</span>
+          <span className="ev-badge">{copy.summary.completed}: {completed.length}</span>
         </div>
       </section>
 
       {/* CANLI OPERASYON */}
-      <div className="ev-section-title" style={{ marginTop: 24 }}>Canlı Operasyon ({live.length})</div>
-      {live.length === 0 && <div className="ev-empty">Yok.</div>}
+      <div className="ev-section-title" style={{ marginTop: 24 }}>{copy.summary.liveOperations} ({live.length})</div>
+      {live.length === 0 && <div className="ev-empty">{copy.summary.noItems}</div>}
       {live.map((b) => (
         <div key={b.id} className="ev-card ev-card-row">
           <div>
             <b>{b.guestName}</b>
             <span className="ev-badge ev-badge--gold" style={{ marginLeft: 8 }}>{STAGE_LABEL[b.status]}</span>
             <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
-              {b.driver?.name} {b.vehicle?.plate} {b.greeter ? `· Karşılamacı: ${b.greeter.name}` : ""}
+              {b.driver?.name} {b.vehicle?.plate} {b.greeter ? `· ${copy.stageLabels.GREETER_CONFIRMED ?? "Karşılamacı"}: ${b.greeter.name}` : ""}
             </div>
           </div>
           <div style={{ minWidth: 340 }}>
@@ -146,8 +154,8 @@ export default async function AdminPage() {
       ))}
 
       {/* ONAY BEKLEYENLER */}
-      <div className="ev-section-title">Rezervasyonlar — Onay Bekleyenler ({pending.length})</div>
-      {pending.length === 0 && <div className="ev-empty">Yok.</div>}
+      <div className="ev-section-title">{copy.summary.pendingReservations} ({pending.length})</div>
+      {pending.length === 0 && <div className="ev-empty">{copy.summary.noItems}</div>}
       {pending.map((b) => (
         <div key={b.id} className="ev-card ev-card-row">
           <div>
@@ -159,14 +167,14 @@ export default async function AdminPage() {
       ))}
 
       {/* ATAMA BEKLEYENLER */}
-      <div className="ev-section-title">Atama Bekleyenler ({approved.length})</div>
-      {approved.length === 0 && <div className="ev-empty">Yok.</div>}
+      <div className="ev-section-title">{copy.summary.pendingAssignments} ({approved.length})</div>
+      {approved.length === 0 && <div className="ev-empty">{copy.summary.noItems}</div>}
       {approved.map((b) => (
         <div key={b.id} className="ev-card ev-card-row">
           <div>
             <b>{b.guestName}</b> · {b.destinationText || b.regionName}
             <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-              {b.vehicleSize === "SMALL" ? "Küçük araç — karşılamacı zorunlu" : "Büyük araç — karşılamacı opsiyonel"}
+              {b.vehicleSize === "SMALL" ? copy.bookingCard.smallVehicle : copy.bookingCard.largeVehicle}
             </div>
           </div>
           <AssignForm
@@ -181,8 +189,8 @@ export default async function AdminPage() {
       ))}
 
       {/* TAMAMLANANLAR */}
-      <div className="ev-section-title">Tamamlananlar ({completed.length})</div>
-      {completed.length === 0 && <div className="ev-empty">Yok.</div>}
+      <div className="ev-section-title">{copy.summary.completedItems} ({completed.length})</div>
+      {completed.length === 0 && <div className="ev-empty">{copy.summary.noItems}</div>}
       {completed.map((b) => (
         <div key={b.id} className="ev-card ev-card-row">
           <div>

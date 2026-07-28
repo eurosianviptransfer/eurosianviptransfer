@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "@/components/LanguageProvider";
+import { getAdminCopy } from "@/lib/admin-copy";
 import { setTheme, type Theme } from "@/lib/theme";
 
 interface ProfileData {
@@ -21,6 +22,7 @@ interface ProfileData {
 export function ProfileSettingsCard() {
   const { data: session, update } = useSession();
   const { locale, setLocale } = useLocale();
+  const copy = getAdminCopy(locale);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [formState, setFormState] = useState({ name: "", email: "", supplierName: "", bio: "", currentPassword: "", newPassword: "", theme: "dark" as Theme, localeValue: "tr" });
   const [loading, setLoading] = useState(false);
@@ -70,7 +72,7 @@ export function ProfileSettingsCard() {
     const data = await response.json().catch(() => ({}));
     setLoading(false);
     if (!response.ok) {
-      setMessage(data.error ?? "Profil güncellenemedi.");
+      setMessage(data.error ?? copy.profile.messages.saveError);
       return;
     }
 
@@ -78,7 +80,7 @@ export function ProfileSettingsCard() {
     setTheme(formState.theme);
     setLocale(formState.localeValue as any);
     await update?.();
-    setMessage("Profil başarıyla güncellendi.");
+    setMessage(copy.profile.messages.success);
   }
 
   async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>) {
@@ -96,11 +98,11 @@ export function ProfileSettingsCard() {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setMessage(data.error ?? "Profil resmi yüklenemedi.");
+        setMessage(data.error ?? copy.profile.messages.imageError);
         return;
       }
       setProfile((current) => current ? { ...current, profileImageUrl: data.profileImageUrl ?? current.profileImageUrl } : current);
-      setMessage("Profil resmi güncellendi.");
+      setMessage(copy.profile.messages.imageSuccess);
     };
     reader.readAsDataURL(file);
   }
@@ -111,9 +113,9 @@ export function ProfileSettingsCard() {
     <section className="ev-card" style={{ marginTop: 24 }}>
       <div className="ev-card-row" style={{ alignItems: "center" }}>
         <div>
-          <div className="ev-eyebrow">Profil & Ayarlar</div>
-          <h2 className="ev-h1" style={{ fontSize: 24, marginTop: 6 }}>Kişisel alanınız</h2>
-          <p className="ev-muted" style={{ marginTop: 6 }}>İsim, e-posta, şifre, dil, tema ve profil fotoğrafını burada yönetebilirsiniz.</p>
+          <div className="ev-eyebrow">{copy.profile.title}</div>
+          <h2 className="ev-h1" style={{ fontSize: 24, marginTop: 6 }}>{copy.profile.title}</h2>
+          <p className="ev-muted" style={{ marginTop: 6 }}>{copy.profile.subtitle}</p>
         </div>
         <div className="ev-badge ev-badge--teal">{profile.role === "ADMIN" ? "Admin" : profile.role === "DRIVER" ? "Şoför" : "Karşılamacı"}</div>
       </div>
@@ -124,44 +126,44 @@ export function ProfileSettingsCard() {
             {profile.profileImageUrl ? <img src={profile.profileImageUrl} alt="Profil fotoğrafı" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 28 }}>{profile.name?.[0] ?? "U"}</span>}
           </div>
           <label className="ev-btn ev-btn--ghost" style={{ cursor: "pointer" }}>
-            Profil resmi yükle
+            {copy.profile.upload}
             <input type="file" accept="image/png,image/jpeg,image/webp" hidden onChange={handleImageUpload} />
           </label>
         </div>
 
         <div className="ev-field-grid">
           <label className="ev-field">
-            <span className="ev-label">Ad Soyad</span>
+            <span className="ev-label">{copy.profile.fields.name}</span>
             <input className="ev-input" value={formState.name} onChange={(event) => setFormState((current) => ({ ...current, name: event.target.value }))} />
           </label>
           <label className="ev-field">
-            <span className="ev-label">E-posta</span>
+            <span className="ev-label">{copy.profile.fields.email}</span>
             <input className="ev-input" type="email" value={formState.email} onChange={(event) => setFormState((current) => ({ ...current, email: event.target.value }))} />
           </label>
           <label className="ev-field">
-            <span className="ev-label">Telefon</span>
+            <span className="ev-label">{copy.profile.fields.phone}</span>
             <input className="ev-input" value={profile.phone ?? ""} disabled />
           </label>
           <label className="ev-field">
-            <span className="ev-label">Firma / tedarik adı</span>
+            <span className="ev-label">{copy.profile.fields.supplier}</span>
             <input className="ev-input" value={formState.supplierName} onChange={(event) => setFormState((current) => ({ ...current, supplierName: event.target.value }))} />
           </label>
           <label className="ev-field ev-field--full">
-            <span className="ev-label">Kısa bio</span>
+            <span className="ev-label">{copy.profile.fields.bio}</span>
             <textarea className="ev-input" rows={3} value={formState.bio} onChange={(event) => setFormState((current) => ({ ...current, bio: event.target.value }))} />
           </label>
         </div>
 
         <div className="ev-field-grid">
           <label className="ev-field">
-            <span className="ev-label">Tema</span>
+            <span className="ev-label">{copy.profile.fields.theme}</span>
             <select className="ev-select" value={formState.theme} onChange={(event) => setFormState((current) => ({ ...current, theme: event.target.value as Theme }))}>
               <option value="dark">Dark</option>
               <option value="light">Light</option>
             </select>
           </label>
           <label className="ev-field">
-            <span className="ev-label">Dil</span>
+            <span className="ev-label">{copy.profile.fields.language}</span>
             <select className="ev-select" value={formState.localeValue} onChange={(event) => setFormState((current) => ({ ...current, localeValue: event.target.value }))}>
               <option value="tr">Türkçe</option>
               <option value="en">English</option>
@@ -172,17 +174,17 @@ export function ProfileSettingsCard() {
 
         <div className="ev-field-grid">
           <label className="ev-field">
-            <span className="ev-label">Mevcut şifre</span>
+            <span className="ev-label">{copy.profile.fields.currentPassword}</span>
             <input className="ev-input" type="password" value={formState.currentPassword} onChange={(event) => setFormState((current) => ({ ...current, currentPassword: event.target.value }))} />
           </label>
           <label className="ev-field">
-            <span className="ev-label">Yeni şifre</span>
+            <span className="ev-label">{copy.profile.fields.newPassword}</span>
             <input className="ev-input" type="password" value={formState.newPassword} onChange={(event) => setFormState((current) => ({ ...current, newPassword: event.target.value }))} />
           </label>
         </div>
 
         {message && <div className="ev-empty" style={{ textAlign: "left" }}>{message}</div>}
-        <button className="ev-btn" type="submit" disabled={loading}>{loading ? "Kaydediliyor…" : "Profili kaydet"}</button>
+        <button className="ev-btn" type="submit" disabled={loading}>{loading ? copy.profile.loading : copy.profile.submit}</button>
       </form>
     </section>
   );

@@ -5,9 +5,19 @@ import { prisma } from "@/lib/db";
 import { compare, hash } from "bcryptjs";
 import { normalizeProfileUpdate } from "@/lib/profile";
 
-function getSessionUserId(session: unknown) {
-  const safeSession = session as any;
-  return safeSession?.user?.id;
+function getSessionUserId(session: unknown): string | undefined {
+  if (!session || typeof session !== "object") return undefined;
+
+  const safeSession = session as { user?: unknown };
+  const user = safeSession.user;
+  if (!user || typeof user !== "object") return undefined;
+
+  const safeUser = user as { id?: unknown };
+  const userId = safeUser.id;
+
+  if (typeof userId === "string") return userId;
+  if (typeof userId === "number") return String(userId);
+  return undefined;
 }
 
 function isImageDataUrl(value: string) {
@@ -55,7 +65,9 @@ export async function PATCH(req: NextRequest) {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
 
-  if (normalized.currentPassword || normalized.newPassword) {
+  const wantsPasswordChange = Boolean(normalized.newPassword);
+
+  if (wantsPasswordChange) {
     if (!normalized.currentPassword || !normalized.newPassword) {
       return NextResponse.json({ error: "Şifre güncellemek için hem mevcut hem yeni şifre gerekli." }, { status: 400 });
     }
@@ -71,7 +83,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   const updateData: Record<string, unknown> = { ...normalized };
-  if (normalized.newPassword) {
+  if (wantsPasswordChange && normalized.newPassword) {
     updateData.passwordHash = await hash(normalized.newPassword, 12);
   }
 
