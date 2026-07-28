@@ -196,10 +196,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .ev-card {
   background: linear-gradient(180deg, rgba(7, 15, 29, 0.95), rgba(12, 22, 39, 0.94));
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  box-shadow: 0 30px 55px rgba(0, 0, 0, 0.22);
-  backdrop-filter: blur(12px);
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 28px 60px rgba(2, 8, 20, 0.28);
+  backdrop-filter: blur(16px);
 }
 
 :root[data-theme="light"] .ev-card {
@@ -268,7 +268,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .ev-btn {
   min-height: 44px;
   padding: 12px 20px;
-  border-radius: 16px;
+  border-radius: 999px;
   border: none;
   background: linear-gradient(135deg, var(--accent), #6ad5ff);
   color: #02101c;
@@ -277,7 +277,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   cursor: pointer;
   transition: transform 0.18s ease, opacity 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
   font-family: inherit;
-  box-shadow: 0 16px 30px rgba(12, 93, 124, 0.18);
+  box-shadow: 0 14px 30px rgba(12, 93, 124, 0.16);
 }
 .ev-btn:hover {
   opacity: 0.98;
@@ -308,10 +308,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 .ev-badge {
   display: inline-block;
-  padding: 3px 10px;
+  padding: 4px 10px;
   border-radius: 999px;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.03em;
 }
 .ev-badge--gold { background: var(--gold-soft); color: var(--gold); }
 .ev-badge--teal { background: var(--teal-soft); color: var(--teal); }
@@ -462,13 +463,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 /* ---------- Admin raporlama merkezi ---------- */
 .ev-admin-report { display: grid; gap: 16px; margin: 12px 0 30px; }
-.ev-admin-report-hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; padding: 28px 30px; border: 1px solid var(--line); border-radius: 24px; background: linear-gradient(135deg, rgba(27,70,85,.98), rgba(14,42,52,.9)); box-shadow: var(--shadow); }
+.ev-admin-report-hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; padding: 28px 30px; border: 1px solid var(--line); border-radius: 24px; background: linear-gradient(135deg, rgba(27,70,85,.98), rgba(14,42,52,.9)); box-shadow: 0 24px 60px rgba(2, 8, 20, 0.24); }
 :root[data-theme="light"] .ev-admin-report-hero { background: linear-gradient(135deg, rgba(248,250,252,.95), rgba(241,245,255,.95)); }
 .ev-admin-report-hero h2 { margin: 4px 0 5px; font-family: "Fraunces", serif; font-size: clamp(25px, 4vw, 35px); font-weight: 500; }
 .ev-admin-report-hero p { margin: 0; color: var(--text-muted); font-size: 14px; }
 .ev-admin-report-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .ev-admin-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.ev-admin-kpi { padding: 17px; border: 1px solid var(--line); border-radius: 17px; background: rgba(21,59,71,.8); }
+.ev-admin-kpi { padding: 17px; border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(145deg, rgba(21,59,71,.86), rgba(13,33,44,.9)); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
 .ev-admin-kpi span, .ev-admin-kpi small { display: block; color: var(--text-muted); font-size: 11px; }
 .ev-admin-kpi strong { display: block; margin: 8px 0 4px; color: var(--text); font-family: "Fraunces", serif; font-size: 25px; font-weight: 500; }
 .ev-admin-kpi--gold { border-color: rgba(227,170,85,.32); }.ev-admin-kpi--gold strong { color: var(--gold); }
@@ -485,6 +486,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .ev-admin-chart-grid { display: grid; grid-template-columns: minmax(250px, .8fr) minmax(250px, .8fr) minmax(340px, 1.4fr); gap: 12px; }
 .ev-admin-chart-card { min-height: 270px; }
 .ev-admin-chart-card h3, .ev-admin-table-card h3 { margin: 4px 0 0; font-family: "Fraunces", serif; font-size: 21px; font-weight: 500; }
+.ev-admin-hero-shell { margin-bottom: 16px; }
+.ev-admin-hero-card { padding: 24px 28px; border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; background: linear-gradient(135deg, rgba(7,16,30,0.98), rgba(13,24,42,0.92)); box-shadow: 0 26px 70px rgba(2, 8, 20, 0.24); }
+:root[data-theme="light"] .ev-admin-hero-card { background: linear-gradient(135deg, rgba(248,250,252,.96), rgba(241,245,255,.95)); }
+.ev-admin-hero-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+.ev-admin-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .ev-admin-chart-card--wide { min-width: 0; }
 .ev-admin-chart-total { color: var(--gold); font-family: "Fraunces", serif; font-size: 20px; font-weight: 500; }
 .ev-donut-layout { display: grid; place-items: center; min-height: 140px; margin: 8px 0 2px; }
@@ -554,6 +560,8 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .ev-locale select { min-width: 128px; border: 0; background: transparent; color: inherit; font: inherit; outline: none; cursor: pointer; direction: ltr; text-align: left; unicode-bidi: isolate; }
 .ev-locale option { color: var(--ink); }
 .ev-landing-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, .72fr); gap: clamp(45px, 8vw, 115px); align-items: center; padding: clamp(70px, 10vw, 126px) 0 112px; position: relative; }
+.ev-landing-hero .ev-hero-copy { padding-right: 8px; }
+.ev-landing-hero .ev-booking-card { transform: translateY(4px); }
 .ev-landing-hero > *, .ev-trust > *, .ev-feature, .ev-booking-card { min-width: 0; }
 .ev-landing-hero::before { content: ""; position: absolute; z-index: 0; width: 470px; height: 470px; border-radius: 50%; left: -245px; top: -170px; pointer-events: none; background: radial-gradient(circle at 62% 62%, rgba(92,232,255,0.18) 0 3%, rgba(92,232,255,0.08) 14%, rgba(20,50,85,0.92) 48%, transparent 72%); }
 .ev-hero-copy, .ev-booking-card { position: relative; z-index: 1; }
@@ -626,6 +634,8 @@ html[dir="rtl"] .ev-route-line, html[dir="rtl"] .ev-booking-fields { direction: 
   .ev-container { width: min(100% - 32px, 480px); }
   .ev-site-header { min-height: 72px; }
   .ev-brand { min-width: 0; font-size: 11px; letter-spacing: .1em; }
+  .ev-landing-hero .ev-hero-copy { padding-right: 0; }
+  .ev-landing-hero .ev-booking-card { transform: none; }
   .ev-brand-mark { width: 29px; height: 29px; }
   .ev-locale { padding: 7px 9px; }
   .ev-main-nav { gap: 18px; font-size: 12px; }

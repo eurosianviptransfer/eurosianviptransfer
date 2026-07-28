@@ -26,9 +26,10 @@ function isImageDataUrl(value: string) {
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const userId = getSessionUserId(session);
-  if (!userId) return NextResponse.json({ error: "Oturum gerekli." }, { status: 401 });
+  const sessionUserId = getSessionUserId(session);
+  if (!sessionUserId) return NextResponse.json({ error: "Oturum gerekli." }, { status: 401 });
 
+  const userId = sessionUserId;
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -52,9 +53,10 @@ export async function GET() {
 
 export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  const userId = getSessionUserId(session);
-  if (!userId) return NextResponse.json({ error: "Oturum gerekli." }, { status: 401 });
+  const sessionUserId = getSessionUserId(session);
+  if (!sessionUserId) return NextResponse.json({ error: "Oturum gerekli." }, { status: 401 });
 
+  const userId = sessionUserId;
   const body = await req.json().catch(() => ({}));
   const normalized = normalizeProfileUpdate(body as Record<string, unknown>);
 

@@ -79,14 +79,33 @@ export default async function AdminPage() {
 
   return (
     <main className="ev-page ev-page--wide">
-      <div className="ev-eyebrow">Eurosian VIP Transfer</div>
-      <div className="ev-card-row" style={{ alignItems: "center" }}>
-        <h1 className="ev-h1">{copy.title}</h1>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-          <ThemeToggle />
-          <div className="ev-actions"><a href="/admin/fiyatlar" className="ev-btn ev-btn--ghost">{copy.pricingTable}</a><SignOutButton /></div>
+      <section className="ev-admin-hero-shell">
+        <div className="ev-admin-hero-card">
+          <div className="ev-eyebrow">Eurosian VIP Transfer</div>
+          <div className="ev-card-row" style={{ alignItems: "center", marginTop: 10 }}>
+            <div>
+              <h1 className="ev-h1">{copy.title}</h1>
+              <p className="ev-muted" style={{ marginTop: 8, maxWidth: 700 }}>{copy.subtitle}</p>
+            </div>
+            <div className="ev-admin-hero-badges">
+              <span className="ev-badge ev-badge--teal">{copy.hero.badge}</span>
+              <span className="ev-badge ev-badge--gold">{copy.toolbar.analytics}</span>
+            </div>
+          </div>
+          <div className="ev-admin-toolbar" style={{ marginTop: 18 }}>
+            <div className="ev-actions">
+              <a href="#canli-online" className="ev-btn ev-btn--ghost">{copy.toolbar.overview}</a>
+              <a href="#raporlama" className="ev-btn ev-btn--ghost">{copy.toolbar.analytics}</a>
+              <a href="#ayarlar" className="ev-btn ev-btn--ghost">{copy.toolbar.settings}</a>
+            </div>
+            <div className="ev-actions">
+              <ThemeToggle />
+              <a href="/admin/fiyatlar" className="ev-btn ev-btn--ghost">{copy.pricingTable}</a>
+              <SignOutButton />
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
       <nav className="ev-card-row" aria-label="Admin bölümleri" style={{ gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
         <a className="ev-btn ev-btn--ghost" href="#canli-online">{copy.sections.liveOnline}</a>
@@ -99,9 +118,13 @@ export default async function AdminPage() {
         <OnlineUsersWidget />
       </div>
 
-      <AdminReportDashboard bookings={reportBookings} />
+      <div id="raporlama">
+        <AdminReportDashboard bookings={reportBookings} />
+      </div>
 
-      <ProfileSettingsCard />
+      <div id="ayarlar">
+        <ProfileSettingsCard />
+      </div>
 
       <DriverApplicationsPanel applications={applications.map((application) => ({ ...application, whatsappMessage: application.whatsappMessage ? unseal(application.whatsappMessage) : null, createdAt: application.createdAt.toISOString() }))} />
       <RatingSummary />

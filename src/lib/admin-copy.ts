@@ -1,11 +1,22 @@
 export type AdminCopy = {
   title: string;
+  subtitle: string;
   pricingTable: string;
   sections: {
     liveOnline: string;
     fleetDrivers: string;
     greeters: string;
     reservations: string;
+  };
+  toolbar: {
+    overview: string;
+    analytics: string;
+    settings: string;
+  };
+  hero: {
+    badge: string;
+    headline: string;
+    description: string;
   };
   summary: {
     title: string;
@@ -102,8 +113,11 @@ export function getAdminCopy(locale: string): AdminCopy {
 export const adminCopy: Record<string, AdminCopy> = {
   tr: {
     title: "Admin — Operasyon Panosu",
-    pricingTable: "Fiyat Tablosu →",
-    sections: { liveOnline: "Canlı Online", fleetDrivers: "Araç & Şoför", greeters: "Karşılamacılar", reservations: "Rezervasyonlar" },
+    subtitle: "Güncel operasyon akışını, finans verisini ve ekip durumunu tek ekrandan yönetin.",
+    pricingTable: "Fiyat tablosu →",
+    sections: { liveOnline: "Canlı online", fleetDrivers: "Araç & şoför", greeters: "Karşılamacılar", reservations: "Rezervasyonlar" },
+    toolbar: { overview: "Özet", analytics: "Raporlar", settings: "Ayarlar" },
+    hero: { badge: "Modern operasyon merkezi", headline: "Operasyon akışınızı daha net yönetin", description: "Canlı durumlar, raporlar ve ekip takibi tek bir deneyimde birleşti." },
     summary: {
       title: "Rezervasyon Yönetimi",
       live: "Canlı",
@@ -165,8 +179,11 @@ export const adminCopy: Record<string, AdminCopy> = {
   },
   en: {
     title: "Admin — Operations Dashboard",
+    subtitle: "Monitor operations, finance and team status from a single modern workspace.",
     pricingTable: "Pricing table →",
-    sections: { liveOnline: "Live Online", fleetDrivers: "Vehicles & Drivers", greeters: "Greeters", reservations: "Reservations" },
+    sections: { liveOnline: "Live online", fleetDrivers: "Vehicles & drivers", greeters: "Greeters", reservations: "Reservations" },
+    toolbar: { overview: "Overview", analytics: "Reports", settings: "Settings" },
+    hero: { badge: "Modern operations hub", headline: "Run your workflow with clarity", description: "Live statuses, reports and team coordination now live in one focused experience." },
     summary: {
       title: "Reservation Management",
       live: "Live",
@@ -228,8 +245,11 @@ export const adminCopy: Record<string, AdminCopy> = {
   },
   de: {
     title: "Admin — Betriebsübersicht",
+    subtitle: "Verfolgen Sie Betrieb, Finanzen und Teamstatus in einem modernen Arbeitsbereich.",
     pricingTable: "Preistabelle →",
-    sections: { liveOnline: "Live Online", fleetDrivers: "Fahrzeuge & Fahrer", greeters: "Begrüßer", reservations: "Reservierungen" },
+    sections: { liveOnline: "Live online", fleetDrivers: "Fahrzeuge & Fahrer", greeters: "Begrüßer", reservations: "Reservierungen" },
+    toolbar: { overview: "Übersicht", analytics: "Berichte", settings: "Einstellungen" },
+    hero: { badge: "Modernes Operations-Center", headline: "Steuern Sie Ihren Workflow mit Klarheit", description: "Live-Status, Berichte und Teamkoordination jetzt in einem fokussierten Erlebnis." },
     summary: {
       title: "Reservierungsverwaltung",
       live: "Live",

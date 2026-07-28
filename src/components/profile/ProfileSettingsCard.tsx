@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "@/components/LanguageProvider";
 import { getAdminCopy } from "@/lib/admin-copy";
+import { locales, type Locale } from "@/lib/i18n";
 import { setTheme, type Theme } from "@/lib/theme";
 
 interface ProfileData {
@@ -19,12 +20,33 @@ interface ProfileData {
   bio: string | null;
 }
 
+interface ProfileFormState {
+  name: string;
+  email: string;
+  supplierName: string;
+  bio: string;
+  currentPassword: string;
+  newPassword: string;
+  theme: Theme;
+  localeValue: Locale;
+}
+
+function normalizeLocale(value: string | null | undefined): Locale {
+  if (typeof value !== "string") return "tr";
+  const trimmed = value.trim().toLowerCase();
+  if ((locales as readonly string[]).includes(trimmed)) return trimmed as Locale;
+  const base = trimmed.split("-")[0];
+  if ((locales as readonly string[]).includes(base)) return base as Locale;
+  return "tr";
+}
+
 export function ProfileSettingsCard() {
-  const { data: session, update } = useSession();
+  const { update } = useSession();
   const { locale, setLocale } = useLocale();
   const copy = getAdminCopy(locale);
   const [profile, setProfile] = useState<ProfileData | null>(null);
-  const [formState, setFormState] = useState({ name: "", email: "", supplierName: "", bio: "", currentPassword: "", newPassword: "", theme: "dark" as Theme, localeValue: "tr" });
+  const initialFormState: ProfileFormState = { name: "", email: "", supplierName: "", bio: "", currentPassword: "", newPassword: "", theme: "dark", localeValue: locale as Locale };
+  const [formState, setFormState] = useState<ProfileFormState>(initialFormState);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -37,6 +59,7 @@ export function ProfileSettingsCard() {
     if (!response.ok) return;
     const data = (await response.json()) as ProfileData;
     setProfile(data);
+    const nextLocale = normalizeLocale(data.preferredLocale ?? locale);
     setFormState({
       name: data.name ?? "",
       email: data.email ?? "",
@@ -45,8 +68,9 @@ export function ProfileSettingsCard() {
       currentPassword: "",
       newPassword: "",
       theme: (data.preferredTheme === "light" ? "light" : "dark"),
-      localeValue: data.preferredLocale ?? locale,
-    });
+      localeValue: nextLocale,
+    } satisfies ProfileFormState);
+    setLocale(nextLocale);
   }
 
   async function saveProfile(event: React.FormEvent) {
@@ -78,7 +102,7 @@ export function ProfileSettingsCard() {
 
     setProfile((current) => current ? { ...current, ...data } : data);
     setTheme(formState.theme);
-    setLocale(formState.localeValue as any);
+    setLocale(normalizeLocale(formState.localeValue));
     await update?.();
     setMessage(copy.profile.messages.success);
   }
@@ -164,7 +188,7 @@ export function ProfileSettingsCard() {
           </label>
           <label className="ev-field">
             <span className="ev-label">{copy.profile.fields.language}</span>
-            <select className="ev-select" value={formState.localeValue} onChange={(event) => setFormState((current) => ({ ...current, localeValue: event.target.value }))}>
+            <select className="ev-select" value={formState.localeValue} onChange={(event) => setFormState((current) => ({ ...current, localeValue: normalizeLocale(event.target.value) }))}>
               <option value="tr">Türkçe</option>
               <option value="en">English</option>
               <option value="de">Deutsch</option>

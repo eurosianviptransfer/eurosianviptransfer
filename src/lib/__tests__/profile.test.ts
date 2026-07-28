@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { normalizeProfileUpdate } from "../profile";
+import { normalizePreferredLocale, normalizeProfileUpdate } from "../profile";
 
 describe("normalizeProfileUpdate", () => {
   it("sanitizes editable profile fields and password change", () => {
@@ -36,5 +36,17 @@ describe("normalizeProfileUpdate", () => {
     expect(value).toEqual({
       profileImageData: "data:image/png;base64,abc",
     });
+  });
+
+  it("normalizes bio text so it can be saved or cleared", () => {
+    expect(normalizeProfileUpdate({ bio: "  Yeni bio  " })).toEqual({ bio: "Yeni bio" });
+    expect(normalizeProfileUpdate({ bio: "   " })).toEqual({ bio: "" });
+  });
+
+  it("normalizes supported locales to the app locale set", () => {
+    expect(normalizePreferredLocale("TR")).toBe("tr");
+    expect(normalizePreferredLocale("en-US")).toBe("en");
+    expect(normalizePreferredLocale("de")).toBe("de");
+    expect(normalizePreferredLocale("fr")).toBe("tr");
   });
 });

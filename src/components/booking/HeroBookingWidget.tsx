@@ -68,7 +68,7 @@ export function HeroBookingWidget() {
         </label>
 
         <label className="ev-field">
-          <span className="ev-label">Time</span>
+          <span className="ev-label">{copy.time}</span>
           <input className="ev-input" type="time" value={time} onChange={(e) => setTime(e.target.value)} required />
         </label>
 
@@ -78,12 +78,12 @@ export function HeroBookingWidget() {
         </label>
 
         <label className="ev-field">
-          <span className="ev-label">Luggage</span>
+          <span className="ev-label">{copy.luggage}</span>
           <input className="ev-input" type="number" min={0} max={30} value={luggage} onChange={(e) => setLuggage(e.target.value)} />
         </label>
 
         <label className="ev-field">
-          <span className="ev-label">Currency</span>
+          <span className="ev-label">{copy.currency}</span>
           <select className="ev-select" value={currency} onChange={(e) => setCurrency(e.target.value)}>
             <option>TRY</option>
             <option>EUR</option>
@@ -100,10 +100,10 @@ export function HeroBookingWidget() {
 
       <div style={{ marginTop: 12 }}>
         <Link className="ev-btn" href={`/rezervasyon?${query}&lang=${locale}`}>
-          {t.quote ?? "See instant price →"}
+          {copy.instantQuote} →
         </Link>
         <Link className="ev-btn ev-btn--ghost" href={`/rezervasyon?lang=${locale}`} style={{ marginLeft: 8 }}>
-          {copy.cardFoot ?? copy.estimate ?? "Estimate"}
+          {copy.estimate}
         </Link>
       </div>
     </section>

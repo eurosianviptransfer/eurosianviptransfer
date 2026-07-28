@@ -196,144 +196,156 @@ export default function RezervasyonPage() {
       <div className="ev-eyebrow">{t.eyebrow}</div>
       <h1 className="ev-h1" style={{ marginBottom: 16 }}>{copy.title}</h1>
 
-      <label className="ev-label" htmlFor="origin-airport">{copy.airport}</label>
-      <select id="origin-airport" className="ev-select" value={originAirport} onChange={(event) => {
-        const nextAirport = event.target.value as AirportCode;
-        setOriginAirport(nextAirport);
-        if (googleMapsEnabled && place) fetchQuote(place, vehicleSize, hasReturnLeg, nextAirport);
-      }}>
-        {airports.map((airport) => <option key={airport.code} value={airport.code}>{airport.name} ({airport.code})</option>)}
-      </select>
-      <label className="ev-label" style={{ marginTop: 14 }}>{copy.destination}</label>
-      {googleMapsEnabled ? (
-        <AddressAutocomplete
-          originAirport={originAirport}
-          onSelect={(p) => {
-            setPlace(p);
-            setDestinationText(p.label);
-            fetchQuote(p, vehicleSize, hasReturnLeg);
-          }}
-        />
-      ) : (
-        <>
-          <DestinationSearch
-            pricingRules={pricingRules}
-            onPick={({ destinationText: pickedText, regionName }) => {
-              setDestinationText(pickedText);
-              if (regionName) {
-                setSelectedRegionName(regionName);
-              } else if (!selectedRegionName && pricingRules[0]?.regionName) {
-                setSelectedRegionName(pricingRules[0].regionName);
-              }
+      <div className="ev-card" style={{ padding: 18, marginBottom: 16, display: "grid", gap: 14 }}>
+        <div className="ev-field-grid">
+          <label className="ev-field">
+            <span className="ev-label">{copy.airport}</span>
+            <select id="origin-airport" className="ev-select" value={originAirport} onChange={(event) => {
+              const nextAirport = event.target.value as AirportCode;
+              setOriginAirport(nextAirport);
+              if (googleMapsEnabled && place) fetchQuote(place, vehicleSize, hasReturnLeg, nextAirport);
+            }}>
+              {airports.map((airport) => <option key={airport.code} value={airport.code}>{airport.name} ({airport.code})</option>)}
+            </select>
+          </label>
+
+          <label className="ev-field">
+            <span className="ev-label">{copy.destination}</span>
+            {googleMapsEnabled ? (
+              <AddressAutocomplete
+                originAirport={originAirport}
+                onSelect={(p) => {
+                  setPlace(p);
+                  setDestinationText(p.label);
+                  fetchQuote(p, vehicleSize, hasReturnLeg);
+                }}
+              />
+            ) : (
+              <>
+                <DestinationSearch
+                  pricingRules={pricingRules}
+                  onPick={({ destinationText: pickedText, regionName }) => {
+                    setDestinationText(pickedText);
+                    if (regionName) {
+                      setSelectedRegionName(regionName);
+                    } else if (!selectedRegionName && pricingRules[0]?.regionName) {
+                      setSelectedRegionName(pricingRules[0].regionName);
+                    }
+                  }}
+                />
+                <div style={{ marginTop: 12 }}>
+                  <label className="ev-label">{copy.region}</label>
+                  <select
+                    className="ev-select"
+                    value={selectedRegionName}
+                    onChange={(e) => {
+                      const regionName = e.target.value;
+                      setSelectedRegionName(regionName);
+                      setDestinationText(regionName);
+                      setPlace(null);
+                    }}
+                  >
+                    <option value="">{pricingRules.length === 0 ? copy.regionLoading : copy.regionChoose}</option>
+                    {pricingRules.map((rule) => (
+                      <option key={rule.regionName} value={rule.regionName}>
+                        {rule.regionName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <label className="ev-label">{copy.selectedAddress}</label>
+                  <input
+                    className="ev-input"
+                    value={destinationText}
+                    onChange={(e) => setDestinationText(e.target.value)}
+                    placeholder={copy.addressPlaceholder}
+                  />
+                </div>
+              </>
+            )}
+          </label>
+        </div>
+
+        {!googleMapsEnabled && (
+          <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+            {copy.mapsNote}
+          </p>
+        )}
+      </div>
+
+      <div className="ev-card" style={{ padding: 18, display: "grid", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <input className="ev-input" placeholder={copy.name} value={name} onChange={(e) => setName(e.target.value)} />
+          <input className="ev-input" placeholder={copy.phone} value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <input className="ev-input" placeholder={copy.email} value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input
+            className="ev-input"
+            type="number"
+            min={1}
+            placeholder={copy.passengers}
+            value={passengers}
+            onChange={(e) => setPassengers(Number.isFinite(e.currentTarget.valueAsNumber) ? e.currentTarget.valueAsNumber : 1)}
+          />
+          <input className="ev-input" type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
+          <input className="ev-input" placeholder={copy.flight} value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} />
+          <select
+            className="ev-select"
+            value={vehicleSize}
+            onChange={(e) => {
+              const size = e.target.value as typeof vehicleSize;
+              setVehicleSize(size);
+              if (googleMapsEnabled && place) fetchQuote(place, size, hasReturnLeg);
+            }}
+          >
+            <option value="SMALL">{copy.vehicleSmall}</option>
+            <option value="LARGE">{copy.vehicleLarge}</option>
+          </select>
+        </div>
+
+        <label className="ev-card" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2, cursor: "pointer", padding: 12 }}>
+          <input
+            type="checkbox"
+            checked={hasReturnLeg}
+            onChange={(e) => {
+              setHasReturnLeg(e.target.checked);
+              if (googleMapsEnabled && place) fetchQuote(place, vehicleSize, e.target.checked);
             }}
           />
-          <div style={{ marginTop: 12 }}>
-            <label className="ev-label">{copy.region}</label>
-            <select
-              className="ev-select"
-              value={selectedRegionName}
-              onChange={(e) => {
-                const regionName = e.target.value;
-                setSelectedRegionName(regionName);
-                setDestinationText(regionName);
-                setPlace(null);
-              }}
-            >
-              <option value="">{pricingRules.length === 0 ? copy.regionLoading : copy.regionChoose}</option>
-              {pricingRules.map((rule) => (
-                <option key={rule.regionName} value={rule.regionName}>
-                  {rule.regionName}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div style={{ marginTop: 12 }}>
-            <label className="ev-label">{copy.selectedAddress}</label>
-            <input
-              className="ev-input"
-              value={destinationText}
-              onChange={(e) => setDestinationText(e.target.value)}
-              placeholder={copy.addressPlaceholder}
-            />
-          </div>
-        </>
-      )}
-      {!googleMapsEnabled && (
-        <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 8 }}>
-          {copy.mapsNote}
-        </p>
-      )}
+          <span style={{ fontSize: 14, color: "var(--text-muted)" }}>{copy.returnTrip}</span>
+        </label>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-        <input className="ev-input" placeholder={copy.name} value={name} onChange={(e) => setName(e.target.value)} />
-        <input className="ev-input" placeholder={copy.phone} value={phone} onChange={(e) => setPhone(e.target.value)} />
-        <input className="ev-input" placeholder={copy.email} value={email} onChange={(e) => setEmail(e.target.value)} />
-        <input
-          className="ev-input"
-          type="number"
-          min={1}
-          placeholder={copy.passengers}
-          value={passengers}
-          onChange={(e) => setPassengers(Number.isFinite(e.currentTarget.valueAsNumber) ? e.currentTarget.valueAsNumber : 1)}
-        />
-        <input className="ev-input" type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
-        <input className="ev-input" placeholder={copy.flight} value={flightNumber} onChange={(e) => setFlightNumber(e.target.value)} />
-        <select
-          className="ev-select"
-          value={vehicleSize}
-          onChange={(e) => {
-            const size = e.target.value as typeof vehicleSize;
-            setVehicleSize(size);
-            if (googleMapsEnabled && place) fetchQuote(place, size, hasReturnLeg);
-          }}
-        >
-          <option value="SMALL">{copy.vehicleSmall}</option>
-          <option value="LARGE">{copy.vehicleLarge}</option>
-        </select>
-      </div>
-
-      <label className="ev-card" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, cursor: "pointer" }}>
-        <input
-          type="checkbox"
-          checked={hasReturnLeg}
-          onChange={(e) => {
-            setHasReturnLeg(e.target.checked);
-            if (googleMapsEnabled && place) fetchQuote(place, vehicleSize, e.target.checked);
-          }}
-        />
-        <span style={{ fontSize: 14, color: "var(--text-muted)" }}>{copy.returnTrip}</span>
-      </label>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 10 }}>
-        <button
-          className={`ev-btn ev-btn--ghost ${paymentMethod === "PAY_IN_VEHICLE" ? "ev-btn--ghost-active" : ""}`}
-          onClick={() => setPaymentMethod("PAY_IN_VEHICLE")}
-        >
-          {copy.payVehicle}
-        </button>
-        <button
-          className={`ev-btn ev-btn--ghost ${paymentMethod === "PAY_NOW_CARD" ? "ev-btn--ghost-active" : ""}`}
-          onClick={() => setPaymentMethod("PAY_NOW_CARD")}
-        >
-          {copy.payCard}
-        </button>
-      </div>
-
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20 }}>
-        <div>
-          <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{copy.total}</div>
-          <div className="ev-price">{loadingQuote ? "…" : displayedQuote ? `€${displayedQuote.total}` : "—"}</div>
-          {displayedQuote?.km !== undefined && (
-            <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
-              {displayedQuote.regionName ? `${displayedQuote.regionName} · ` : ""}
-              {displayedQuote.km} km
-            </div>
-          )}
-          {displayedQuote?.isEstimate && <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{displayedQuote.note}</div>}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <button
+            className={`ev-btn ev-btn--ghost ${paymentMethod === "PAY_IN_VEHICLE" ? "ev-btn--ghost-active" : ""}`}
+            onClick={() => setPaymentMethod("PAY_IN_VEHICLE")}
+          >
+            {copy.payVehicle}
+          </button>
+          <button
+            className={`ev-btn ev-btn--ghost ${paymentMethod === "PAY_NOW_CARD" ? "ev-btn--ghost-active" : ""}`}
+            onClick={() => setPaymentMethod("PAY_NOW_CARD")}
+          >
+            {copy.payCard}
+          </button>
         </div>
-        <button className="ev-btn" onClick={submit} disabled={submitting}>
-          {submitting ? "…" : copy.confirm}
-        </button>
+
+        <div className="ev-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 14, marginTop: 4 }}>
+          <div>
+            <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{copy.total}</div>
+            <div className="ev-price">{loadingQuote ? "…" : displayedQuote ? `€${displayedQuote.total}` : "—"}</div>
+            {displayedQuote?.km !== undefined && (
+              <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                {displayedQuote.regionName ? `${displayedQuote.regionName} · ` : ""}
+                {displayedQuote.km} km
+              </div>
+            )}
+            {displayedQuote?.isEstimate && <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{displayedQuote.note}</div>}
+          </div>
+          <button className="ev-btn" onClick={submit} disabled={submitting}>
+            {submitting ? "…" : copy.confirm}
+          </button>
+        </div>
       </div>
     </main>
   );

@@ -32,22 +32,22 @@ export interface AdminReportBooking {
 }
 
 const STATUS_LABEL: Record<string, string> = {
-  PENDING_APPROVAL: "Onay bekliyor",
-  APPROVED: "Atama bekliyor",
-  ASSIGNED: "Atandı",
-  GREETER_CONFIRMED: "Karşılamacı tamamladı",
-  EN_ROUTE: "Yolda",
-  DROPPED_OFF: "Otele bırakıldı",
-  COMPLETED: "Tamamlandı",
-  CANCELLED: "İptal edildi",
+  PENDING_APPROVAL: "Pending approval",
+  APPROVED: "Pending assignment",
+  ASSIGNED: "Assigned",
+  GREETER_CONFIRMED: "Greeter completed",
+  EN_ROUTE: "En route",
+  DROPPED_OFF: "Dropped off",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
 };
 
 const PAYMENT_LABEL: Record<string, string> = {
-  UNPAID: "Ödenmedi",
-  PENDING: "Ödeme bekliyor",
-  PAID: "Ödendi",
-  FAILED: "Başarısız",
-  REFUNDED: "İade edildi",
+  UNPAID: "Unpaid",
+  PENDING: "Pending payment",
+  PAID: "Paid",
+  FAILED: "Failed",
+  REFUNDED: "Refunded",
 };
 
 const FILTER_STATUSES = ["ALL", "PENDING_APPROVAL", "APPROVED", "ASSIGNED", "GREETER_CONFIRMED", "EN_ROUTE", "DROPPED_OFF", "COMPLETED", "CANCELLED"];
@@ -81,24 +81,24 @@ function downloadBlob(content: BlobPart, fileName: string, type: string) {
 
 function reportRows(bookings: AdminReportBooking[]) {
   return bookings.map((booking) => ({
-    Rezervasyon: booking.code,
-    Misafir: booking.guestName,
-    Telefon: booking.guestPhone,
-    Eposta: booking.guestEmail ?? "",
-    Destinasyon: booking.destinationText || booking.regionName || "",
-    Ucus: booking.flightNumber ?? "",
-    TransferTarihi: formatDate(booking.scheduledAt),
-    TamamlanmaTarihi: formatDate(booking.completedAt),
-    Durum: STATUS_LABEL[booking.status] ?? booking.status,
-    AracTipi: booking.vehicleSize,
-    Sofor: booking.driverName ?? "",
-    Karsilamaci: booking.greeterName ?? "",
-    Plaka: booking.vehiclePlate ?? "",
-    Tutar: booking.price,
-    ParaBirimi: booking.currency,
-    OdemeDurumu: PAYMENT_LABEL[booking.paymentStatus] ?? booking.paymentStatus,
-    SoforHakedis: booking.driverFee ?? 0,
-    KarsilamaciHakedis: booking.greeterFee ?? 0,
+    Reservation: booking.code,
+    Guest: booking.guestName,
+    Phone: booking.guestPhone,
+    Email: booking.guestEmail ?? "",
+    Destination: booking.destinationText || booking.regionName || "",
+    Flight: booking.flightNumber ?? "",
+    TransferDate: formatDate(booking.scheduledAt),
+    CompletedAt: formatDate(booking.completedAt),
+    Status: STATUS_LABEL[booking.status] ?? booking.status,
+    VehicleType: booking.vehicleSize,
+    Driver: booking.driverName ?? "",
+    Greeter: booking.greeterName ?? "",
+    Plate: booking.vehiclePlate ?? "",
+    Amount: booking.price,
+    Currency: booking.currency,
+    PaymentStatus: PAYMENT_LABEL[booking.paymentStatus] ?? booking.paymentStatus,
+    DriverPayout: booking.driverFee ?? 0,
+    GreeterPayout: booking.greeterFee ?? 0,
   }));
 }
 
@@ -191,45 +191,45 @@ export function AdminReportDashboard({ bookings }: { bookings: AdminReportBookin
   return (
     <section className="ev-admin-report ev-no-print-area">
       <div className="ev-admin-report-hero">
-        <div><div className="ev-eyebrow">Yönetim · Raporlama Merkezi</div><h2>Operasyon analitiği</h2><p>Rezervasyon, ödeme, atama ve hakediş verilerini tek ekrandan yönetin.</p></div>
-        <div className="ev-admin-report-actions ev-no-print"><button className="ev-btn" onClick={exportXlsx}>Excel (.xlsx)</button><button className="ev-btn ev-btn--ghost" onClick={exportCsv}>CSV</button><button className="ev-btn ev-btn--ghost" onClick={exportPdf}>PDF</button><button className="ev-btn ev-btn--ghost" onClick={() => window.print()}>Yazdır</button></div>
+        <div><div className="ev-eyebrow">Management · reporting center</div><h2>Operations intelligence</h2><p>Manage reservations, payments, assignments and payouts from one elegant workspace.</p></div>
+        <div className="ev-admin-report-actions ev-no-print"><button className="ev-btn" onClick={exportXlsx}>Excel (.xlsx)</button><button className="ev-btn ev-btn--ghost" onClick={exportCsv}>CSV</button><button className="ev-btn ev-btn--ghost" onClick={exportPdf}>PDF</button><button className="ev-btn ev-btn--ghost" onClick={() => window.print()}>Print</button></div>
       </div>
 
       <div className="ev-admin-kpis">
-        <div className="ev-admin-kpi"><span>Filtrelenen rezervasyon</span><strong>{metrics.total}</strong><small>{metrics.pending} bekleyen · {metrics.live} canlı</small></div>
-        <div className="ev-admin-kpi ev-admin-kpi--gold"><span>Tamamlanan ciro</span><strong>{money(metrics.revenue)}</strong><small>{metrics.completed} tamamlanan iş</small></div>
-        <div className="ev-admin-kpi ev-admin-kpi--teal"><span>Tahsil edilen</span><strong>{money(metrics.paid)}</strong><small>Ödeme durumu: ödendi</small></div>
-        <div className="ev-admin-kpi ev-admin-kpi--rose"><span>Toplam hakediş</span><strong>{money(metrics.payout, "TRY")}</strong><small>Şoför + karşılamacı</small></div>
+        <div className="ev-admin-kpi"><span>Filtered reservations</span><strong>{metrics.total}</strong><small>{metrics.pending} pending · {metrics.live} live</small></div>
+        <div className="ev-admin-kpi ev-admin-kpi--gold"><span>Completed revenue</span><strong>{money(metrics.revenue)}</strong><small>{metrics.completed} completed jobs</small></div>
+        <div className="ev-admin-kpi ev-admin-kpi--teal"><span>Collected</span><strong>{money(metrics.paid)}</strong><small>Payment status: paid</small></div>
+        <div className="ev-admin-kpi ev-admin-kpi--rose"><span>Total payout</span><strong>{money(metrics.payout, "TRY")}</strong><small>Driver + greeter</small></div>
       </div>
 
       <div className="ev-card ev-admin-filters ev-no-print">
-        <div className="ev-admin-filter-head"><div><span className="ev-section-title ev-section-title--tight">Detaylı filtreleme</span><p>Birden fazla filtreyi birlikte kullanabilirsiniz.</p></div><span className="ev-badge ev-badge--blue">{filtered.length} kayıt</span></div>
+        <div className="ev-admin-filter-head"><div><span className="ev-section-title ev-section-title--tight">Advanced filters</span><p>Combine multiple filters in one view.</p></div><span className="ev-badge ev-badge--blue">{filtered.length} records</span></div>
         <div className="ev-admin-filter-grid">
-          <label>Durum<select className="ev-select" value={status} onChange={(event) => setStatus(event.target.value)}>{FILTER_STATUSES.map((item) => <option key={item} value={item}>{item === "ALL" ? "Tüm durumlar" : STATUS_LABEL[item]}</option>)}</select></label>
-          <label>Ödeme<select className="ev-select" value={paymentStatus} onChange={(event) => setPaymentStatus(event.target.value)}><option value="ALL">Tüm ödemeler</option>{Object.entries(PAYMENT_LABEL).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
-          <label>Araç tipi<select className="ev-select" value={vehicleSize} onChange={(event) => setVehicleSize(event.target.value)}><option value="ALL">Tüm araçlar</option><option value="SMALL">Küçük</option><option value="LARGE">Büyük</option></select></label>
-          <label>Şoför<select className="ev-select" value={driver} onChange={(event) => setDriver(event.target.value)}><option value="ALL">Tüm şoförler</option>{drivers.map((item) => <option key={item} value={item!}>{item}</option>)}</select></label>
-          <label>Karşılamacı<select className="ev-select" value={greeter} onChange={(event) => setGreeter(event.target.value)}><option value="ALL">Tüm karşılamacılar</option>{greeters.map((item) => <option key={item} value={item!}>{item}</option>)}</select></label>
-          <label>Başlangıç<input className="ev-input" type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label>
-          <label>Bitiş<input className="ev-input" type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label>
-          <label className="ev-admin-search">Ara<input className="ev-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Kod, misafir, destinasyon, uçuş..." /></label>
+          <label>Status<select className="ev-select" value={status} onChange={(event) => setStatus(event.target.value)}>{FILTER_STATUSES.map((item) => <option key={item} value={item}>{item === "ALL" ? "All statuses" : STATUS_LABEL[item]}</option>)}</select></label>
+          <label>Payment<select className="ev-select" value={paymentStatus} onChange={(event) => setPaymentStatus(event.target.value)}><option value="ALL">All payments</option>{Object.entries(PAYMENT_LABEL).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label>
+          <label>Vehicle<select className="ev-select" value={vehicleSize} onChange={(event) => setVehicleSize(event.target.value)}><option value="ALL">All vehicles</option><option value="SMALL">Small</option><option value="LARGE">Large</option></select></label>
+          <label>Driver<select className="ev-select" value={driver} onChange={(event) => setDriver(event.target.value)}><option value="ALL">All drivers</option>{drivers.map((item) => <option key={item} value={item!}>{item}</option>)}</select></label>
+          <label>Greeter<select className="ev-select" value={greeter} onChange={(event) => setGreeter(event.target.value)}><option value="ALL">All greeters</option>{greeters.map((item) => <option key={item} value={item!}>{item}</option>)}</select></label>
+          <label>From<input className="ev-input" type="date" value={from} onChange={(event) => setFrom(event.target.value)} /></label>
+          <label>To<input className="ev-input" type="date" value={to} onChange={(event) => setTo(event.target.value)} /></label>
+          <label className="ev-admin-search">Search<input className="ev-input" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Code, guest, destination, flight..." /></label>
         </div>
-        <button className="ev-btn ev-btn--ghost ev-admin-clear" onClick={clearFilters}>Filtreleri temizle</button>
+        <button className="ev-btn ev-btn--ghost ev-admin-clear" onClick={clearFilters}>Clear filters</button>
       </div>
 
       <div className="ev-admin-chart-grid">
-        <div className="ev-card ev-admin-chart-card"><div className="ev-admin-card-heading"><div><span className="ev-section-title ev-section-title--tight">Dağılım</span><h3>Rezervasyon durumları</h3></div><span className="ev-badge ev-badge--gold">Pie chart</span></div><DonutChart data={statusData} total={filtered.length} /><ChartLegend data={statusData} /></div>
-        <div className="ev-card ev-admin-chart-card"><div className="ev-admin-card-heading"><div><span className="ev-section-title ev-section-title--tight">Finans</span><h3>Ödeme durumları</h3></div><span className="ev-badge ev-badge--teal">Pie chart</span></div><DonutChart data={paymentData} total={filtered.length} offset={2} /><ChartLegend data={paymentData} /></div>
-        <div className="ev-card ev-admin-chart-card ev-admin-chart-card--wide"><div className="ev-admin-card-heading"><div><span className="ev-section-title ev-section-title--tight">Son 7 gün</span><h3>Tamamlanan ciro trendi</h3></div><strong className="ev-admin-chart-total">{money(metrics.revenue)}</strong></div><BarChart data={dailyRevenue} /></div>
+        <div className="ev-card ev-admin-chart-card"><div className="ev-admin-card-heading"><div><span className="ev-section-title ev-section-title--tight">Distribution</span><h3>Reservation status</h3></div><span className="ev-badge ev-badge--gold">Live</span></div><DonutChart data={statusData} total={filtered.length} /><ChartLegend data={statusData} /></div>
+        <div className="ev-card ev-admin-chart-card"><div className="ev-admin-card-heading"><div><span className="ev-section-title ev-section-title--tight">Finance</span><h3>Payment status</h3></div><span className="ev-badge ev-badge--teal">Live</span></div><DonutChart data={paymentData} total={filtered.length} offset={2} /><ChartLegend data={paymentData} /></div>
+        <div className="ev-card ev-admin-chart-card ev-admin-chart-card--wide"><div className="ev-admin-card-heading"><div><span className="ev-section-title ev-section-title--tight">Last 7 days</span><h3>Completed revenue trend</h3></div><strong className="ev-admin-chart-total">{money(metrics.revenue)}</strong></div><BarChart data={dailyRevenue} /></div>
       </div>
 
-      <div className="ev-card ev-admin-table-card" id="admin-report-table"><div className="ev-admin-card-heading"><div><span className="ev-section-title ev-section-title--tight">Operasyon raporu</span><h3>Tamamlanan ve filtrelenen işler</h3></div><span className="ev-muted">{filtered.length} satır</span></div><div className="ev-admin-table-wrap"><table className="ev-admin-table"><thead><tr><th>Kod / tarih</th><th>Misafir</th><th>Güzergâh</th><th>Atama</th><th>Durum</th><th>Ödeme</th><th>Tutar</th><th>Hakediş</th></tr></thead><tbody>{filtered.length === 0 ? <tr><td colSpan={8}><div className="ev-empty">Filtreye uyan kayıt bulunamadı.</div></td></tr> : filtered.map((item) => <tr key={item.id}><td><strong className="ev-mono">{item.code}</strong><small>{formatDate(item.scheduledAt)}</small></td><td><strong>{item.guestName}</strong><small>{item.guestPhone}</small></td><td>{item.destinationText || item.regionName || "—"}<small>{item.flightNumber ? `Uçuş ${item.flightNumber}` : "Uçuş belirtilmedi"}</small></td><td><small>Şoför: {item.driverName || "—"}</small><small>Karşılamacı: {item.greeterName || "—"}</small><small>{item.vehiclePlate || item.vehicleSize}</small></td><td><span className="ev-badge ev-badge--blue">{STATUS_LABEL[item.status] ?? item.status}</span></td><td><span className={`ev-badge ${item.paymentStatus === "PAID" ? "ev-badge--teal" : item.paymentStatus === "FAILED" ? "ev-badge--rose" : "ev-badge--gold"}`}>{PAYMENT_LABEL[item.paymentStatus] ?? item.paymentStatus}</span></td><td><strong>{money(item.price, item.currency)}</strong></td><td><small>Şoför: {money(item.driverFee ?? 0, "TRY")}</small><small>Karşılamacı: {money(item.greeterFee ?? 0, "TRY")}</small></td></tr>)}</tbody></table></div></div>
+      <div className="ev-card ev-admin-table-card" id="admin-report-table"><div className="ev-admin-card-heading"><div><span className="ev-section-title ev-section-title--tight">Operations report</span><h3>Completed and filtered work</h3></div><span className="ev-muted">{filtered.length} rows</span></div><div className="ev-admin-table-wrap"><table className="ev-admin-table"><thead><tr><th>Code / date</th><th>Guest</th><th>Route</th><th>Assignment</th><th>Status</th><th>Payment</th><th>Amount</th><th>Payout</th></tr></thead><tbody>{filtered.length === 0 ? <tr><td colSpan={8}><div className="ev-empty">No records matched the filters.</div></td></tr> : filtered.map((item) => <tr key={item.id}><td><strong className="ev-mono">{item.code}</strong><small>{formatDate(item.scheduledAt)}</small></td><td><strong>{item.guestName}</strong><small>{item.guestPhone}</small></td><td>{item.destinationText || item.regionName || "—"}<small>{item.flightNumber ? `Flight ${item.flightNumber}` : "No flight specified"}</small></td><td><small>Driver: {item.driverName || "—"}</small><small>Greeter: {item.greeterName || "—"}</small><small>{item.vehiclePlate || item.vehicleSize}</small></td><td><span className="ev-badge ev-badge--blue">{STATUS_LABEL[item.status] ?? item.status}</span></td><td><span className={`ev-badge ${item.paymentStatus === "PAID" ? "ev-badge--teal" : item.paymentStatus === "FAILED" ? "ev-badge--rose" : "ev-badge--gold"}`}>{PAYMENT_LABEL[item.paymentStatus] ?? item.paymentStatus}</span></td><td><strong>{money(item.price, item.currency)}</strong></td><td><small>Driver: {money(item.driverFee ?? 0, "TRY")}</small><small>Greeter: {money(item.greeterFee ?? 0, "TRY")}</small></td></tr>)}</tbody></table></div></div>
     </section>
   );
 }
 
 function DonutChart({ data, total, offset = 0 }: { data: { key: string; label: string; value: number }[]; total: number; offset?: number }) {
-  const colors = ["#e3aa55", "#4fa189", "#5b93b0", "#d9714e", "#b28aeb", "#8db5a4", "#d9c27b", "#8094a5"];
+  const colors = ["#76d7ff", "#5fe2b1", "#6f9eff", "#ff7ca8", "#b28aeb", "#8db5a4", "#d9c27b", "#8094a5"];
   const gradient = data.reduce<{ cursor: number; parts: string[] }>((result, item, index) => {
     const start = result.cursor;
     const end = start + (total ? (item.value / total) * 360 : 0);
@@ -239,7 +239,7 @@ function DonutChart({ data, total, offset = 0 }: { data: { key: string; label: s
 }
 
 function ChartLegend({ data }: { data: { key: string; label: string; value: number }[] }) {
-  const colors = ["#e3aa55", "#4fa189", "#5b93b0", "#d9714e", "#b28aeb", "#8db5a4", "#d9c27b", "#8094a5"];
+  const colors = ["#76d7ff", "#5fe2b1", "#6f9eff", "#ff7ca8", "#b28aeb", "#8db5a4", "#d9c27b", "#8094a5"];
   return <div className="ev-chart-legend">{data.map((item, index) => <div key={item.key}><i style={{ background: colors[index % colors.length] }} /><span>{item.label}</span><strong>{item.value}</strong></div>)}</div>;
 }
 
