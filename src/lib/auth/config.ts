@@ -12,54 +12,6 @@ export const authOptions: NextAuthOptions = {
   },
 
   providers: [
-    // Standart 'credentials' id'si ile hem varsayılan hem admin girişini yakalayalım
-    CredentialsProvider({
-      id: "credentials",
-      name: "Admin Credentials",
-
-      credentials: {
-        email: { label: "E-posta", type: "email" },
-        password: { label: "Şifre", type: "password" },
-      },
-
-      async authorize(creds) {
-        if (!creds?.email || !creds?.password) {
-          return null;
-        }
-
-        const cleanEmail = creds.email.trim().toLowerCase();
-
-        const user = await prisma.user.findUnique({
-          where: {
-            email: cleanEmail,
-          },
-        });
-
-        if (
-          !user ||
-          user.role !== "ADMIN" ||
-          !user.passwordHash ||
-          !user.active
-        ) {
-          return null;
-        }
-
-        const valid = await compare(creds.password, user.passwordHash);
-
-        if (!valid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email ?? undefined,
-          role: user.role,
-        };
-      },
-    }),
-
-    // Admin dışındaki özel provider (aynı id ile kalabilir)
     CredentialsProvider({
       id: "admin-credentials",
       name: "Admin",
@@ -166,7 +118,7 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        (token as any).role = (user as any).role;
+        token.role = user.role;
       }
 
       return token;
@@ -174,8 +126,8 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).id = token.sub;
-        (session.user as any).role = (token as any).role;
+        session.user.id = token.sub ?? session.user.id;
+        session.user.role = token.role ?? session.user.role;
       }
 
       return session;
@@ -188,5 +140,5 @@ export const authOptions: NextAuthOptions = {
 
   secret: process.env.NEXTAUTH_SECRET,
 
-  debug: true, // Sorun çözülene kadar Vercel loglarında detay görmek için açık kalsın
+  debug: process.env.NODE_ENV !== "production",
 };

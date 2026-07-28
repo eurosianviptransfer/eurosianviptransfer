@@ -9,7 +9,8 @@ export const dynamic = "force-dynamic";
 
 export default async function GreeterPage() {
   const session = await getServerSession(authOptions);
-  const greeterId = (session!.user as any).id;
+  const greeterId = session?.user.id;
+  if (!greeterId) return null;
   
   const jobs = await prisma.booking.findMany({
     where: { greeterId },

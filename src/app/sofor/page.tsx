@@ -9,7 +9,8 @@ export const dynamic = "force-dynamic";
 
 export default async function DriverPage() {
   const session = await getServerSession(authOptions);
-  const driverId = (session!.user as any).id;
+  const driverId = session?.user.id;
+  if (!driverId) return null;
   const jobs = await prisma.booking.findMany({
     where: { driverId },
     include: { greeter: { select: { name: true } }, vehicle: { select: { plate: true } } },

@@ -9,4 +9,3 @@ runnable/data.json
 .DS_Store
 *.tsbuildinfo
 .vercel
-.env*
