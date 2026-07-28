@@ -50,7 +50,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, vehicle });
     }
 
-    // Karşılamacı veya Şoför ekleme
     if (body.type === "user" || body.role === "GREETER" || body.role === "DRIVER") {
       const name = body.name;
       const phone = body.phone;
@@ -111,5 +110,56 @@ export async function POST(req: Request) {
   } catch (error: any) {
     console.error("Fleet POST error:", error);
     return NextResponse.json({ error: error.message || "İşlem sırasında bir hata oluştu." }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const body = await req.json();
+
+    if (body.type === "user") {
+      const { id, name, phone, active } = body;
+      if (!id) {
+        return NextResponse.json({ error: "Kullanıcı ID gereklidir." }, { status: 400 });
+      }
+
+      const cleanPhone = phone ? normalizePhone(phone) : undefined;
+
+      const updatedUser = await prisma.user.update({
+        where: { id },
+        data: {
+          name: name ? name.trim() : undefined,
+          phone: cleanPhone,
+          active: active !== undefined ? active : undefined,
+        },
+      });
+
+      return NextResponse.json({ success: true, user: updatedUser });
+    }
+
+    if (body.type === "vehicle") {
+      const { id, plate, model, size, driverId, active } = body;
+      if (!id) {
+        return NextResponse.json({ error: "Araç ID gereklidir." }, { status: 400 });
+      }
+
+      const updatedVehicle = await prisma.vehicle.update({
+        where: { id },
+        data: {
+          plate: plate ? plate.trim().toUpperCase() : undefined,
+          model: model ? model.trim() : undefined,
+          size,
+          driverId: driverId !== undefined ? (driverId || null) : undefined,
+          active: active !== undefined ? active : undefined,
+        },
+      });
+
+      return NextResponse.json({ success: true, vehicle: updatedVehicle });
+    }
+
+    return NextResponse.json({ error: "Geçersiz işlem tipi." }, { status: 400 });
+  } catch (error: any) {
+    console.error("Fleet PATCH error:", error);
+    return NextResponse.json({ error: error.message || "Güncelleme sırasında bir hata oluştu." }, { status: 500 });
   }
 }
