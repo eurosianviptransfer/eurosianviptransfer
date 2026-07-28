@@ -30,7 +30,10 @@ function resolveBrowserLocale(): Locale | undefined {
     }
   }
 
-  return getMatch(navigator.language || navigator.userLanguage || navigator.browserLanguage || navigator.systemLanguage);
+  // Fallbacks for older browsers; cast to any to satisfy TypeScript typings
+  return getMatch(
+    navigator.language || (navigator as any).userLanguage || (navigator as any).browserLanguage || (navigator as any).systemLanguage
+  );
 }
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
