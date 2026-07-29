@@ -69,32 +69,35 @@ enum DriverApplicationStatus {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  role          Role
-  name          String
-  phone         String?   @unique // şoför/karşılamacı SMS OTP girişi için
-  email         String?   @unique // admin email+şifre girişi için
-  passwordHash  String?
-  active        Boolean   @default(true)
-  lastSeen      DateTime? // Anlık online takibi (Heartbeat) için son sinyal zamanı
-  createdAt     DateTime  @default(now())
-  supplierName       String?
-  companyId          String?
-  emailVerifiedAt    DateTime?
-  profileImageUrl    String?
-  preferredTheme     String?   @default("dark")
-  preferredLocale    String?   @default("tr")
-  bio                String?
+  id              String    @id @default(cuid())
+  role            Role
+  name            String
+  phone           String?   @unique // şoför/karşılamacı SMS OTP girişi için
+  email           String?   @unique // admin email+şifre girişi için
+  passwordHash    String?
+  active          Boolean   @default(true)
+  lastSeen        DateTime? // Anlık online takibi (Heartbeat) için son sinyal zamanı
+  createdAt       DateTime  @default(now())
+  supplierName    String?
+  companyId       String?
+  emailVerifiedAt DateTime?
+  profileImageUrl String?
+  preferredTheme  String?   @default("dark")
+  preferredLocale String?   @default("tr")
+  bio             String?
 
-  vehicle             Vehicle?              @relation("VehicleDriver")
-  driverJobs          Booking[]             @relation("DriverBookings")
-  greeterJobs         Booking[]             @relation("GreeterBookings")
-  payouts             Payout[]
-  documents           DriverDocument[]
-  auditLogs           AssetAuditLog[]       @relation("AuditActor")
-  ratingsReceived     Rating[]              @relation("RatedUser")
-  approvedApplications DriverApplication[]  @relation("ApplicationApprovedUser")
-  company             Company?              @relation(fields: [companyId], references: [id])
+  vehicle              Vehicle?            @relation("VehicleDriver")
+  driverJobs           Booking[]           @relation("DriverBookings")
+  greeterJobs          Booking[]           @relation("GreeterBookings")
+  payouts              Payout[]
+  documents            DriverDocument[]
+  auditLogs            AssetAuditLog[]     @relation("AuditActor")
+  ratingsReceived      Rating[]            @relation("RatedUser")
+  approvedApplications DriverApplication[] @relation("ApplicationApprovedUser")
+  company              Company?            @relation(fields: [companyId], references: [id])
+  ContentEntry         ContentEntry[]
+  MediaItem            MediaItem[]
+  SiteSetting          SiteSetting[]
 }
 
 model DriverApplication {
@@ -218,8 +221,8 @@ model PayoutRule {
 }
 
 model Booking {
-  id             String @id @default(cuid())
-  code           String @unique // EVT-1001 gibi, misafir takip linki için
+  id             String  @id @default(cuid())
+  code           String  @unique // EVT-1001 gibi, misafir takip linki için
   idempotencyKey String? @unique // Aynı submit tekrarlandığında aynı rezervasyonu döndürmek için
 
   // Misafir bilgileri
@@ -336,4 +339,68 @@ model Payout {
   createdAt   DateTime  @default(now())
 
   @@unique([bookingId, userId])
+}
+
+// ---------- Content management models (CMS) ----------
+
+enum ContentType {
+  PAGE
+  SNIPPET
+  BANNER
+  HERO
+  NAV
+  FOOTER
+  OTHER
+}
+
+model ContentEntry {
+  id        String      @id @default(cuid())
+  key       String
+  locale    String      @default("tr")
+  type      ContentType @default(PAGE)
+  title     String?
+  body      String?
+  meta      Json?
+  slug      String?
+  published Boolean     @default(false)
+  sortOrder Int         @default(0)
+
+  updatedById String?
+  updatedBy   User?   @relation(fields: [updatedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([key, locale])
+  @@index([type, published, locale])
+}
+
+model MediaItem {
+  id           String   @id @default(cuid())
+  filename     String
+  url          String
+  mime         String?
+  width        Int?
+  height       Int?
+  alt          String?
+  size         Int?
+  uploadedById String?
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id])
+  meta         Json?
+  createdAt    DateTime @default(now())
+
+  @@index([filename])
+}
+
+model SiteSetting {
+  id          String   @id @default(cuid())
+  key         String
+  locale      String? // null => global
+  value       Json
+  updatedById String?
+  updatedBy   User?    @relation(fields: [updatedById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([key, locale])
 }
