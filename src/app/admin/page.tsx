@@ -13,6 +13,7 @@ import { unseal } from "@/lib/security/sealed";
 import { getAdminCopy } from "@/lib/admin-copy";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth/config";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,12 @@ export default async function AdminPage() {
   const session = await getServerSession(authOptions);
   const userId = (session?.user as { id?: string } | undefined)?.id;
   const user = userId ? await prisma.user.findUnique({ where: { id: userId }, select: { preferredLocale: true } }) : null;
-  const locale = typeof user?.preferredLocale === "string" && user.preferredLocale.trim() ? user.preferredLocale.trim() : "tr";
+  // Prefer user's explicit preference, then a lang cookie (or NEXT_LOCALE), otherwise default to English
+  const cookieStore = await cookies();
+  const cookieLang = cookieStore.get("lang")?.value ?? cookieStore.get("NEXT_LOCALE")?.value;
+  const locale = typeof user?.preferredLocale === "string" && user.preferredLocale.trim()
+    ? user.preferredLocale.trim()
+    : cookieLang ?? "en";
   const copy = getAdminCopy(locale);
 
   const bookings = await prisma.booking.findMany({
@@ -154,9 +160,9 @@ export default async function AdminPage() {
         <div key={b.id} className="ev-card ev-card-row">
           <div>
             <b>{b.guestName}</b>
-            <span className="ev-badge ev-badge--gold" style={{ marginLeft: 8 }}>{STAGE_LABEL[b.status]}</span>
+            <span className="ev-badge ev-badge--gold" style={{ marginLeft: 8 }}>{copy.stageLabels[b.status] ?? b.status}</span>
             <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
-              {b.driver?.name} {b.vehicle?.plate} {b.greeter ? `· ${copy.stageLabels.GREETER_CONFIRMED ?? "Karşılamacı"}: ${b.greeter.name}` : ""}
+              {b.driver?.name} {b.vehicle?.plate} {b.greeter ? `· ${copy.stageLabels.GREETER_CONFIRMED ?? "Greeter confirmed"}: ${b.greeter.name}` : ""}
             </div>
           </div>
           <div style={{ minWidth: 340 }}>

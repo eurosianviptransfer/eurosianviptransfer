@@ -3,6 +3,7 @@ import path from "path";
 import { NextRequest, NextResponse } from "next/server";
 import { createVehicleImageUpload } from "@/lib/providers/storage/r2";
 import { checkRateLimit, getClientIp } from "@/lib/security/request-controls";
+import { getCloudinaryConfig, signPayload } from "@/lib/cloudinary";
 
 const types: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
 
@@ -12,6 +13,20 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const contentType = typeof body?.contentType === "string" ? body.contentType : "";
   if (!types[contentType]) return NextResponse.json({ error: "Sadece JPG, PNG veya WebP fotoğraf kabul edilir." }, { status: 400 });
+
+  // If cloudinary configured, return signature and upload info for direct browser upload
+  const { cloudName, apiKey, apiSecret } = getCloudinaryConfig();
+  if (cloudName && apiKey && apiSecret) {
+    const folder = body?.folder ?? `driver-applications/${new Date().getFullYear()}`;
+    const timestamp = Math.floor(Date.now() / 1000);
+    const paramsToSign: Record<string, any> = { timestamp };
+    if (folder) paramsToSign.folder = folder;
+    const signature = signPayload(paramsToSign, apiSecret);
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    return NextResponse.json({ uploadUrl, fields: { api_key: apiKey, timestamp, signature, folder }, clientInfo: { cloudName } });
+  }
+
+  // Fallback to R2/local presign flow (existing implementation)
   try {
     return NextResponse.json(await createVehicleImageUpload(contentType, types[contentType]));
   } catch (error) {

@@ -32,33 +32,41 @@ async function main() {
   console.log("Admin hazır:", user.email);
 
   // Örnek Media öğesi (gerçek upload sonrası URL değiştirilebilir)
-  const logo = await prisma.mediaItem.upsert({
-    where: { filename: "logo-main.png" },
-    update: {
-      url: "https://res.cloudinary.com/your-cloud-name/image/upload/v000000/logo-main.png",
-      uploadedById: user.id,
-    },
-    create: {
-      filename: "logo-main.png",
-      url: "https://res.cloudinary.com/your-cloud-name/image/upload/v000000/logo-main.png",
-      mime: "image/png",
-      alt: "Eurosian VIP Transfer logo",
-      uploadedById: user.id,
-    },
-  });
+  let logo = await prisma.mediaItem.findFirst({ where: { filename: "logo-main.png" } });
+  if (logo) {
+    logo = await prisma.mediaItem.update({
+      where: { id: logo.id },
+      data: {
+        url: "https://res.cloudinary.com/your-cloud-name/image/upload/v000000/logo-main.png",
+        uploadedById: user.id,
+      },
+    });
+  } else {
+    logo = await prisma.mediaItem.create({
+      data: {
+        filename: "logo-main.png",
+        url: "https://res.cloudinary.com/your-cloud-name/image/upload/v000000/logo-main.png",
+        mime: "image/png",
+        alt: "Eurosian VIP Transfer logo",
+        uploadedById: user.id,
+      },
+    });
+  }
 
-  // Site ayarları — logo ve ana dili
-  await prisma.siteSetting.upsert({
-    where: { key_locale: { key: "site.logo", locale: null } },
-    update: { value: { url: logo.url }, updatedById: user.id },
-    create: { key: "site.logo", locale: null, value: { url: logo.url }, updatedById: user.id },
-  });
+  // Site ayarları — logo ve ana dili (nullable locale için upsert yerine find+create/update kullanıyoruz)
+  let logoSetting = await prisma.siteSetting.findFirst({ where: { key: "site.logo", locale: null } });
+  if (logoSetting) {
+    await prisma.siteSetting.update({ where: { id: logoSetting.id }, data: { value: { url: logo.url }, updatedById: user.id } });
+  } else {
+    await prisma.siteSetting.create({ data: { key: "site.logo", locale: null, value: { url: logo.url }, updatedById: user.id } });
+  }
 
-  await prisma.siteSetting.upsert({
-    where: { key_locale: { key: "site.defaultLocale", locale: null } },
-    update: { value: { locale: "tr" }, updatedById: user.id },
-    create: { key: "site.defaultLocale", locale: null, value: { locale: "tr" }, updatedById: user.id },
-  });
+  let defaultLocaleSetting = await prisma.siteSetting.findFirst({ where: { key: "site.defaultLocale", locale: null } });
+  if (defaultLocaleSetting) {
+    await prisma.siteSetting.update({ where: { id: defaultLocaleSetting.id }, data: { value: { locale: "tr" }, updatedById: user.id } });
+  } else {
+    await prisma.siteSetting.create({ data: { key: "site.defaultLocale", locale: null, value: { locale: "tr" }, updatedById: user.id } });
+  }
 
   // Örnek içerik — ana sayfa başlığı ve lead (TR + EN)
   await prisma.contentEntry.upsert({
