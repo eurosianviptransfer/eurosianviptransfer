@@ -25,6 +25,10 @@ export async function searchSerper(options: SerperSearchOptions) {
 
   if (!res.ok) {
     const text = await res.text();
+    if (res.status === 401 || res.status === 403) {
+      // Unauthorized — likely invalid or missing API key
+      throw new Error(`Serper API yetkisi reddedildi (401/403). Lütfen SERPER_API_KEY environment değişkeninizi kontrol edin. API mesajı: ${text}`);
+    }
     throw new Error(`Serper arama başarısız: ${res.status} ${res.statusText}${text ? ` - ${text}` : ""}`);
   }
 
