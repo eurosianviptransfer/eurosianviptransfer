@@ -18,12 +18,29 @@ export async function POST(req: NextRequest) {
     // Prefer Google Places Text Search when server API key is configured
     const googleKey = process.env.GOOGLE_MAPS_SERVER_API_KEY;
     if (googleKey) {
-      const gRes = await fetch(`https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${googleKey}&language=tr`);
-      if (!gRes.ok) {
-        const t = await gRes.text();
-        throw new Error(`Google Places arama başarısız: ${gRes.status} ${gRes.statusText} - ${t}`);
+      // First try sending key in x-goog-api-key header (preferred)
+      let gRes = await fetch(`https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&language=tr`, {
+        headers: { "x-goog-api-key": googleKey },
+      });
+      let gJson = await gRes.json().catch(() => null);
+
+      // If header approach failed or returned non-OK status, try with key as query param as a fallback
+      if (!gRes.ok || !gJson || (gJson.status && gJson.status !== "OK" && gJson.status !== "ZERO_RESULTS")) {
+        gRes = await fetch(`https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${googleKey}&language=tr`);
+        if (!gRes.ok) {
+          const t = await gRes.text();
+          throw new Error(`Google Places arama başarısız: ${gRes.status} ${gRes.statusText} - ${t}`);
+        }
+        gJson = await gRes.json();
       }
-      const gJson = await gRes.json();
+
+      if (!gJson) {
+        throw new Error("Google Places araması beklenmeyen bir yanıt döndü.");
+      }
+      if (gJson.status && gJson.status !== "OK" && gJson.status !== "ZERO_RESULTS") {
+        throw new Error(`Google Places hata: ${gJson.status} - ${gJson.error_message ?? JSON.stringify(gJson)}`);
+      }
+
       const results = Array.isArray(gJson.results)
         ? gJson.results.slice(0, 7).map((item: any) => ({
             title: item.name || "",
