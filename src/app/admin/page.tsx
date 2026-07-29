@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { ApproveButton, AssignForm, CompleteButton } from "./_actions";
-import { SerperSearchPanel } from "@/components/admin/SerperSearchPanel";
+import { SearchPanel as SerperSearchPanel } from "@/components/admin/SerperSearchPanel";
 import { FleetManagement } from "@/components/admin/FleetManagement";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { AdminReportDashboard, type AdminReportBooking } from "@/components/admin/AdminReportDashboard";

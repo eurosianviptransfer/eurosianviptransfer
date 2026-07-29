@@ -8,7 +8,7 @@ type SearchResult = {
   snippet: string;
 };
 
-export function SerperSearchPanel() {
+export function SearchPanel() {
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -38,7 +38,7 @@ export function SerperSearchPanel() {
     <div className="ev-card" style={{ marginTop: 16 }}>
       <div className="ev-section-title" style={{ marginTop: 0 }}>Web Arama</div>
       <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: -4 }}>
-        Serper API ile otel, bölge veya adres araması yap. Bu alan admin kullanımına yöneliktir.
+        Sunucu tarafı Google Places (varsa) ile otel, bölge veya adres araması yapar. Eğer Places kullanılamıyorsa sonuç gösterilmez.
       </p>
       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
         <input

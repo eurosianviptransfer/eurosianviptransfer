@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { searchSerper } from "@/lib/providers/search/serper";
-import { checkRateLimit, getClientIp, readThroughCache } from "@/lib/security/request-controls";
+import { checkRateLimit, getClientIp } from "@/lib/security/request-controls";
 
 export async function POST(req: NextRequest) {
   const rate = await checkRateLimit(`search:${getClientIp(req.headers)}`, 20, 60);
@@ -54,24 +53,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Fallback to Serper if Google key is not configured or Google returned an error
-    try {
-      const data = await readThroughCache("serper", query.toLowerCase(), 300, () => searchSerper({ q: query }));
-      const results = Array.isArray(data.organic)
-        ? data.organic.slice(0, 5).map((item: any) => ({
-            title: item.title ?? "",
-            link: item.link ?? "",
-            snippet: item.snippet ?? "",
-            location: item.address ?? item.location ?? "",
-          }))
-        : [];
-
-      return NextResponse.json({ results });
-    } catch (serperErr) {
-      console.error("Search fallback (Serper) failed:", serperErr);
-      // Final safe fallback: return empty results instead of an error so the client UI can handle gracefully
-      return NextResponse.json({ results: [] });
-    }
+    // No Serper fallback configured — return safe empty results so client handles gracefully
+    return NextResponse.json({ results: [] });
   } catch (error) {
     const err = error as Error;
     // Any unexpected error — return safe empty results rather than throwing JSON parse errors on client
