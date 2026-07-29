@@ -103,6 +103,7 @@ export default async function AdminPage() {
               <a href="#canli-online" className="ev-btn ev-btn--ghost">{copy.toolbar.overview}</a>
               <a href="#raporlama" className="ev-btn ev-btn--ghost">{copy.toolbar.analytics}</a>
               <a href="#ayarlar" className="ev-btn ev-btn--ghost">{copy.toolbar.settings}</a>
+              <a href="/admin/cms" className="ev-btn ev-btn--ghost">CMS</a>
             </div>
             <div className="ev-actions">
               <ThemeToggle />
