@@ -94,6 +94,7 @@ model User {
   auditLogs            AssetAuditLog[]     @relation("AuditActor")
   ratingsReceived      Rating[]            @relation("RatedUser")
   approvedApplications DriverApplication[] @relation("ApplicationApprovedUser")
+  approvedGreeterApplications GreeterApplication[] @relation("GreeterApplicationApprovedUser")
   company              Company?            @relation(fields: [companyId], references: [id])
   ContentEntry         ContentEntry[]
   MediaItem            MediaItem[]
@@ -129,6 +130,31 @@ model DriverApplication {
   @@index([phone, createdAt])
   @@index([status, createdAt])
   @@index([vehiclePlate])
+}
+
+// Greeter / Karşılamacı başvuruları — sürücü başvurularına benzer onay akışı
+model GreeterApplication {
+  id                String                  @id @default(cuid())
+  applicationNo     String                  @unique
+  fullName          String
+  phone             String
+  email             String?
+  address           String?
+  experienceYears   Int?
+  languages         String[]                @default([])
+  imageUrls         String[]                @default([])
+  notes             String?
+  status            DriverApplicationStatus @default(PENDING)
+  rejectionReason   String?
+  approvedAt        DateTime?
+  approvedUserId    String?                 @unique
+  approvedUser      User?                   @relation("GreeterApplicationApprovedUser", fields: [approvedUserId], references: [id])
+  whatsappMessage   String?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+
+  @@index([phone, createdAt])
+  @@index([status, createdAt])
 }
 
 model Vehicle {

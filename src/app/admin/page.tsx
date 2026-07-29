@@ -5,6 +5,7 @@ import { FleetManagement } from "@/components/admin/FleetManagement";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { AdminReportDashboard, type AdminReportBooking } from "@/components/admin/AdminReportDashboard";
 import { DriverApplicationsPanel } from "@/components/admin/DriverApplicationsPanel";
+import { GreeterApplicationsPanel } from "@/components/admin/GreeterApplicationsPanel";
 import { RatingSummary } from "@/components/admin/RatingSummary";
 import { OnlineUsersWidget } from "@/components/admin/OnlineUsersWidget";
 import { ThemeToggle } from "@/components/admin/ThemeToggle";
@@ -53,6 +54,7 @@ export default async function AdminPage() {
   const greeters = allGreeters.filter((greeter) => greeter.active);
   const payoutRules = await prisma.payoutRule.findMany({ where: { active: true } });
   const applications = await prisma.driverApplication.findMany({ orderBy: { createdAt: "desc" }, take: 100 });
+  const greeterApplications = await prisma.greeterApplication.findMany({ orderBy: { createdAt: "desc" }, take: 100 });
 
   const pending = bookings.filter((b) => b.status === "PENDING_APPROVAL");
   const approved = bookings.filter((b) => b.status === "APPROVED");
@@ -134,6 +136,7 @@ export default async function AdminPage() {
       </div>
 
       <DriverApplicationsPanel applications={applications.map((application) => ({ ...application, whatsappMessage: application.whatsappMessage ? unseal(application.whatsappMessage) : null, createdAt: application.createdAt.toISOString() }))} />
+      <GreeterApplicationsPanel applications={greeterApplications.map((application) => ({ ...application, whatsappMessage: application.whatsappMessage ? unseal(application.whatsappMessage) : null, createdAt: application.createdAt.toISOString() }))} />
       <RatingSummary />
 
       <SerperSearchPanel />
