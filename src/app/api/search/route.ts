@@ -38,37 +38,44 @@ export async function POST(req: NextRequest) {
         throw new Error("Google Places araması beklenmeyen bir yanıt döndü.");
       }
       if (gJson.status && gJson.status !== "OK" && gJson.status !== "ZERO_RESULTS") {
-        throw new Error(`Google Places hata: ${gJson.status} - ${gJson.error_message ?? JSON.stringify(gJson)}`);
+        // Google returned an error (e.g. REQUEST_DENIED). Log and fall back to Serper instead
+        console.warn("Google Places returned status:", gJson.status, gJson.error_message);
+        // Try Serper fallback below
+      } else {
+        const results = Array.isArray(gJson.results)
+          ? gJson.results.slice(0, 7).map((item: any) => ({
+              title: item.name || "",
+              link: item.place_id ? `https://www.google.com/maps/place/?q=place_id:${item.place_id}` : "",
+              snippet: item.formatted_address || "",
+              location: item.formatted_address || "",
+            }))
+          : [];
+        return NextResponse.json({ results });
       }
+    }
 
-      const results = Array.isArray(gJson.results)
-        ? gJson.results.slice(0, 7).map((item: any) => ({
-            title: item.name || "",
-            link: item.place_id ? `https://www.google.com/maps/place/?q=place_id:${item.place_id}` : "",
-            snippet: item.formatted_address || "",
-            location: item.formatted_address || "",
+    // Fallback to Serper if Google key is not configured or Google returned an error
+    try {
+      const data = await readThroughCache("serper", query.toLowerCase(), 300, () => searchSerper({ q: query }));
+      const results = Array.isArray(data.organic)
+        ? data.organic.slice(0, 5).map((item: any) => ({
+            title: item.title ?? "",
+            link: item.link ?? "",
+            snippet: item.snippet ?? "",
+            location: item.address ?? item.location ?? "",
           }))
         : [];
+
       return NextResponse.json({ results });
+    } catch (serperErr) {
+      console.error("Search fallback (Serper) failed:", serperErr);
+      // Final safe fallback: return empty results instead of an error so the client UI can handle gracefully
+      return NextResponse.json({ results: [] });
     }
-
-    // Fallback to Serper if Google key is not configured
-    const data = await readThroughCache("serper", query.toLowerCase(), 300, () => searchSerper({ q: query }));
-    const results = Array.isArray(data.organic)
-      ? data.organic.slice(0, 5).map((item: any) => ({
-          title: item.title ?? "",
-          link: item.link ?? "",
-          snippet: item.snippet ?? "",
-          location: item.address ?? item.location ?? "",
-        }))
-      : [];
-
-    return NextResponse.json({ results });
   } catch (error) {
     const err = error as Error;
-    if ((err.message || "").toLowerCase().includes("google places arama başarısız") || (err.message || "").toLowerCase().includes("serper")) {
-      return NextResponse.json({ error: `${err.message}` }, { status: 502 });
-    }
-    return NextResponse.json({ error: (error as Error).message }, { status: 502 });
+    // Any unexpected error — return safe empty results rather than throwing JSON parse errors on client
+    console.error("/api/search error:", err);
+    return NextResponse.json({ results: [] });
   }
 }
