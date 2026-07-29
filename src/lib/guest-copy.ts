@@ -49,8 +49,41 @@ export interface BookingCopy {
   trackButton: string;
 }
 
+const en: BookingCopy = { title: "Airport Transfer Booking", airport: "Pickup airport", destination: "Destination — Hotel / Address", hotelSearch: "Search hotel or address", region: "Area", regionLoading: "Loading areas…", regionChoose: "Choose an area", selectedAddress: "Selected hotel/address", addressPlaceholder: "Search result or manual entry", mapsNote: "Google Places is not configured. You can continue by selecting an area.", cardEyebrow: "See your quote", cardTitle: "Quote calculator", cardFoot: "A full total appears before you confirm, with no hidden fees.", date: "Transfer date", name: "Full name", phone: "WhatsApp phone", email: "Email (optional)", passengers: "Passengers", flight: "Flight No. (optional)", vehicleSmall: "Vito / Transporter (small)", vehicleLarge: "Sprinter (large)", returnTrip: "Add return transfer", payVehicle: "Pay in vehicle", payCard: "Pay now (card)", total: "Total price", confirm: "Confirm booking", required: "Name, phone and date are required.", destinationRequired: "Destination address is required.", regionRequired: "Please choose an area.", addressRequired: "Hotel or address details are required.", estimate: "Estimated price", instantQuote: "See instant price", time: "Time", luggage: "Luggage", currency: "Currency", searchButton: "Search", searchExample: "e.g. Lara Beach Hotel", searchError: "Search failed.", googleApiRequired: "Google address search requires an API key", loadingAddresses: "Address search loading…", selectedAddressPrefix: "Selected location:", trackTitle: "Track your booking", trackSubtitle: "Enter your booking code to see your transfer status.", trackCode: "Booking code", trackButton: "Open tracking" };
+
 const tr: BookingCopy = {
-  title: "Havalimanı Transferi Rezervasyonu", airport: "Kalkış havalimanı", destination: "Varış — Otel / Adres", hotelSearch: "Otel veya adres ara", region: "Bölge", regionLoading: "Bölge yükleniyor…", regionChoose: "Bölge seçin", selectedAddress: "Seçilen otel/adres", addressPlaceholder: "Arama sonucu veya manuel giriş", mapsNote: "Google Places anahtarı tanımlı değil. Bölge seçerek devam edebilirsiniz.", cardEyebrow: "Önizlemede fiyatınızı gör", cardTitle: "Fiyat hesaplayıcısı", cardFoot: "Rezervasyonu onaylamadan önce toplam fiyatı ve hizmet detaylarını görün.", date: "Transfer tarihi", name: "Ad Soyad", phone: "WhatsApp Telefon", email: "E-posta (opsiyonel)", passengers: "Yolcu Sayısı", flight: "Uçuş No (opsiyonel)", vehicleSmall: "Vito / Transporter (küçük)", vehicleLarge: "Sprinter (büyük)", returnTrip: "Dönüş transferi ekle", payVehicle: "Araçta Öde", payCard: "Şimdi Öde (Kart)", total: "Toplam Fiyat", confirm: "Rezervasyonu Onayla", required: "Ad, telefon ve tarih gerekli.", destinationRequired: "Varış adresi gerekli.", regionRequired: "Bölge seçimi gerekli.", addressRequired: "Otel veya adres bilgisi gerekli.", estimate: "Tahmini fiyat",
+  ...en,
+  title: "Havalimanı Transferi Rezervasyonu",
+  airport: "Kalkış havalimanı",
+  destination: "Varış — Otel / Adres",
+  hotelSearch: "Otel veya adres ara",
+  region: "Bölge",
+  regionLoading: "Bölge yükleniyor…",
+  regionChoose: "Bölge seçin",
+  selectedAddress: "Seçilen otel/adres",
+  addressPlaceholder: "Arama sonucu veya manuel giriş",
+  mapsNote: "Google Places anahtarı tanımlı değil. Bölge seçerek devam edebilirsiniz.",
+  cardEyebrow: "Önizlemede fiyatınızı gör",
+  cardTitle: "Fiyat hesaplayıcısı",
+  cardFoot: "Rezervasyonu onaylamadan önce toplam fiyatı ve hizmet detaylarını görün.",
+  date: "Transfer tarihi",
+  name: "Ad Soyad",
+  phone: "WhatsApp Telefon",
+  email: "E-posta (opsiyonel)",
+  passengers: "Yolcu Sayısı",
+  flight: "Uçuş No (opsiyonel)",
+  vehicleSmall: "Vito / Transporter (küçük)",
+  vehicleLarge: "Sprinter (büyük)",
+  returnTrip: "Dönüş transferi ekle",
+  payVehicle: "Araçta Öde",
+  payCard: "Şimdi Öde (Kart)",
+  total: "Toplam Fiyat",
+  confirm: "Rezervasyonu Onayla",
+  required: "Ad, telefon ve tarih gerekli.",
+  destinationRequired: "Varış adresi gerekli.",
+  regionRequired: "Bölge seçimi gerekli.",
+  addressRequired: "Otel veya adres bilgisi gerekli.",
+  estimate: "Tahmini fiyat",
   searchButton: "Ara",
   searchExample: "Örn. Lara Beach Hotel",
   searchError: "Arama başarısız.",
@@ -58,8 +91,6 @@ const tr: BookingCopy = {
   loadingAddresses: "Adres araması yükleniyor…",
   selectedAddressPrefix: "Seçilen konum:",
 };
-
-const en: BookingCopy = { title: "Airport Transfer Booking", airport: "Pickup airport", destination: "Destination — Hotel / Address", hotelSearch: "Search hotel or address", region: "Area", regionLoading: "Loading areas…", regionChoose: "Choose an area", selectedAddress: "Selected hotel/address", addressPlaceholder: "Search result or manual entry", mapsNote: "Google Places is not configured. You can continue by selecting an area.", cardEyebrow: "See your quote", cardTitle: "Quote calculator", cardFoot: "A full total appears before you confirm, with no hidden fees.", date: "Transfer date", name: "Full name", phone: "WhatsApp phone", email: "Email (optional)", passengers: "Passengers", flight: "Flight No. (optional)", vehicleSmall: "Vito / Transporter (small)", vehicleLarge: "Sprinter (large)", returnTrip: "Add return transfer", payVehicle: "Pay in vehicle", payCard: "Pay now (card)", total: "Total price", confirm: "Confirm booking", required: "Name, phone and date are required.", destinationRequired: "Destination address is required.", regionRequired: "Please choose an area.", addressRequired: "Hotel or address details are required.", estimate: "Estimated price", instantQuote: "See instant price", time: "Time", luggage: "Luggage", currency: "Currency", searchButton: "Search", searchExample: "e.g. Lara Beach Hotel", searchError: "Search failed.", googleApiRequired: "Google address search requires an API key", loadingAddresses: "Address search loading…", selectedAddressPrefix: "Selected location:", trackTitle: "Track your booking", trackSubtitle: "Enter your booking code to see your transfer status.", trackCode: "Booking code", trackButton: "Open tracking" };
 const de: BookingCopy = { ...en, title: "Flughafentransfer buchen", airport: "Abholflughafen", destination: "Ziel — Hotel / Adresse", hotelSearch: "Hotel oder Adresse suchen", region: "Region", regionLoading: "Regionen werden geladen…", regionChoose: "Region wählen", selectedAddress: "Ausgewähltes Hotel/Adresse", addressPlaceholder: "Suchergebnis oder manuelle Eingabe", mapsNote: "Google Places ist nicht konfiguriert. Sie können eine Region auswählen.", name: "Name", phone: "WhatsApp-Telefon", email: "E-Mail (optional)", passengers: "Passagiere", flight: "Flugnummer (optional)", vehicleSmall: "Vito / Transporter (klein)", vehicleLarge: "Sprinter (groß)", returnTrip: "Rücktransfer hinzufügen", payVehicle: "Im Fahrzeug zahlen", payCard: "Jetzt zahlen (Karte)", total: "Gesamtpreis", confirm: "Buchung bestätigen", required: "Name, Telefon und Datum sind erforderlich.", destinationRequired: "Zieladresse ist erforderlich.", regionRequired: "Bitte wählen Sie eine Region.", addressRequired: "Hotel- oder Adressdaten sind erforderlich.", estimate: "Geschätzter Preis", searchButton: "Suchen", searchExample: "z. B. Lara Beach Hotel", searchError: "Suche fehlgeschlagen." };
 const es: BookingCopy = { ...en, title: "Reserva de traslado desde el aeropuerto", airport: "Aeropuerto de salida", destination: "Destino — Hotel / Dirección", hotelSearch: "Buscar hotel o dirección", region: "Zona", regionChoose: "Elija una zona", selectedAddress: "Hotel/dirección seleccionada", name: "Nombre completo", phone: "Teléfono de WhatsApp", passengers: "Pasajeros", returnTrip: "Añadir traslado de vuelta", payVehicle: "Pagar en el vehículo", payCard: "Pagar ahora (tarjeta)", total: "Precio total", confirm: "Confirmar reserva", required: "El nombre, teléfono y fecha son obligatorios.", destinationRequired: "La dirección de destino es obligatoria.", regionRequired: "Elija una zona.", addressRequired: "Indique el hotel o la dirección." };
 const it: BookingCopy = { ...en, title: "Prenotazione transfer aeroportuale", airport: "Aeroporto di partenza", destination: "Destinazione — Hotel / Indirizzo", hotelSearch: "Cerca hotel o indirizzo", region: "Zona", regionChoose: "Scegli una zona", selectedAddress: "Hotel/indirizzo selezionato", name: "Nome e cognome", phone: "Telefono WhatsApp", passengers: "Passeggeri", returnTrip: "Aggiungi transfer di ritorno", payVehicle: "Paga a bordo", payCard: "Paga ora (carta)", total: "Prezzo totale", confirm: "Conferma prenotazione", required: "Nome, telefono e data sono obbligatori.", destinationRequired: "L'indirizzo di destinazione è obbligatorio.", regionRequired: "Scegli una zona.", addressRequired: "Inserisci hotel o indirizzo." };

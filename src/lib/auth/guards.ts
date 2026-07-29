@@ -3,6 +3,6 @@ import { authOptions } from "./config";
 
 export async function requireAdminSession() {
   const session = await getServerSession(authOptions);
-  if (!session || (session.user as { role?: string }).role !== "ADMIN") return null;
+  if (!session || session.user.role !== "ADMIN") return null;
   return session;
 }
