@@ -35,9 +35,9 @@ export const metadata = {
 
 import { cookies } from "next/headers";
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
   // Determine server-side theme from cookie so SSR markup matches client pre-hydration
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const serverTheme = cookieStore.get("admin-theme")?.value === "light" ? "light" : "dark";
 
   return (
