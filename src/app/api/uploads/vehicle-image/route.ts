@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   const contentType = typeof body?.contentType === "string" ? body.contentType : "";
   if (!types[contentType]) return NextResponse.json({ error: "Sadece JPG, PNG veya WebP fotoğraf kabul edilir." }, { status: 400 });
 
-  // If cloudinary configured, return signature and upload info for direct browser upload
+  // If cloudinary configured for signed uploads, return signature and upload info for direct browser upload
   const { cloudName, apiKey, apiSecret } = getCloudinaryConfig();
   if (cloudName && apiKey && apiSecret) {
     const folder = body?.folder ?? `driver-applications/${new Date().getFullYear()}`;
@@ -23,14 +23,23 @@ export async function POST(req: NextRequest) {
     if (folder) paramsToSign.folder = folder;
     const signature = signPayload(paramsToSign, apiSecret);
     const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
-    return NextResponse.json({ uploadUrl, fields: { api_key: apiKey, timestamp, signature, folder }, clientInfo: { cloudName } });
+    return NextResponse.json({ uploadUrl, fields: { api_key: apiKey, timestamp, signature, folder }, clientInfo: { cloudName, signed: true } });
+  }
+
+  // If Cloudinary unsigned preset is provided in env, offer unsigned direct upload option (no server-side signature required)
+  const unsignedPreset = process.env.CLOUDINARY_UNSIGNED_UPLOAD_PRESET;
+  if (cloudName && unsignedPreset) {
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+    return NextResponse.json({ uploadUrl, fields: { upload_preset: unsignedPreset }, clientInfo: { cloudName, signed: false, unsigned: true } });
   }
 
   // Fallback to R2/local presign flow (existing implementation)
   try {
     return NextResponse.json(await createVehicleImageUpload(contentType, types[contentType]));
   } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, { status: 503 });
+    // Improve error message to suggest Cloudinary if R2 not configured
+    const msg = (error as Error).message || "Depolama yapılandırma hatası.";
+    return NextResponse.json({ error: msg + " Eğer R2/S3 yapılandırılmadıysa Cloudinary yüklemeyi etkinleştirmek için CLOUDINARY_URL veya CLOUDINARY_UNSIGNED_UPLOAD_PRESET environment değişkenlerini ayarlayın." }, { status: 503 });
   }
 }
 

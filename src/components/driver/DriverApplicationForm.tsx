@@ -66,10 +66,38 @@ export function DriverApplicationForm() {
         }
       }
 
+      // Cloudinary unsigned upload (upload_preset) — server returned fields.upload_preset
+      if (body.fields && body.fields.upload_preset && body.clientInfo?.unsigned) {
+        const form = new FormData();
+        form.append("file", file);
+        Object.entries(body.fields).forEach(([k, v]) => { if (v !== undefined && v !== null) form.append(k, String(v)); });
+        const uploadRes = await fetch(body.uploadUrl, { method: "POST", body: form });
+        const uploadJson = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(copy.imageUploadError);
+        const secureUrl = uploadJson.secure_url || uploadJson.url;
+        try {
+          const persistRes = await fetch("/api/media", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: secureUrl, filename: uploadJson.original_filename || file.name, mime: uploadJson.format ? `image/${uploadJson.format}` : file.type, width: uploadJson.width, height: uploadJson.height, size: uploadJson.bytes, meta: { public_id: uploadJson.public_id, raw: uploadJson } }),
+          });
+          const persisted = await persistRes.json();
+          if (!persistRes.ok) throw new Error(persisted.error || copy.imageUploadError);
+          return persisted.media?.url || secureUrl;
+        } catch (err) {
+          console.error("Media persist failed:", err);
+          return secureUrl;
+        }
+      }
+
       // Fallback: existing PUT flow (R2 / signed URL)
-      const upload = await fetch(body.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
-      if (!upload.ok) throw new Error(copy.imageUploadError);
-      return body.publicUrl;
+      if (body.uploadUrl) {
+        const upload = await fetch(body.uploadUrl, { method: "PUT", headers: { "Content-Type": file.type }, body: file });
+        if (!upload.ok) throw new Error(copy.imageUploadError);
+        return body.publicUrl;
+      }
+
+      throw new Error(copy.imageUploadUrlError);
     }));
   }
 
