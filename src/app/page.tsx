@@ -14,6 +14,7 @@ export default function HomePage() {
   const { t, locale } = useLocale();
   const navDriverLabel = getNavLabel(locale, "driver");
   const navApplyLabel = getNavLabel(locale, "applicationTrack");
+  const navGreeterLabel = getNavLabel(locale, "greeter");
   const [originAirport, setOriginAirport] = useState<AirportCode>("AYT");
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
@@ -33,7 +34,7 @@ export default function HomePage() {
         />
         <span>EUROSIAN <small>VIP TRANSFER</small></span>
       </Link>
-      <nav className="ev-main-nav" aria-label="Main navigation"><Link href={bookingHref}>{t.navBook}</Link><Link href={`/takip?lang=${locale}`}>{t.navTrack}</Link><Link href={`/sofor-basvuru?lang=${locale}`}>{navDriverLabel}</Link><Link href={`/basvuru-takip?lang=${locale}`}>{navApplyLabel}</Link><Link href={`/giris?lang=${locale}`}>{t.navTeam}</Link></nav>
+      <nav className="ev-main-nav" aria-label="Main navigation"><Link href={bookingHref}>{t.navBook}</Link><Link href={`/takip?lang=${locale}`}>{t.navTrack}</Link><Link href={`/karsilamaci-basvuru?lang=${locale}`}>{navGreeterLabel}</Link><Link href={`/sofor-basvuru?lang=${locale}`}>{navDriverLabel}</Link><Link href={`/basvuru-takip?lang=${locale}`}>{navApplyLabel}</Link><Link href={`/giris?lang=${locale}`}>{t.navTeam}</Link></nav>
       <LocaleSwitcher />
     </header>
 
