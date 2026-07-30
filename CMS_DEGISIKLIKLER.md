@@ -29,15 +29,33 @@ Bu güncelleme `/admin/cms`, `/admin/content`, `/admin/media`, `/admin/settings`
 
 ## ÖNEMLİ — henüz yapılmayan kısım
 
-`ContentEntry` ve `SiteSetting` tabloları **şu an yalnızca admin panelinde** kullanılıyor.
-Kontrol ettiğimde canlı sitenin (`src/app/[lang]/...`) hiçbir sayfası bu tablolardan veri
-okumuyor — metinler, ayarlar ve logo hâlâ komponentlerde sabit (hardcoded). Yani admin panelinde
-bir metni değiştirdiğinizde şu anda **sitede görünmez**.
+Bir sonraki güncellemeyle **logo, ana sayfa SEO şeması, Hakkımızda ve İletişim sayfaları** artık
+gerçekten CMS'den okuyor (aşağıya bakın). Ancak site genelinde onlarca SEO/iniş sayfası
+(fiyatlar, filomuz, havalimanı transferi, şehirlerarası transfer, medikal transfer, kurumsal) ve
+20+ dilli ana sayfa footer/nav metinleri (`src/lib/i18n.ts`) hâlâ koda gömülü. Bunlar çok büyük,
+tek dosyada binlerce satırlık bir çeviri sözlüğüne dayanıyor — güvenli şekilde CMS'e taşımak
+ayrı, kapsamlı bir iş. İsterseniz öncelik sırasına göre (örn. önce fiyat sayfası, sonra filo
+sayfaları) adım adım devam edebilirim.
 
-Bunu tam anlamıyla "dinamik" hale getirmek için ikinci bir adım gerekiyor: ilgili genel sayfaların
-(`src/app/[lang]/hakkimizda`, `iletisim`, footer, header logo vb.) `prisma.contentEntry` /
-`prisma.siteSetting` üzerinden veri okuyacak şekilde güncellenmesi. İsterseniz bunu da yapabilirim —
-hangi sayfa/metinlerin öncelikli olduğunu söylemeniz yeterli.
+## Canlı siteye CMS bağlantısı (güncelleme 3)
+
+- **Logo:** Ana sayfa header'ı ve SEO JSON-LD şeması artık `/admin/settings` üzerinden
+  yönetilen logoyu okuyor (`src/lib/cms/read.ts` → `getSiteLogoUrl()`). CMS'te bir logo
+  seçilmemişse `public/eurosianviptransferlogo.png` dosyasına düşer.
+  **Not:** `public/logo.png` dosyası artık diskte yoktu (muhtemelen sizin tarafınızda silindi),
+  bu yüzden ana sayfanın header logosu **kırıktı** — bu değişiklik aynı zamanda o hatayı da
+  düzeltiyor.
+- **Hakkımızda** (`/[lang]/hakkimizda`) ve **İletişim** (`/[lang]/iletisim`) sayfalarındaki
+  başlık ve gövde metni artık `/admin/content` üzerinden yönetilebilir: sırasıyla
+  `key="hakkimizda"` ve `key="iletisim"` ile, ilgili dilde (`tr`/`en`/`de`/`ru`) bir içerik
+  oluşturup **yayına alırsanız (published)**, sitedeki sabit metnin yerine o kullanılır.
+  Yayınlanmış bir kayıt yoksa mevcut sabit metin fallback olarak kalır — hiçbir şey kırılmaz.
+- Bu sayfalar `revalidate = 300` ile işaretlendi: admin panelinde yaptığınız bir değişiklik,
+  yeniden deploy gerekmeden en geç 5 dakika içinde canlıya yansır.
+- Ana sayfadaki logo artık `next/image` yerine düz `<img>` ile render ediliyor — çünkü logo
+  URL'i artık admin panelinden herhangi bir depolama sağlayıcısından (R2/Cloudinary/yerel)
+  gelebilir ve `next/image`'ın `remotePatterns` beyaz listesinde olmayan bir domain tüm sayfanın
+  hata vermesine yol açabilirdi.
 
 ## Kurulum notları
 
