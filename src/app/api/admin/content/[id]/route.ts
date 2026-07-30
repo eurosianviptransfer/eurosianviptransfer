@@ -2,22 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAdminSession } from "@/lib/auth/guards";
 
-export async function GET(req: NextRequest) {
+type Ctx = { params: Promise<{ id: string }> };
+
+export async function GET(_req: NextRequest, { params }: Ctx) {
   const session = await requireAdminSession();
   if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
-  const { params } = (req as any);
-  const id = params?.id;
+  const { id } = await params;
   if (!id) return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
   const item = await prisma.contentEntry.findUnique({ where: { id } });
   if (!item) return NextResponse.json({ error: "Bulunamadı." }, { status: 404 });
   return NextResponse.json({ content: item });
 }
 
-export async function PATCH(req: NextRequest) {
+export async function PATCH(req: NextRequest, { params }: Ctx) {
   const session = await requireAdminSession();
   if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
-  const { params } = (req as any);
-  const id = params?.id;
+  const { id } = await params;
   if (!id) return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
 
   const body = await req.json().catch(() => null);
@@ -29,6 +29,8 @@ export async function PATCH(req: NextRequest) {
       body: body.body ?? undefined,
       meta: body.meta ?? undefined,
       slug: body.slug ?? undefined,
+      locale: body.locale ?? undefined,
+      type: body.type ?? undefined,
       published: typeof body.published === 'boolean' ? body.published : undefined,
       sortOrder: typeof body.sortOrder === 'number' ? body.sortOrder : undefined,
       updatedById: (session.user as any).id || undefined,
@@ -40,11 +42,10 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(_req: NextRequest, { params }: Ctx) {
   const session = await requireAdminSession();
   if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
-  const { params } = (req as any);
-  const id = params?.id;
+  const { id } = await params;
   if (!id) return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
   try {
     await prisma.contentEntry.delete({ where: { id } });

@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { requireAdminSession } from "@/lib/auth/guards";
 
-export async function DELETE(req: NextRequest) {
+type Ctx = { params: Promise<{ id: string }> };
+
+export async function DELETE(_req: NextRequest, { params }: Ctx) {
   const session = await requireAdminSession();
   if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
-  const { params } = (req as any);
-  const id = params?.id;
+  const { id } = await params;
   if (!id) return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
   try {
     await prisma.mediaItem.delete({ where: { id } });
@@ -17,11 +18,10 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest, { params }: Ctx) {
   const session = await requireAdminSession();
   if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
-  const { params } = (req as any);
-  const id = params?.id;
+  const { id } = await params;
   if (!id) return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
   const item = await prisma.mediaItem.findUnique({ where: { id } });
   if (!item) return NextResponse.json({ error: "Bulunamadı." }, { status: 404 });
