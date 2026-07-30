@@ -13,14 +13,14 @@ export default async function MediaAdminPage() {
       <div className="ev-cms-topbar">
         <div>
           <h1 className="ev-h1">Medya Kütüphanesi</h1>
-          <p>Logolar, sayfa görselleri ve banner'lar için tüm medya dosyalarınız.</p>
+          <p>Logolar, sayfa görselleri ve banner&apos;lar için tüm medya dosyalarınız.</p>
         </div>
         <Link className="ev-btn ev-btn--icon" href="/admin/media/upload">
           <IconUpload /> Dosya Yükle
         </Link>
       </div>
 
-      {items.length === 0 && <div className="ev-empty">Henüz medya yok. "Dosya Yükle" ile ilk görselinizi ekleyin.</div>}
+      {items.length === 0 && <div className="ev-empty">Henüz medya yok. &ldquo;Dosya Yükle&rdquo; ile ilk görselinizi ekleyin.</div>}
 
       <div className="ev-media-grid">
         {items.map((m) => (

@@ -36,7 +36,10 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       updatedById: (session.user as any).id || undefined,
     }});
     return NextResponse.json({ content: updated });
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.code === "P2002") {
+      return NextResponse.json({ error: "Bu anahtar (key) ve dil kombinasyonu zaten kayıtlı." }, { status: 409 });
+    }
     console.error('Update content error:', err);
     return NextResponse.json({ error: 'Güncelleme başarısız.' }, { status: 500 });
   }

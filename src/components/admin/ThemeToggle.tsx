@@ -7,7 +7,10 @@ export function ThemeToggle() {
   const [theme, setThemeState] = useState<Theme>("dark");
 
   useEffect(() => {
+    // Tema tercihi tarayıcı depolamasından okunuyor; SSR ile hydration uyuşmazlığı
+    // yaşamamak için ilk render "dark" ile yapılıp gerçek değer burada senkronize ediliyor.
     const nextTheme = initTheme();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemeState(nextTheme);
   }, []);
 

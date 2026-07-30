@@ -12,15 +12,20 @@ export function LogoPicker({ currentUrl, settingKey }: { currentUrl: string | nu
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<MediaItem[] | null>(null);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const openPicker = async () => {
     setOpen((v) => !v);
+    setError(null);
     if (!items) {
       setLoading(true);
       try {
         const res = await fetch("/api/admin/media");
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || "Medya listesi alınamadı.");
         setItems((data.results || []).filter((m: MediaItem) => m.mime?.startsWith("image")));
+      } catch (err) {
+        setError((err as Error).message || "Medya listesi alınamadı.");
       } finally {
         setLoading(false);
       }
@@ -29,14 +34,19 @@ export function LogoPicker({ currentUrl, settingKey }: { currentUrl: string | nu
 
   const selectLogo = async (url: string) => {
     setSaving(true);
+    setError(null);
     try {
-      await fetch("/api/admin/settings", {
+      const res = await fetch("/api/admin/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: settingKey, value: { url } }),
       });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Logo kaydedilemedi.");
       setOpen(false);
       router.refresh();
+    } catch (err) {
+      setError((err as Error).message || "Logo kaydedilemedi.");
     } finally {
       setSaving(false);
     }
@@ -61,6 +71,11 @@ export function LogoPicker({ currentUrl, settingKey }: { currentUrl: string | nu
 
       {open && (
         <div style={{ width: "100%", marginTop: 12 }}>
+          {error && (
+            <div className="ev-empty" style={{ borderColor: "var(--rose)", color: "var(--rose)", marginBottom: 12 }}>
+              {error}
+            </div>
+          )}
           {loading && <div className="ev-empty">Yükleniyor…</div>}
           {!loading && items && items.length === 0 && (
             <div className="ev-empty">Medya kütüphanesinde görsel yok. Önce bir dosya yükleyin.</div>

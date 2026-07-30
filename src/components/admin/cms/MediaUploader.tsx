@@ -80,7 +80,16 @@ export function MediaUploader({ onUploaded }: { onUploaded?: (url: string) => vo
       )}
       <div
         className={`ev-dropzone ${dragActive ? "ev-dropzone--active" : ""}`}
+        role="button"
+        tabIndex={0}
+        aria-label="Dosya yüklemek için tıklayın ya da sürükleyip bırakın"
         onClick={() => inputRef.current?.click()}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            inputRef.current?.click();
+          }
+        }}
         onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
         onDragLeave={() => setDragActive(false)}
         onDrop={(e) => {

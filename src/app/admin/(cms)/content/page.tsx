@@ -22,7 +22,7 @@ export default async function ContentAdminPage() {
       </div>
 
       <div className="ev-cms-list">
-        {items.length === 0 && <div className="ev-empty">Henüz içerik yok. "Yeni İçerik" ile ilk sayfanızı ekleyin.</div>}
+        {items.length === 0 && <div className="ev-empty">Henüz içerik yok. &ldquo;Yeni İçerik&rdquo; ile ilk sayfanızı ekleyin.</div>}
         {items.map((it) => (
           <div key={it.id} className="ev-cms-item">
             <div className="ev-cms-item-main">

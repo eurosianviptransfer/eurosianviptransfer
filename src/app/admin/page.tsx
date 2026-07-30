@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { ApproveButton, AssignForm, CompleteButton } from "./_actions";
 import { SearchPanel as SerperSearchPanel } from "@/components/admin/SerperSearchPanel";
@@ -105,11 +106,11 @@ export default async function AdminPage() {
               <a href="#canli-online" className="ev-btn ev-btn--ghost">{copy.toolbar.overview}</a>
               <a href="#raporlama" className="ev-btn ev-btn--ghost">{copy.toolbar.analytics}</a>
               <a href="#ayarlar" className="ev-btn ev-btn--ghost">{copy.toolbar.settings}</a>
-              <a href="/admin/cms" className="ev-btn ev-btn--ghost">CMS</a>
+              <Link href="/admin/cms" className="ev-btn ev-btn--ghost">CMS</Link>
             </div>
             <div className="ev-actions">
               <ThemeToggle />
-              <a href="/admin/fiyatlar" className="ev-btn ev-btn--ghost">{copy.pricingTable}</a>
+              <Link href="/admin/fiyatlar" className="ev-btn ev-btn--ghost">{copy.pricingTable}</Link>
               <SignOutButton />
             </div>
           </div>

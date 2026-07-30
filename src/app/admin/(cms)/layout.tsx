@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { requireAdminSession } from "@/lib/auth/guards";
 import { ThemeToggle } from "@/components/admin/ThemeToggle";
 import { CmsNav } from "@/components/admin/cms/CmsNav";
@@ -10,7 +11,7 @@ export default async function CmsLayout({ children }: { children: ReactNode }) {
   if (!session) {
     return (
       <main className="ev-page">
-        <div className="ev-card">Admin girişi gerekli. Lütfen <a href="/admin/giris">giriş yapın</a>.</div>
+        <div className="ev-card">Admin girişi gerekli. Lütfen <Link href="/admin/giris">giriş yapın</Link>.</div>
       </main>
     );
   }

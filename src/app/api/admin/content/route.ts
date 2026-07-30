@@ -41,7 +41,10 @@ export async function POST(req: NextRequest) {
       },
     });
     return NextResponse.json({ content: created }, { status: 201 });
-  } catch (err) {
+  } catch (err: any) {
+    if (err?.code === "P2002") {
+      return NextResponse.json({ error: "Bu anahtar (key) ve dil kombinasyonu zaten kayıtlı." }, { status: 409 });
+    }
     console.error("Create content error:", err);
     return NextResponse.json({ error: "İçerik oluşturulamadı." }, { status: 500 });
   }
