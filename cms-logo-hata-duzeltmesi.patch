@@ -1,0 +1,64 @@
+From 99f3813b685e37263a92484488ca7f9975cfd5cb Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.local>
+Date: Fri, 31 Jul 2026 09:04:51 +0000
+Subject: [PATCH] =?UTF-8?q?CMS=20sidebar=20logosunu=20da=20CMS=20ayarlar?=
+ =?UTF-8?q?=C4=B1ndan=20okuyacak=20=C5=9Fekilde=20ba=C4=9Fla=20+=20genel?=
+ =?UTF-8?q?=20bak=C4=B1=C5=9F=20logo=20=C3=B6nizlemesinin=20boyutunu=20s?=
+ =?UTF-8?q?=C4=B1n=C4=B1rla?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- admin/(cms)/layout.tsx: sidebar'daki marka logosu artık sabit dosya yolu yerine
+  getSiteLogoUrl() ile /admin/settings üzerinden yönetilen logoyu okuyor
+- cms/page.tsx: logo önizlemesine width/object-fit eklendi, görsel yüklenemediğinde
+  taşma/garip boyutlanma olmasın diye
+---
+ src/app/admin/(cms)/cms/page.tsx | 2 +-
+ src/app/admin/(cms)/layout.tsx   | 5 ++++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/src/app/admin/(cms)/cms/page.tsx b/src/app/admin/(cms)/cms/page.tsx
+index cdb9feb..4b6db2d 100644
+--- a/src/app/admin/(cms)/cms/page.tsx
++++ b/src/app/admin/(cms)/cms/page.tsx
+@@ -25,7 +25,7 @@ export default async function CmsIndex() {
+           <p>Sayfalar, statik metinler, medya ve site ayarlarını buradan yönetin.</p>
+         </div>
+         {/* eslint-disable-next-line @next/next/no-img-element */}
+-        <img src={logoUrl || "/eurosianviptransferlogo.png"} alt="Site logosu" style={{ height: 40, borderRadius: 8, background: "#fff", padding: 4 }} />
++        <img src={logoUrl || "/eurosianviptransferlogo.png"} alt="Site logosu" style={{ height: 40, width: "auto", maxWidth: 140, borderRadius: 8, background: "#fff", padding: 4, objectFit: "contain" }} />
+       </div>
+ 
+       <div className="ev-stat-grid">
+diff --git a/src/app/admin/(cms)/layout.tsx b/src/app/admin/(cms)/layout.tsx
+index bd9a6a2..37ab7fa 100644
+--- a/src/app/admin/(cms)/layout.tsx
++++ b/src/app/admin/(cms)/layout.tsx
+@@ -3,6 +3,7 @@ import Link from "next/link";
+ import { requireAdminSession } from "@/lib/auth/guards";
+ import { ThemeToggle } from "@/components/admin/ThemeToggle";
+ import { CmsNav } from "@/components/admin/cms/CmsNav";
++import { getSiteLogoUrl } from "@/lib/cms/read";
+ 
+ export const dynamic = "force-dynamic";
+ 
+@@ -16,12 +17,14 @@ export default async function CmsLayout({ children }: { children: ReactNode }) {
+     );
+   }
+ 
++  const logoUrl = await getSiteLogoUrl();
++
+   return (
+     <div className="ev-cms-shell">
+       <aside className="ev-cms-sidebar">
+         <div className="ev-cms-brand">
+           {/* eslint-disable-next-line @next/next/no-img-element */}
+-          <img src="/eurosianviptransferlogo.png" alt="Eurosian VIP Transfer" />
++          <img src={logoUrl} alt="Eurosian VIP Transfer" />
+           <div>
+             <strong>CMS Paneli</strong>
+             <span>İçerik Yönetimi</span>
+-- 
+2.43.0
+

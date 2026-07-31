@@ -1,0 +1,285 @@
+From de0932c7672dfd84af6fb7c428a6ba97fb902e73 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.local>
+Date: Thu, 30 Jul 2026 20:55:19 +0000
+Subject: [PATCH] =?UTF-8?q?CMS=20admin:=20hata=20d=C3=BCzeltmeleri=20ve=20?=
+ =?UTF-8?q?iyile=C5=9Ftirmeler?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- ESLint hataları giderildi: kaçırılmamış tırnak/apostrof (react/no-unescaped-entities),
+  admin/cms ve admin/fiyatlar linkleri artık <a> yerine next/link Link kullanıyor
+  (@next/next/no-html-link-for-pages)
+- İçerik oluşturma/güncellemede aynı key+locale ile çakışma artık 409 ve anlaşılır
+  bir hata mesajıyla dönüyor (önceden genel 500 hatası veriyordu)
+- LogoPicker: medya listesi çekilemezse ya da logo kaydı başarısız olursa artık
+  kullanıcıya hata gösteriliyor (önceden sessizce yutuluyordu)
+- DeleteButton: tam sayfa location.reload() yerine router.refresh() kullanıyor,
+  çift tıklamayı önlemek için 'Siliniyor…' durumu ve buton disable eklendi,
+  API hata mesajını gösteriyor
+- MediaUploader dropzone artık klavyeyle erişilebilir (role=button, tabIndex,
+  Enter/Space desteği)
+- ThemeToggle: react-hooks/set-state-in-effect uyarısı, kasıtlı SSR-güvenli
+  deseni açıklayan bir yorumla belgelenip bastırıldı
+---
+ src/app/admin/(cms)/content/page.tsx       |  2 +-
+ src/app/admin/(cms)/layout.tsx             |  3 +-
+ src/app/admin/(cms)/media/page.tsx         |  4 +--
+ src/app/admin/page.tsx                     |  5 ++--
+ src/app/api/admin/content/[id]/route.ts    |  5 +++-
+ src/app/api/admin/content/route.ts         |  5 +++-
+ src/components/admin/DeleteButton.tsx      | 32 ++++++++++++++++++----
+ src/components/admin/ThemeToggle.tsx       |  3 ++
+ src/components/admin/cms/LogoPicker.tsx    | 19 +++++++++++--
+ src/components/admin/cms/MediaUploader.tsx |  9 ++++++
+ 10 files changed, 71 insertions(+), 16 deletions(-)
+
+diff --git a/src/app/admin/(cms)/content/page.tsx b/src/app/admin/(cms)/content/page.tsx
+index 8b39a71..00d15c3 100644
+--- a/src/app/admin/(cms)/content/page.tsx
++++ b/src/app/admin/(cms)/content/page.tsx
+@@ -22,7 +22,7 @@ export default async function ContentAdminPage() {
+       </div>
+ 
+       <div className="ev-cms-list">
+-        {items.length === 0 && <div className="ev-empty">Henüz içerik yok. "Yeni İçerik" ile ilk sayfanızı ekleyin.</div>}
++        {items.length === 0 && <div className="ev-empty">Henüz içerik yok. &ldquo;Yeni İçerik&rdquo; ile ilk sayfanızı ekleyin.</div>}
+         {items.map((it) => (
+           <div key={it.id} className="ev-cms-item">
+             <div className="ev-cms-item-main">
+diff --git a/src/app/admin/(cms)/layout.tsx b/src/app/admin/(cms)/layout.tsx
+index bcb1096..bd9a6a2 100644
+--- a/src/app/admin/(cms)/layout.tsx
++++ b/src/app/admin/(cms)/layout.tsx
+@@ -1,4 +1,5 @@
+ import type { ReactNode } from "react";
++import Link from "next/link";
+ import { requireAdminSession } from "@/lib/auth/guards";
+ import { ThemeToggle } from "@/components/admin/ThemeToggle";
+ import { CmsNav } from "@/components/admin/cms/CmsNav";
+@@ -10,7 +11,7 @@ export default async function CmsLayout({ children }: { children: ReactNode }) {
+   if (!session) {
+     return (
+       <main className="ev-page">
+-        <div className="ev-card">Admin girişi gerekli. Lütfen <a href="/admin/giris">giriş yapın</a>.</div>
++        <div className="ev-card">Admin girişi gerekli. Lütfen <Link href="/admin/giris">giriş yapın</Link>.</div>
+       </main>
+     );
+   }
+diff --git a/src/app/admin/(cms)/media/page.tsx b/src/app/admin/(cms)/media/page.tsx
+index f7d3d51..1a1ed9b 100644
+--- a/src/app/admin/(cms)/media/page.tsx
++++ b/src/app/admin/(cms)/media/page.tsx
+@@ -13,14 +13,14 @@ export default async function MediaAdminPage() {
+       <div className="ev-cms-topbar">
+         <div>
+           <h1 className="ev-h1">Medya Kütüphanesi</h1>
+-          <p>Logolar, sayfa görselleri ve banner'lar için tüm medya dosyalarınız.</p>
++          <p>Logolar, sayfa görselleri ve banner&apos;lar için tüm medya dosyalarınız.</p>
+         </div>
+         <Link className="ev-btn ev-btn--icon" href="/admin/media/upload">
+           <IconUpload /> Dosya Yükle
+         </Link>
+       </div>
+ 
+-      {items.length === 0 && <div className="ev-empty">Henüz medya yok. "Dosya Yükle" ile ilk görselinizi ekleyin.</div>}
++      {items.length === 0 && <div className="ev-empty">Henüz medya yok. &ldquo;Dosya Yükle&rdquo; ile ilk görselinizi ekleyin.</div>}
+ 
+       <div className="ev-media-grid">
+         {items.map((m) => (
+diff --git a/src/app/admin/page.tsx b/src/app/admin/page.tsx
+index bbef601..2415059 100644
+--- a/src/app/admin/page.tsx
++++ b/src/app/admin/page.tsx
+@@ -1,3 +1,4 @@
++import Link from "next/link";
+ import { prisma } from "@/lib/db";
+ import { ApproveButton, AssignForm, CompleteButton } from "./_actions";
+ import { SearchPanel as SerperSearchPanel } from "@/components/admin/SerperSearchPanel";
+@@ -105,11 +106,11 @@ export default async function AdminPage() {
+               <a href="#canli-online" className="ev-btn ev-btn--ghost">{copy.toolbar.overview}</a>
+               <a href="#raporlama" className="ev-btn ev-btn--ghost">{copy.toolbar.analytics}</a>
+               <a href="#ayarlar" className="ev-btn ev-btn--ghost">{copy.toolbar.settings}</a>
+-              <a href="/admin/cms" className="ev-btn ev-btn--ghost">CMS</a>
++              <Link href="/admin/cms" className="ev-btn ev-btn--ghost">CMS</Link>
+             </div>
+             <div className="ev-actions">
+               <ThemeToggle />
+-              <a href="/admin/fiyatlar" className="ev-btn ev-btn--ghost">{copy.pricingTable}</a>
++              <Link href="/admin/fiyatlar" className="ev-btn ev-btn--ghost">{copy.pricingTable}</Link>
+               <SignOutButton />
+             </div>
+           </div>
+diff --git a/src/app/api/admin/content/[id]/route.ts b/src/app/api/admin/content/[id]/route.ts
+index 1cf479b..305b205 100644
+--- a/src/app/api/admin/content/[id]/route.ts
++++ b/src/app/api/admin/content/[id]/route.ts
+@@ -36,7 +36,10 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
+       updatedById: (session.user as any).id || undefined,
+     }});
+     return NextResponse.json({ content: updated });
+-  } catch (err) {
++  } catch (err: any) {
++    if (err?.code === "P2002") {
++      return NextResponse.json({ error: "Bu anahtar (key) ve dil kombinasyonu zaten kayıtlı." }, { status: 409 });
++    }
+     console.error('Update content error:', err);
+     return NextResponse.json({ error: 'Güncelleme başarısız.' }, { status: 500 });
+   }
+diff --git a/src/app/api/admin/content/route.ts b/src/app/api/admin/content/route.ts
+index 386a476..b9863ba 100644
+--- a/src/app/api/admin/content/route.ts
++++ b/src/app/api/admin/content/route.ts
+@@ -41,7 +41,10 @@ export async function POST(req: NextRequest) {
+       },
+     });
+     return NextResponse.json({ content: created }, { status: 201 });
+-  } catch (err) {
++  } catch (err: any) {
++    if (err?.code === "P2002") {
++      return NextResponse.json({ error: "Bu anahtar (key) ve dil kombinasyonu zaten kayıtlı." }, { status: 409 });
++    }
+     console.error("Create content error:", err);
+     return NextResponse.json({ error: "İçerik oluşturulamadı." }, { status: 500 });
+   }
+diff --git a/src/components/admin/DeleteButton.tsx b/src/components/admin/DeleteButton.tsx
+index 20c216d..46c8c3e 100644
+--- a/src/components/admin/DeleteButton.tsx
++++ b/src/components/admin/DeleteButton.tsx
+@@ -1,12 +1,32 @@
+ "use client";
+-import React from "react";
++import React, { useState } from "react";
++import { useRouter } from "next/navigation";
+ 
+ export function DeleteButton({ url, label = "Sil" }: { url: string; label?: string }) {
++  const router = useRouter();
++  const [pending, setPending] = useState(false);
++
+   const handle = async () => {
+-    if (!confirm('Silinsin mi?')) return;
+-    const res = await fetch(url, { method: "DELETE" });
+-    if (res.ok) location.reload();
+-    else alert('Silme başarısız');
++    if (!confirm("Silinsin mi? Bu işlem geri alınamaz.")) return;
++    setPending(true);
++    try {
++      const res = await fetch(url, { method: "DELETE" });
++      if (res.ok) {
++        router.refresh();
++        return;
++      }
++      const data = await res.json().catch(() => null);
++      alert(data?.error || "Silme başarısız.");
++    } catch {
++      alert("Silme sırasında bir bağlantı hatası oluştu.");
++    } finally {
++      setPending(false);
++    }
+   };
+-  return <button className="ev-btn ev-btn--danger" onClick={handle}>{label}</button>;
++
++  return (
++    <button className="ev-btn ev-btn--danger" onClick={handle} disabled={pending}>
++      {pending ? "Siliniyor…" : label}
++    </button>
++  );
+ }
+diff --git a/src/components/admin/ThemeToggle.tsx b/src/components/admin/ThemeToggle.tsx
+index bfe446a..ffd7bd6 100644
+--- a/src/components/admin/ThemeToggle.tsx
++++ b/src/components/admin/ThemeToggle.tsx
+@@ -7,7 +7,10 @@ export function ThemeToggle() {
+   const [theme, setThemeState] = useState<Theme>("dark");
+ 
+   useEffect(() => {
++    // Tema tercihi tarayıcı depolamasından okunuyor; SSR ile hydration uyuşmazlığı
++    // yaşamamak için ilk render "dark" ile yapılıp gerçek değer burada senkronize ediliyor.
+     const nextTheme = initTheme();
++    // eslint-disable-next-line react-hooks/set-state-in-effect
+     setThemeState(nextTheme);
+   }, []);
+ 
+diff --git a/src/components/admin/cms/LogoPicker.tsx b/src/components/admin/cms/LogoPicker.tsx
+index 0a31e6f..37bb3d6 100644
+--- a/src/components/admin/cms/LogoPicker.tsx
++++ b/src/components/admin/cms/LogoPicker.tsx
+@@ -12,15 +12,20 @@ export function LogoPicker({ currentUrl, settingKey }: { currentUrl: string | nu
+   const [loading, setLoading] = useState(false);
+   const [items, setItems] = useState<MediaItem[] | null>(null);
+   const [saving, setSaving] = useState(false);
++  const [error, setError] = useState<string | null>(null);
+ 
+   const openPicker = async () => {
+     setOpen((v) => !v);
++    setError(null);
+     if (!items) {
+       setLoading(true);
+       try {
+         const res = await fetch("/api/admin/media");
+-        const data = await res.json();
++        const data = await res.json().catch(() => ({}));
++        if (!res.ok) throw new Error(data.error || "Medya listesi alınamadı.");
+         setItems((data.results || []).filter((m: MediaItem) => m.mime?.startsWith("image")));
++      } catch (err) {
++        setError((err as Error).message || "Medya listesi alınamadı.");
+       } finally {
+         setLoading(false);
+       }
+@@ -29,14 +34,19 @@ export function LogoPicker({ currentUrl, settingKey }: { currentUrl: string | nu
+ 
+   const selectLogo = async (url: string) => {
+     setSaving(true);
++    setError(null);
+     try {
+-      await fetch("/api/admin/settings", {
++      const res = await fetch("/api/admin/settings", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ key: settingKey, value: { url } }),
+       });
++      const data = await res.json().catch(() => ({}));
++      if (!res.ok) throw new Error(data.error || "Logo kaydedilemedi.");
+       setOpen(false);
+       router.refresh();
++    } catch (err) {
++      setError((err as Error).message || "Logo kaydedilemedi.");
+     } finally {
+       setSaving(false);
+     }
+@@ -61,6 +71,11 @@ export function LogoPicker({ currentUrl, settingKey }: { currentUrl: string | nu
+ 
+       {open && (
+         <div style={{ width: "100%", marginTop: 12 }}>
++          {error && (
++            <div className="ev-empty" style={{ borderColor: "var(--rose)", color: "var(--rose)", marginBottom: 12 }}>
++              {error}
++            </div>
++          )}
+           {loading && <div className="ev-empty">Yükleniyor…</div>}
+           {!loading && items && items.length === 0 && (
+             <div className="ev-empty">Medya kütüphanesinde görsel yok. Önce bir dosya yükleyin.</div>
+diff --git a/src/components/admin/cms/MediaUploader.tsx b/src/components/admin/cms/MediaUploader.tsx
+index 4386ad9..2c849ec 100644
+--- a/src/components/admin/cms/MediaUploader.tsx
++++ b/src/components/admin/cms/MediaUploader.tsx
+@@ -80,7 +80,16 @@ export function MediaUploader({ onUploaded }: { onUploaded?: (url: string) => vo
+       )}
+       <div
+         className={`ev-dropzone ${dragActive ? "ev-dropzone--active" : ""}`}
++        role="button"
++        tabIndex={0}
++        aria-label="Dosya yüklemek için tıklayın ya da sürükleyip bırakın"
+         onClick={() => inputRef.current?.click()}
++        onKeyDown={(e) => {
++          if (e.key === "Enter" || e.key === " ") {
++            e.preventDefault();
++            inputRef.current?.click();
++          }
++        }}
+         onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
+         onDragLeave={() => setDragActive(false)}
+         onDrop={(e) => {
+-- 
+2.43.0
+

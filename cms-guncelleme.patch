@@ -1,0 +1,1873 @@
+From 3e25e707b9673c0a235bf25084300949fe2c1dbc Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.local>
+Date: Thu, 30 Jul 2026 10:25:28 +0000
+Subject: [PATCH] =?UTF-8?q?CMS=20admin=20panelini=20modernize=20et:=20payl?=
+ =?UTF-8?q?a=C5=9F=C4=B1ml=C4=B1=20layout,=20i=C3=A7erik/ayar=20CRUD,=20me?=
+ =?UTF-8?q?dya=20y=C3=BCkleme,=20logo=20y=C3=B6netimi?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- /admin altında (cms) route group ile ortak sidebar layout eklendi
+- api/admin/content/[id] ve api/admin/media/[id] route'larındaki async params bug'ı düzeltildi
+- content/new, content/[id], settings/new, settings/[id], media/upload sayfaları eklendi
+- api/admin/settings (GET/POST upsert) ve api/admin/settings/[id] (GET/PATCH/DELETE) API'si eklendi
+- api/uploads/media: Cloudinary/R2/yerel fallback zinciriyle gerçek dosya yükleme akışı
+- LogoPicker bileşeni ile medya kütüphanesinden logo seçimi (SiteSetting: branding.logo)
+- globals.css: ev-cms-*, ev-stat-*, ev-media-*, ev-dropzone, ev-logo-*, ev-btn--danger sınıfları
+---
+ CMS_DEGISIKLIKLER.md                       |  48 +++++++
+ src/app/admin/(cms)/cms/page.tsx           | 108 ++++++++++++++++
+ src/app/admin/(cms)/content/[id]/page.tsx  |  41 ++++++
+ src/app/admin/(cms)/content/new/page.tsx   |  21 ++++
+ src/app/admin/(cms)/content/page.tsx       |  49 ++++++++
+ src/app/admin/(cms)/layout.tsx             |  35 ++++++
+ src/app/admin/(cms)/media/page.tsx         |  48 +++++++
+ src/app/admin/(cms)/media/upload/page.tsx  |  26 ++++
+ src/app/admin/(cms)/settings/[id]/page.tsx |  27 ++++
+ src/app/admin/(cms)/settings/new/page.tsx  |  21 ++++
+ src/app/admin/(cms)/settings/page.tsx      |  48 +++++++
+ src/app/admin/cms/page.tsx                 |  36 ------
+ src/app/admin/content/page.tsx             |  38 ------
+ src/app/admin/media/page.tsx               |  41 ------
+ src/app/admin/settings/page.tsx            |  36 ------
+ src/app/api/admin/content/[id]/route.ts    |  19 +--
+ src/app/api/admin/media/[id]/route.ts      |  12 +-
+ src/app/api/admin/settings/[id]/route.ts   |  49 ++++++++
+ src/app/api/admin/settings/route.ts        |  44 +++++++
+ src/app/api/uploads/media/route.ts         |  78 ++++++++++++
+ src/app/globals.css                        | 100 +++++++++++++++
+ src/components/admin/cms/CmsNav.tsx        |  36 ++++++
+ src/components/admin/cms/ContentForm.tsx   | 140 +++++++++++++++++++++
+ src/components/admin/cms/LogoPicker.tsx    |  91 ++++++++++++++
+ src/components/admin/cms/MediaUploader.tsx | 107 ++++++++++++++++
+ src/components/admin/cms/SettingForm.tsx   | 109 ++++++++++++++++
+ src/components/admin/cms/icons.tsx         |  90 +++++++++++++
+ src/lib/cms/constants.ts                   |  21 ++++
+ src/lib/providers/storage/media.ts         |  50 ++++++++
+ 29 files changed, 1403 insertions(+), 166 deletions(-)
+ create mode 100644 CMS_DEGISIKLIKLER.md
+ create mode 100644 src/app/admin/(cms)/cms/page.tsx
+ create mode 100644 src/app/admin/(cms)/content/[id]/page.tsx
+ create mode 100644 src/app/admin/(cms)/content/new/page.tsx
+ create mode 100644 src/app/admin/(cms)/content/page.tsx
+ create mode 100644 src/app/admin/(cms)/layout.tsx
+ create mode 100644 src/app/admin/(cms)/media/page.tsx
+ create mode 100644 src/app/admin/(cms)/media/upload/page.tsx
+ create mode 100644 src/app/admin/(cms)/settings/[id]/page.tsx
+ create mode 100644 src/app/admin/(cms)/settings/new/page.tsx
+ create mode 100644 src/app/admin/(cms)/settings/page.tsx
+ delete mode 100644 src/app/admin/cms/page.tsx
+ delete mode 100644 src/app/admin/content/page.tsx
+ delete mode 100644 src/app/admin/media/page.tsx
+ delete mode 100644 src/app/admin/settings/page.tsx
+ create mode 100644 src/app/api/admin/settings/[id]/route.ts
+ create mode 100644 src/app/api/admin/settings/route.ts
+ create mode 100644 src/app/api/uploads/media/route.ts
+ create mode 100644 src/components/admin/cms/CmsNav.tsx
+ create mode 100644 src/components/admin/cms/ContentForm.tsx
+ create mode 100644 src/components/admin/cms/LogoPicker.tsx
+ create mode 100644 src/components/admin/cms/MediaUploader.tsx
+ create mode 100644 src/components/admin/cms/SettingForm.tsx
+ create mode 100644 src/components/admin/cms/icons.tsx
+ create mode 100644 src/lib/cms/constants.ts
+ create mode 100644 src/lib/providers/storage/media.ts
+
+diff --git a/CMS_DEGISIKLIKLER.md b/CMS_DEGISIKLIKLER.md
+new file mode 100644
+index 0000000..ded3aaa
+--- /dev/null
++++ b/CMS_DEGISIKLIKLER.md
+@@ -0,0 +1,48 @@
++# CMS Admin Paneli Güncellemesi
++
++Bu güncelleme `/admin/cms`, `/admin/content`, `/admin/media`, `/admin/settings` alanlarını kapsar.
++
++## Neler değişti
++
++1. **Ortak modern layout** — Dört sayfa artık `src/app/admin/(cms)/layout.tsx` altında paylaşılan bir
++   sidebar navigasyona sahip (Genel Bakış / Sayfalar / Medya / Ayarlar + tema geçişi + operasyon
++   paneline dönüş). Route group (`(cms)`) URL'leri değiştirmez.
++2. **Bug fix:** `api/admin/content/[id]` ve `api/admin/media/[id]` route'ları Next.js 16'nın async
++   `params` API'sini yanlış okuyordu (`(req as any).params`), bu yüzden düzenleme/silme aslında
++   çalışmıyordu. Düzeltildi.
++3. **Eksik sayfalar tamamlandı:**
++   - `/admin/content/new`, `/admin/content/[id]` — içerik oluşturma/düzenleme formu
++   - `/admin/settings/new`, `/admin/settings/[id]` — ayar oluşturma/düzenleme formu
++   - `/admin/media/upload` — sürükle-bırak dosya yükleme
++4. **Eksik API tamamlandı:** `api/admin/settings` (GET/POST, upsert) ve `api/admin/settings/[id]`
++   (GET/PATCH/DELETE) sıfırdan yazıldı — önceden site ayarları için oluşturma/güncelleme API'si yoktu.
++5. **Gerçek medya yükleme akışı:** `api/uploads/media` — Cloudinary (signed/unsigned), Cloudflare R2
++   veya yerel dev fallback (`public/media-library/...`) zincirini kullanır (mevcut
++   `vehicle-image` yükleme deseniyle aynı mantık). Önceden medya kaydı sadece harici bir URL
++   yapıştırılarak yapılabiliyordu.
++6. **Logo yönetimi:** Ayarlar sayfasının üstünde `LogoPicker` bileşeni — mevcut logoyu gösterir,
++   medya kütüphanesinden seçim yapmayı veya yeni bir dosya yüklemeyi sağlar. Seçilen logo
++   `SiteSetting` tablosunda `branding.logo` anahtarıyla `{ "url": "..." }` olarak saklanır.
++7. **Görsel tasarım:** `globals.css`'e CMS'e özel sınıflar eklendi (`ev-cms-*`, `ev-stat-*`,
++   `ev-media-*`, `ev-dropzone`, `ev-logo-*`, `.ev-btn--danger` eksikti, o da eklendi) — mevcut
++   dark/light tema token'larınızla uyumlu.
++
++## ÖNEMLİ — henüz yapılmayan kısım
++
++`ContentEntry` ve `SiteSetting` tabloları **şu an yalnızca admin panelinde** kullanılıyor.
++Kontrol ettiğimde canlı sitenin (`src/app/[lang]/...`) hiçbir sayfası bu tablolardan veri
++okumuyor — metinler, ayarlar ve logo hâlâ komponentlerde sabit (hardcoded). Yani admin panelinde
++bir metni değiştirdiğinizde şu anda **sitede görünmez**.
++
++Bunu tam anlamıyla "dinamik" hale getirmek için ikinci bir adım gerekiyor: ilgili genel sayfaların
++(`src/app/[lang]/hakkimizda`, `iletisim`, footer, header logo vb.) `prisma.contentEntry` /
++`prisma.siteSetting` üzerinden veri okuyacak şekilde güncellenmesi. İsterseniz bunu da yapabilirim —
++hangi sayfa/metinlerin öncelikli olduğunu söylemeniz yeterli.
++
++## Kurulum notları
++
++- `npm install` sonrası `npx prisma generate` çalıştırmayı unutmayın (schema ile generate edilmiş
++  client bu ortamda senkron değildi, ağ erişimim olmadığı için burada çalıştıramadım).
++- Prodüksiyonda gerçek dosya yükleme için `R2_*` ya da `CLOUDINARY_*` ortam değişkenlerini
++  ayarlayın; aksi halde yerel geliştirmede `public/media-library` altına yazar (production'da hata
++  verir, güvenlik için kasıtlı).
+diff --git a/src/app/admin/(cms)/cms/page.tsx b/src/app/admin/(cms)/cms/page.tsx
+new file mode 100644
+index 0000000..cdb9feb
+--- /dev/null
++++ b/src/app/admin/(cms)/cms/page.tsx
+@@ -0,0 +1,108 @@
++import { prisma } from "@/lib/db";
++import Link from "next/link";
++import { IconMedia, IconPages, IconSettings } from "@/components/admin/cms/icons";
++import { CONTENT_TYPE_LABELS, LOGO_SETTING_KEY } from "@/lib/cms/constants";
++
++export const dynamic = "force-dynamic";
++
++export default async function CmsIndex() {
++  const [contentCount, mediaCount, settingCount, recentContent, recentMedia, logoSetting] = await Promise.all([
++    prisma.contentEntry.count(),
++    prisma.mediaItem.count(),
++    prisma.siteSetting.count(),
++    prisma.contentEntry.findMany({ orderBy: { updatedAt: "desc" }, take: 5 }),
++    prisma.mediaItem.findMany({ orderBy: { createdAt: "desc" }, take: 6 }),
++    prisma.siteSetting.findFirst({ where: { key: LOGO_SETTING_KEY } }),
++  ]);
++
++  const logoUrl = (logoSetting?.value as { url?: string } | null)?.url;
++
++  return (
++    <>
++      <div className="ev-cms-topbar">
++        <div>
++          <h1 className="ev-h1">CMS Genel Bakış</h1>
++          <p>Sayfalar, statik metinler, medya ve site ayarlarını buradan yönetin.</p>
++        </div>
++        {/* eslint-disable-next-line @next/next/no-img-element */}
++        <img src={logoUrl || "/eurosianviptransferlogo.png"} alt="Site logosu" style={{ height: 40, borderRadius: 8, background: "#fff", padding: 4 }} />
++      </div>
++
++      <div className="ev-stat-grid">
++        <Link href="/admin/content" className="ev-stat-card">
++          <div className="ev-stat-card-icon" style={{ background: "var(--accent-soft)", color: "var(--accent)" }}>
++            <IconPages />
++          </div>
++          <strong>{contentCount}</strong>
++          <span>Sayfa &amp; statik metin</span>
++        </Link>
++        <Link href="/admin/media" className="ev-stat-card">
++          <div className="ev-stat-card-icon" style={{ background: "var(--teal-soft)", color: "var(--teal)" }}>
++            <IconMedia />
++          </div>
++          <strong>{mediaCount}</strong>
++          <span>Medya dosyası</span>
++        </Link>
++        <Link href="/admin/settings" className="ev-stat-card">
++          <div className="ev-stat-card-icon" style={{ background: "var(--gold-soft)", color: "var(--gold)" }}>
++            <IconSettings />
++          </div>
++          <strong>{settingCount}</strong>
++          <span>Site ayarı</span>
++        </Link>
++        <Link href="/admin/content/new" className="ev-stat-card">
++          <div className="ev-stat-card-icon" style={{ background: "var(--rose-soft)", color: "var(--rose)" }}>
++            <IconPages />
++          </div>
++          <strong>+</strong>
++          <span>Yeni içerik ekle</span>
++        </Link>
++      </div>
++
++      <div className="ev-grid ev-grid--2">
++        <div className="ev-card">
++          <div className="ev-card-row">
++            <h3 style={{ margin: 0 }}>Son güncellenen içerikler</h3>
++            <Link className="ev-text-link" href="/admin/content">Tümünü gör</Link>
++          </div>
++          <div className="ev-cms-list" style={{ marginTop: 14 }}>
++            {recentContent.length === 0 && <div className="ev-empty">Henüz içerik yok.</div>}
++            {recentContent.map((it) => (
++              <Link key={it.id} href={`/admin/content/${it.id}`} className="ev-cms-item" style={{ textDecoration: "none" }}>
++                <div className="ev-cms-item-main">
++                  <span className="ev-cms-item-title">{it.title || it.key}</span>
++                  <span className="ev-cms-item-meta">
++                    <span className="ev-badge ev-badge--blue">{CONTENT_TYPE_LABELS[it.type] ?? it.type}</span>
++                    {it.locale} · {it.published ? "Yayında" : "Taslak"}
++                  </span>
++                </div>
++              </Link>
++            ))}
++          </div>
++        </div>
++
++        <div className="ev-card">
++          <div className="ev-card-row">
++            <h3 style={{ margin: 0 }}>Son yüklenen medya</h3>
++            <Link className="ev-text-link" href="/admin/media">Tümünü gör</Link>
++          </div>
++          <div className="ev-media-grid" style={{ marginTop: 14 }}>
++            {recentMedia.length === 0 && <div className="ev-empty">Henüz medya yok.</div>}
++            {recentMedia.map((m) => (
++              <div key={m.id} className="ev-media-card">
++                <div className="ev-media-thumb">
++                  {m.mime?.startsWith("image") ? (
++                    // eslint-disable-next-line @next/next/no-img-element
++                    <img src={m.url} alt={m.alt || m.filename} />
++                  ) : (
++                    <span style={{ fontSize: 12 }}>{m.filename}</span>
++                  )}
++                </div>
++              </div>
++            ))}
++          </div>
++        </div>
++      </div>
++    </>
++  );
++}
+diff --git a/src/app/admin/(cms)/content/[id]/page.tsx b/src/app/admin/(cms)/content/[id]/page.tsx
+new file mode 100644
+index 0000000..47f8e7f
+--- /dev/null
++++ b/src/app/admin/(cms)/content/[id]/page.tsx
+@@ -0,0 +1,41 @@
++import Link from "next/link";
++import { notFound } from "next/navigation";
++import { prisma } from "@/lib/db";
++import { ContentForm } from "@/components/admin/cms/ContentForm";
++
++export const dynamic = "force-dynamic";
++
++export default async function EditContentPage({ params }: { params: Promise<{ id: string }> }) {
++  const { id } = await params;
++  const item = await prisma.contentEntry.findUnique({ where: { id } });
++  if (!item) notFound();
++
++  return (
++    <>
++      <div className="ev-cms-breadcrumb">
++        <Link href="/admin/content">İçerikler</Link> / {item.title || item.key}
++      </div>
++      <div className="ev-cms-topbar">
++        <div>
++          <h1 className="ev-h1">İçeriği Düzenle</h1>
++          <p>
++            <code>{item.key}</code> · {item.locale}
++          </p>
++        </div>
++      </div>
++      <ContentForm
++        initial={{
++          id: item.id,
++          key: item.key,
++          locale: item.locale,
++          type: item.type,
++          title: item.title,
++          body: item.body,
++          slug: item.slug,
++          published: item.published,
++          sortOrder: item.sortOrder,
++        }}
++      />
++    </>
++  );
++}
+diff --git a/src/app/admin/(cms)/content/new/page.tsx b/src/app/admin/(cms)/content/new/page.tsx
+new file mode 100644
+index 0000000..4fc1984
+--- /dev/null
++++ b/src/app/admin/(cms)/content/new/page.tsx
+@@ -0,0 +1,21 @@
++import Link from "next/link";
++import { ContentForm } from "@/components/admin/cms/ContentForm";
++
++export const dynamic = "force-dynamic";
++
++export default function NewContentPage() {
++  return (
++    <>
++      <div className="ev-cms-breadcrumb">
++        <Link href="/admin/content">İçerikler</Link> / Yeni içerik
++      </div>
++      <div className="ev-cms-topbar">
++        <div>
++          <h1 className="ev-h1">Yeni İçerik</h1>
++          <p>Bir sayfa, statik metin, banner veya bölüm içeriği oluşturun.</p>
++        </div>
++      </div>
++      <ContentForm />
++    </>
++  );
++}
+diff --git a/src/app/admin/(cms)/content/page.tsx b/src/app/admin/(cms)/content/page.tsx
+new file mode 100644
+index 0000000..8b39a71
+--- /dev/null
++++ b/src/app/admin/(cms)/content/page.tsx
+@@ -0,0 +1,49 @@
++import { prisma } from "@/lib/db";
++import Link from "next/link";
++import { DeleteButton } from "@/components/admin/DeleteButton";
++import { IconPlus } from "@/components/admin/cms/icons";
++import { CONTENT_TYPE_LABELS } from "@/lib/cms/constants";
++
++export const dynamic = "force-dynamic";
++
++export default async function ContentAdminPage() {
++  const items = await prisma.contentEntry.findMany({ orderBy: { sortOrder: "asc" }, take: 200 });
++
++  return (
++    <>
++      <div className="ev-cms-topbar">
++        <div>
++          <h1 className="ev-h1">Sayfalar &amp; Statik Metinler</h1>
++          <p>Site içindeki tüm sayfa metinlerini, banner ve bölüm içeriklerini tek yerden yönetin.</p>
++        </div>
++        <Link className="ev-btn ev-btn--icon" href="/admin/content/new">
++          <IconPlus /> Yeni İçerik
++        </Link>
++      </div>
++
++      <div className="ev-cms-list">
++        {items.length === 0 && <div className="ev-empty">Henüz içerik yok. "Yeni İçerik" ile ilk sayfanızı ekleyin.</div>}
++        {items.map((it) => (
++          <div key={it.id} className="ev-cms-item">
++            <div className="ev-cms-item-main">
++              <span className="ev-cms-item-title">{it.title || it.key}</span>
++              <span className="ev-cms-item-meta">
++                <span className="ev-badge ev-badge--blue">{CONTENT_TYPE_LABELS[it.type] ?? it.type}</span>
++                <span className="ev-badge ev-badge--teal">{it.locale}</span>
++                <span className={`ev-badge ${it.published ? "ev-badge--teal" : "ev-badge--rose"}`}>
++                  {it.published ? "Yayında" : "Taslak"}
++                </span>
++                <code>{it.key}</code>
++              </span>
++              {it.body && <span className="ev-cms-item-desc">{it.body.replace(/\s+/g, " ").slice(0, 140)}</span>}
++            </div>
++            <div className="ev-cms-item-actions">
++              <Link className="ev-btn ev-btn--ghost ev-btn--sm" href={`/admin/content/${it.id}`}>Düzenle</Link>
++              <DeleteButton url={`/api/admin/content/${it.id}`} />
++            </div>
++          </div>
++        ))}
++      </div>
++    </>
++  );
++}
+diff --git a/src/app/admin/(cms)/layout.tsx b/src/app/admin/(cms)/layout.tsx
+new file mode 100644
+index 0000000..bcb1096
+--- /dev/null
++++ b/src/app/admin/(cms)/layout.tsx
+@@ -0,0 +1,35 @@
++import type { ReactNode } from "react";
++import { requireAdminSession } from "@/lib/auth/guards";
++import { ThemeToggle } from "@/components/admin/ThemeToggle";
++import { CmsNav } from "@/components/admin/cms/CmsNav";
++
++export const dynamic = "force-dynamic";
++
++export default async function CmsLayout({ children }: { children: ReactNode }) {
++  const session = await requireAdminSession();
++  if (!session) {
++    return (
++      <main className="ev-page">
++        <div className="ev-card">Admin girişi gerekli. Lütfen <a href="/admin/giris">giriş yapın</a>.</div>
++      </main>
++    );
++  }
++
++  return (
++    <div className="ev-cms-shell">
++      <aside className="ev-cms-sidebar">
++        <div className="ev-cms-brand">
++          {/* eslint-disable-next-line @next/next/no-img-element */}
++          <img src="/eurosianviptransferlogo.png" alt="Eurosian VIP Transfer" />
++          <div>
++            <strong>CMS Paneli</strong>
++            <span>İçerik Yönetimi</span>
++          </div>
++        </div>
++        <CmsNav />
++        <ThemeToggle />
++      </aside>
++      <main className="ev-cms-main">{children}</main>
++    </div>
++  );
++}
+diff --git a/src/app/admin/(cms)/media/page.tsx b/src/app/admin/(cms)/media/page.tsx
+new file mode 100644
+index 0000000..f7d3d51
+--- /dev/null
++++ b/src/app/admin/(cms)/media/page.tsx
+@@ -0,0 +1,48 @@
++import { prisma } from "@/lib/db";
++import Link from "next/link";
++import { DeleteButton } from "@/components/admin/DeleteButton";
++import { IconUpload } from "@/components/admin/cms/icons";
++
++export const dynamic = "force-dynamic";
++
++export default async function MediaAdminPage() {
++  const items = await prisma.mediaItem.findMany({ orderBy: { createdAt: "desc" }, take: 200 });
++
++  return (
++    <>
++      <div className="ev-cms-topbar">
++        <div>
++          <h1 className="ev-h1">Medya Kütüphanesi</h1>
++          <p>Logolar, sayfa görselleri ve banner'lar için tüm medya dosyalarınız.</p>
++        </div>
++        <Link className="ev-btn ev-btn--icon" href="/admin/media/upload">
++          <IconUpload /> Dosya Yükle
++        </Link>
++      </div>
++
++      {items.length === 0 && <div className="ev-empty">Henüz medya yok. "Dosya Yükle" ile ilk görselinizi ekleyin.</div>}
++
++      <div className="ev-media-grid">
++        {items.map((m) => (
++          <div key={m.id} className="ev-media-card">
++            <div className="ev-media-thumb">
++              {m.mime?.startsWith("image") ? (
++                // eslint-disable-next-line @next/next/no-img-element
++                <img src={m.url} alt={m.alt || m.filename} />
++              ) : (
++                <div style={{ fontSize: 12, padding: 12, textAlign: "center" }}>{m.filename}</div>
++              )}
++            </div>
++            <div className="ev-media-body">
++              <div className="ev-media-name" title={m.filename}>{m.filename}</div>
++              <div className="ev-media-actions">
++                <a className="ev-btn ev-btn--ghost ev-btn--sm" href={m.url} target="_blank" rel="noreferrer">Aç</a>
++                <DeleteButton url={`/api/admin/media/${m.id}`} />
++              </div>
++            </div>
++          </div>
++        ))}
++      </div>
++    </>
++  );
++}
+diff --git a/src/app/admin/(cms)/media/upload/page.tsx b/src/app/admin/(cms)/media/upload/page.tsx
+new file mode 100644
+index 0000000..3e54367
+--- /dev/null
++++ b/src/app/admin/(cms)/media/upload/page.tsx
+@@ -0,0 +1,26 @@
++import Link from "next/link";
++import { MediaUploader } from "@/components/admin/cms/MediaUploader";
++
++export const dynamic = "force-dynamic";
++
++export default function MediaUploadPage() {
++  return (
++    <>
++      <div className="ev-cms-breadcrumb">
++        <Link href="/admin/media">Medya</Link> / Yükle
++      </div>
++      <div className="ev-cms-topbar">
++        <div>
++          <h1 className="ev-h1">Medya Yükle</h1>
++          <p>Görseller otomatik olarak medya kütüphanenize eklenir ve sayfa/logo seçiminde kullanılabilir hale gelir.</p>
++        </div>
++      </div>
++      <div className="ev-card">
++        <MediaUploader />
++        <div className="ev-actions" style={{ marginTop: 18 }}>
++          <Link className="ev-btn ev-btn--ghost" href="/admin/media">Medya Kütüphanesine Dön</Link>
++        </div>
++      </div>
++    </>
++  );
++}
+diff --git a/src/app/admin/(cms)/settings/[id]/page.tsx b/src/app/admin/(cms)/settings/[id]/page.tsx
+new file mode 100644
+index 0000000..18686c4
+--- /dev/null
++++ b/src/app/admin/(cms)/settings/[id]/page.tsx
+@@ -0,0 +1,27 @@
++import Link from "next/link";
++import { notFound } from "next/navigation";
++import { prisma } from "@/lib/db";
++import { SettingForm } from "@/components/admin/cms/SettingForm";
++
++export const dynamic = "force-dynamic";
++
++export default async function EditSettingPage({ params }: { params: Promise<{ id: string }> }) {
++  const { id } = await params;
++  const item = await prisma.siteSetting.findUnique({ where: { id } });
++  if (!item) notFound();
++
++  return (
++    <>
++      <div className="ev-cms-breadcrumb">
++        <Link href="/admin/settings">Ayarlar</Link> / {item.key}
++      </div>
++      <div className="ev-cms-topbar">
++        <div>
++          <h1 className="ev-h1">Ayarı Düzenle</h1>
++          <p><code>{item.key}</code> · {item.locale ?? "global"}</p>
++        </div>
++      </div>
++      <SettingForm initial={{ id: item.id, key: item.key, locale: item.locale, value: item.value }} />
++    </>
++  );
++}
+diff --git a/src/app/admin/(cms)/settings/new/page.tsx b/src/app/admin/(cms)/settings/new/page.tsx
+new file mode 100644
+index 0000000..ada2ae2
+--- /dev/null
++++ b/src/app/admin/(cms)/settings/new/page.tsx
+@@ -0,0 +1,21 @@
++import Link from "next/link";
++import { SettingForm } from "@/components/admin/cms/SettingForm";
++
++export const dynamic = "force-dynamic";
++
++export default function NewSettingPage() {
++  return (
++    <>
++      <div className="ev-cms-breadcrumb">
++        <Link href="/admin/settings">Ayarlar</Link> / Yeni ayar
++      </div>
++      <div className="ev-cms-topbar">
++        <div>
++          <h1 className="ev-h1">Yeni Site Ayarı</h1>
++          <p>Bir anahtar-değer ayarı ekleyin (örn. iletişim bilgisi, sosyal medya linki, banner metni).</p>
++        </div>
++      </div>
++      <SettingForm />
++    </>
++  );
++}
+diff --git a/src/app/admin/(cms)/settings/page.tsx b/src/app/admin/(cms)/settings/page.tsx
+new file mode 100644
+index 0000000..879286b
+--- /dev/null
++++ b/src/app/admin/(cms)/settings/page.tsx
+@@ -0,0 +1,48 @@
++import { prisma } from "@/lib/db";
++import Link from "next/link";
++import { IconPlus } from "@/components/admin/cms/icons";
++import { LogoPicker } from "@/components/admin/cms/LogoPicker";
++import { LOGO_SETTING_KEY } from "@/lib/cms/constants";
++
++export const dynamic = "force-dynamic";
++
++export default async function SettingsAdminPage() {
++  const items = await prisma.siteSetting.findMany({ orderBy: { key: "asc" }, take: 200 });
++  const logoSetting = items.find((it) => it.key === LOGO_SETTING_KEY);
++  const otherItems = items.filter((it) => it.key !== LOGO_SETTING_KEY);
++  const logoUrl = (logoSetting?.value as { url?: string } | null)?.url ?? null;
++
++  return (
++    <>
++      <div className="ev-cms-topbar">
++        <div>
++          <h1 className="ev-h1">Site Ayarları</h1>
++          <p>Marka, iletişim bilgileri ve diğer genel site ayarlarını yönetin.</p>
++        </div>
++        <Link className="ev-btn ev-btn--icon" href="/admin/settings/new">
++          <IconPlus /> Yeni Ayar
++        </Link>
++      </div>
++
++      <LogoPicker currentUrl={logoUrl} settingKey={LOGO_SETTING_KEY} />
++
++      <div className="ev-cms-list">
++        {otherItems.length === 0 && <div className="ev-empty">Henüz başka bir ayar yok.</div>}
++        {otherItems.map((it) => (
++          <div key={it.id} className="ev-cms-item">
++            <div className="ev-cms-item-main">
++              <span className="ev-cms-item-title">{it.key}</span>
++              <span className="ev-cms-item-meta">
++                <span className="ev-badge ev-badge--blue">{it.locale ?? "global"}</span>
++              </span>
++              <span className="ev-cms-item-desc">{JSON.stringify(it.value)}</span>
++            </div>
++            <div className="ev-cms-item-actions">
++              <Link className="ev-btn ev-btn--ghost ev-btn--sm" href={`/admin/settings/${it.id}`}>Düzenle</Link>
++            </div>
++          </div>
++        ))}
++      </div>
++    </>
++  );
++}
+diff --git a/src/app/admin/cms/page.tsx b/src/app/admin/cms/page.tsx
+deleted file mode 100644
+index 3aa1c6d..0000000
+--- a/src/app/admin/cms/page.tsx
++++ /dev/null
+@@ -1,36 +0,0 @@
+-import { prisma } from "@/lib/db";
+-import { requireAdminSession } from "@/lib/auth/guards";
+-import Link from "next/link";
+-
+-export const dynamic = "force-dynamic";
+-
+-export default async function CmsIndex() {
+-  const session = await requireAdminSession();
+-  if (!session) return <div className="ev-page">Admin girişi gerekli.</div>;
+-
+-  const counts = await Promise.all([
+-    prisma.contentEntry.count(),
+-    prisma.mediaItem.count(),
+-    prisma.siteSetting.count(),
+-  ]);
+-
+-  return (
+-    <main className="ev-page ev-page--wide">
+-      <h1>CMS Yönetimi</h1>
+-      <div style={{ display: "flex", gap: 12, marginTop: 12 }}>
+-        <Link className="ev-card" href="/admin/content">
+-          <h3>İçerikler</h3>
+-          <div>{counts[0]} öğe</div>
+-        </Link>
+-        <Link className="ev-card" href="/admin/media">
+-          <h3>Medya</h3>
+-          <div>{counts[1]} dosya</div>
+-        </Link>
+-        <Link className="ev-card" href="/admin/settings">
+-          <h3>Ayarlar</h3>
+-          <div>{counts[2]} ayar</div>
+-        </Link>
+-      </div>
+-    </main>
+-  );
+-}
+diff --git a/src/app/admin/content/page.tsx b/src/app/admin/content/page.tsx
+deleted file mode 100644
+index 90785bc..0000000
+--- a/src/app/admin/content/page.tsx
++++ /dev/null
+@@ -1,38 +0,0 @@
+-import { prisma } from "@/lib/db";
+-import { requireAdminSession } from "@/lib/auth/guards";
+-import Link from "next/link";
+-import { DeleteButton } from "@/components/admin/DeleteButton";
+-
+-export const dynamic = "force-dynamic";
+-
+-export default async function ContentAdminPage() {
+-  const session = await requireAdminSession();
+-  if (!session) return <div className="ev-page">Admin girişi gerekli.</div>;
+-
+-  const items = await prisma.contentEntry.findMany({ orderBy: { sortOrder: "asc" }, take: 200 });
+-
+-  return (
+-    <main className="ev-page ev-page--wide">
+-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+-        <h1>İçerikler</h1>
+-        <Link className="ev-btn" href="/admin/content/new">Yeni içerik</Link>
+-      </div>
+-
+-      <div style={{ marginTop: 12 }}>
+-        {items.length === 0 && <div className="ev-empty">Henüz içerik yok.</div>}
+-        {items.map((it) => (
+-          <div key={it.id} className="ev-card ev-card-row" style={{ justifyContent: "space-between" }}>
+-            <div>
+-              <b>{it.key}</b> · {it.locale} · <span style={{ color: "var(--text-muted)" }}>{it.type}</span>
+-              <div style={{ fontSize: 13, marginTop: 6 }}>{it.title}</div>
+-            </div>
+-            <div style={{ display: "flex", gap: 8 }}>
+-              <Link className="ev-btn ev-btn--ghost" href={`/admin/content/${it.id}`}>Düzenle</Link>
+-              <DeleteButton url={`/api/admin/content/${it.id}`} />
+-            </div>
+-          </div>
+-        ))}
+-      </div>
+-    </main>
+-  );
+-}
+diff --git a/src/app/admin/media/page.tsx b/src/app/admin/media/page.tsx
+deleted file mode 100644
+index 458ffda..0000000
+--- a/src/app/admin/media/page.tsx
++++ /dev/null
+@@ -1,41 +0,0 @@
+-import { prisma } from "@/lib/db";
+-import { requireAdminSession } from "@/lib/auth/guards";
+-import { DeleteButton } from "@/components/admin/DeleteButton";
+-
+-export const dynamic = "force-dynamic";
+-
+-export default async function MediaAdminPage() {
+-  const session = await requireAdminSession();
+-  if (!session) return <div className="ev-page">Admin girişi gerekli.</div>;
+-
+-  const items = await prisma.mediaItem.findMany({ orderBy: { createdAt: "desc" }, take: 200 });
+-
+-  return (
+-    <main className="ev-page ev-page--wide">
+-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+-        <h1>Medya Kütüphanesi</h1>
+-        <a className="ev-btn" href="/admin/media/upload">Yükle</a>
+-      </div>
+-
+-      <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 12 }}>
+-        {items.map((m) => (
+-          <div key={m.id} className="ev-card" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+-            <div style={{ height: 120, background: '#f6f6f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+-              {m.mime?.startsWith('image') ? (
+-                // eslint-disable-next-line @next/next/no-img-element
+-                <img src={m.url} alt={m.alt || m.filename} style={{ maxHeight: 120, maxWidth: '100%' }} />
+-              ) : (
+-                <div style={{ fontSize: 12 }}>{m.filename}</div>
+-              )}
+-            </div>
+-            <div style={{ fontSize: 13 }}>{m.filename}</div>
+-            <div style={{ display: 'flex', gap: 8 }}>
+-              <a className="ev-btn ev-btn--ghost" href={m.url} target="_blank">Aç</a>
+-            <DeleteButton url={`/api/admin/media/${m.id}`} />
+-            </div>
+-          </div>
+-        ))}
+-      </div>
+-    </main>
+-  );
+-}
+diff --git a/src/app/admin/settings/page.tsx b/src/app/admin/settings/page.tsx
+deleted file mode 100644
+index 62c65a1..0000000
+--- a/src/app/admin/settings/page.tsx
++++ /dev/null
+@@ -1,36 +0,0 @@
+-import { prisma } from "@/lib/db";
+-import { requireAdminSession } from "@/lib/auth/guards";
+-import Link from "next/link";
+-
+-export const dynamic = "force-dynamic";
+-
+-export default async function SettingsAdminPage() {
+-  const session = await requireAdminSession();
+-  if (!session) return <div className="ev-page">Admin girişi gerekli.</div>;
+-
+-  const items = await prisma.siteSetting.findMany({ orderBy: { key: "asc" }, take: 200 });
+-
+-  return (
+-    <main className="ev-page ev-page--wide">
+-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+-        <h1>Site Ayarları</h1>
+-        <Link className="ev-btn" href="/admin/settings/new">Yeni ayar</Link>
+-      </div>
+-
+-      <div style={{ marginTop: 12 }}>
+-        {items.length === 0 && <div className="ev-empty">Henüz ayar yok.</div>}
+-        {items.map((it) => (
+-          <div key={it.id} className="ev-card ev-card-row" style={{ justifyContent: "space-between" }}>
+-            <div>
+-              <b>{it.key}</b> · {it.locale ?? 'global'}
+-              <div style={{ fontSize: 13, marginTop: 6 }}>{JSON.stringify(it.value)}</div>
+-            </div>
+-            <div style={{ display: 'flex', gap: 8 }}>
+-              <Link className="ev-btn ev-btn--ghost" href={`/admin/settings/${it.id}`}>Düzenle</Link>
+-            </div>
+-          </div>
+-        ))}
+-      </div>
+-    </main>
+-  );
+-}
+diff --git a/src/app/api/admin/content/[id]/route.ts b/src/app/api/admin/content/[id]/route.ts
+index 432d480..1cf479b 100644
+--- a/src/app/api/admin/content/[id]/route.ts
++++ b/src/app/api/admin/content/[id]/route.ts
+@@ -2,22 +2,22 @@ import { NextRequest, NextResponse } from "next/server";
+ import { prisma } from "@/lib/db";
+ import { requireAdminSession } from "@/lib/auth/guards";
+ 
+-export async function GET(req: NextRequest) {
++type Ctx = { params: Promise<{ id: string }> };
++
++export async function GET(_req: NextRequest, { params }: Ctx) {
+   const session = await requireAdminSession();
+   if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
+-  const { params } = (req as any);
+-  const id = params?.id;
++  const { id } = await params;
+   if (!id) return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
+   const item = await prisma.contentEntry.findUnique({ where: { id } });
+   if (!item) return NextResponse.json({ error: "Bulunamadı." }, { status: 404 });
+   return NextResponse.json({ content: item });
+ }
+ 
+-export async function PATCH(req: NextRequest) {
++export async function PATCH(req: NextRequest, { params }: Ctx) {
+   const session = await requireAdminSession();
+   if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
+-  const { params } = (req as any);
+-  const id = params?.id;
++  const { id } = await params;
+   if (!id) return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
+ 
+   const body = await req.json().catch(() => null);
+@@ -29,6 +29,8 @@ export async function PATCH(req: NextRequest) {
+       body: body.body ?? undefined,
+       meta: body.meta ?? undefined,
+       slug: body.slug ?? undefined,
++      locale: body.locale ?? undefined,
++      type: body.type ?? undefined,
+       published: typeof body.published === 'boolean' ? body.published : undefined,
+       sortOrder: typeof body.sortOrder === 'number' ? body.sortOrder : undefined,
+       updatedById: (session.user as any).id || undefined,
+@@ -40,11 +42,10 @@ export async function PATCH(req: NextRequest) {
+   }
+ }
+ 
+-export async function DELETE(req: NextRequest) {
++export async function DELETE(_req: NextRequest, { params }: Ctx) {
+   const session = await requireAdminSession();
+   if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
+-  const { params } = (req as any);
+-  const id = params?.id;
++  const { id } = await params;
+   if (!id) return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
+   try {
+     await prisma.contentEntry.delete({ where: { id } });
+diff --git a/src/app/api/admin/media/[id]/route.ts b/src/app/api/admin/media/[id]/route.ts
+index 795dd1b..7a0f4e2 100644
+--- a/src/app/api/admin/media/[id]/route.ts
++++ b/src/app/api/admin/media/[id]/route.ts
+@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
+ import { prisma } from "@/lib/db";
+ import { requireAdminSession } from "@/lib/auth/guards";
+ 
+-export async function DELETE(req: NextRequest) {
++type Ctx = { params: Promise<{ id: string }> };
++
++export async function DELETE(_req: NextRequest, { params }: Ctx) {
+   const session = await requireAdminSession();
+   if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
+-  const { params } = (req as any);
+-  const id = params?.id;
++  const { id } = await params;
+   if (!id) return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
+   try {
+     await prisma.mediaItem.delete({ where: { id } });
+@@ -17,11 +18,10 @@ export async function DELETE(req: NextRequest) {
+   }
+ }
+ 
+-export async function GET(req: NextRequest) {
++export async function GET(_req: NextRequest, { params }: Ctx) {
+   const session = await requireAdminSession();
+   if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
+-  const { params } = (req as any);
+-  const id = params?.id;
++  const { id } = await params;
+   if (!id) return NextResponse.json({ error: "ID gerekli." }, { status: 400 });
+   const item = await prisma.mediaItem.findUnique({ where: { id } });
+   if (!item) return NextResponse.json({ error: "Bulunamadı." }, { status: 404 });
+diff --git a/src/app/api/admin/settings/[id]/route.ts b/src/app/api/admin/settings/[id]/route.ts
+new file mode 100644
+index 0000000..1505646
+--- /dev/null
++++ b/src/app/api/admin/settings/[id]/route.ts
+@@ -0,0 +1,49 @@
++import { NextRequest, NextResponse } from "next/server";
++import { prisma } from "@/lib/db";
++import { requireAdminSession } from "@/lib/auth/guards";
++
++export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
++  const session = await requireAdminSession();
++  if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
++  const { id } = await params;
++  const item = await prisma.siteSetting.findUnique({ where: { id } });
++  if (!item) return NextResponse.json({ error: "Bulunamadı." }, { status: 404 });
++  return NextResponse.json({ setting: item });
++}
++
++export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
++  const session = await requireAdminSession();
++  if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
++  const { id } = await params;
++
++  const body = await req.json().catch(() => null);
++  if (!body) return NextResponse.json({ error: "Eksik veri." }, { status: 400 });
++
++  try {
++    const updated = await prisma.siteSetting.update({
++      where: { id },
++      data: {
++        value: body.value ?? undefined,
++        locale: body.locale === undefined ? undefined : body.locale,
++        updatedById: (session.user as any).id || undefined,
++      },
++    });
++    return NextResponse.json({ setting: updated });
++  } catch (err) {
++    console.error("Update setting error:", err);
++    return NextResponse.json({ error: "Güncelleme başarısız." }, { status: 500 });
++  }
++}
++
++export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
++  const session = await requireAdminSession();
++  if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
++  const { id } = await params;
++  try {
++    await prisma.siteSetting.delete({ where: { id } });
++    return NextResponse.json({ ok: true });
++  } catch (err) {
++    console.error("Delete setting error:", err);
++    return NextResponse.json({ error: "Silme başarısız." }, { status: 500 });
++  }
++}
+diff --git a/src/app/api/admin/settings/route.ts b/src/app/api/admin/settings/route.ts
+new file mode 100644
+index 0000000..5a00148
+--- /dev/null
++++ b/src/app/api/admin/settings/route.ts
+@@ -0,0 +1,44 @@
++import { NextRequest, NextResponse } from "next/server";
++import { prisma } from "@/lib/db";
++import { requireAdminSession } from "@/lib/auth/guards";
++
++export async function GET(req: NextRequest) {
++  const session = await requireAdminSession();
++  if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
++
++  const url = new URL(req.url);
++  const key = url.searchParams.get("key") || undefined;
++  const locale = url.searchParams.get("locale") || undefined;
++
++  const where: any = {};
++  if (key) where.key = key;
++  if (locale) where.locale = locale;
++
++  const items = await prisma.siteSetting.findMany({ where, orderBy: { key: "asc" } });
++  return NextResponse.json({ results: items });
++}
++
++export async function POST(req: NextRequest) {
++  const session = await requireAdminSession();
++  if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
++
++  const body = await req.json().catch(() => null);
++  if (!body || !body.key || body.value === undefined) {
++    return NextResponse.json({ error: "Eksik veri (key ve value gerekli)." }, { status: 400 });
++  }
++
++  const locale = body.locale || null;
++  const userId = (session.user as any).id || null;
++
++  try {
++    const setting = await prisma.siteSetting.upsert({
++      where: { key_locale: { key: body.key, locale } },
++      update: { value: body.value, updatedById: userId },
++      create: { key: body.key, locale, value: body.value, updatedById: userId },
++    });
++    return NextResponse.json({ setting }, { status: 201 });
++  } catch (err) {
++    console.error("Upsert setting error:", err);
++    return NextResponse.json({ error: "Ayar kaydedilemedi." }, { status: 500 });
++  }
++}
+diff --git a/src/app/api/uploads/media/route.ts b/src/app/api/uploads/media/route.ts
+new file mode 100644
+index 0000000..73e4538
+--- /dev/null
++++ b/src/app/api/uploads/media/route.ts
+@@ -0,0 +1,78 @@
++import { promises as fs } from "fs";
++import path from "path";
++import { NextRequest, NextResponse } from "next/server";
++import { requireAdminSession } from "@/lib/auth/guards";
++import { createMediaLibraryUpload } from "@/lib/providers/storage/media";
++import { checkRateLimit, getClientIp } from "@/lib/security/request-controls";
++import { getCloudinaryConfig, signPayload } from "@/lib/cloudinary";
++
++const types: Record<string, string> = {
++  "image/jpeg": "jpg",
++  "image/png": "png",
++  "image/webp": "webp",
++  "image/svg+xml": "svg",
++};
++
++export async function POST(req: NextRequest) {
++  const session = await requireAdminSession();
++  if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
++
++  const rate = await checkRateLimit(`media-upload:${getClientIp(req.headers)}`, 30, 3600);
++  if (!rate.allowed) return NextResponse.json({ error: "Çok fazla yükleme denemesi. Lütfen sonra tekrar deneyin." }, { status: 429 });
++
++  const body = await req.json().catch(() => null);
++  const contentType = typeof body?.contentType === "string" ? body.contentType : "";
++  if (!types[contentType]) {
++    return NextResponse.json({ error: "Sadece JPG, PNG, WebP veya SVG dosyaları kabul edilir." }, { status: 400 });
++  }
++
++  const { cloudName, apiKey, apiSecret } = getCloudinaryConfig();
++  if (cloudName && apiKey && apiSecret) {
++    const folder = body?.folder ?? "media-library";
++    const timestamp = Math.floor(Date.now() / 1000);
++    const paramsToSign: Record<string, any> = { timestamp, folder };
++    const signature = signPayload(paramsToSign, apiSecret);
++    return NextResponse.json({
++      uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
++      fields: { api_key: apiKey, timestamp, signature, folder },
++      clientInfo: { cloudName, signed: true },
++    });
++  }
++
++  const unsignedPreset = process.env.CLOUDINARY_UNSIGNED_UPLOAD_PRESET;
++  if (cloudName && unsignedPreset) {
++    return NextResponse.json({
++      uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
++      fields: { upload_preset: unsignedPreset },
++      clientInfo: { cloudName, signed: false, unsigned: true },
++    });
++  }
++
++  try {
++    return NextResponse.json(await createMediaLibraryUpload(contentType, types[contentType]));
++  } catch (error) {
++    const msg = (error as Error).message || "Depolama yapılandırma hatası.";
++    return NextResponse.json({ error: msg }, { status: 503 });
++  }
++}
++
++export async function PUT(req: NextRequest) {
++  const session = await requireAdminSession();
++  if (!session) return NextResponse.json({ error: "Admin girişi gerekli." }, { status: 401 });
++
++  const localKey = req.nextUrl.searchParams.get("localKey")?.trim();
++  if (!localKey) return NextResponse.json({ error: "Dosya anahtarı eksik." }, { status: 400 });
++  const contentType = req.headers.get("content-type") ?? "";
++  if (!types[contentType]) return NextResponse.json({ error: "Sadece JPG, PNG, WebP veya SVG dosyaları kabul edilir." }, { status: 400 });
++
++  const root = process.cwd();
++  const targetPath = path.join(root, "public", ...localKey.split("/"));
++  const allowedRoot = path.join(root, "public", "media-library");
++  if (!targetPath.startsWith(allowedRoot)) return NextResponse.json({ error: "Geçersiz dosya yolu." }, { status: 400 });
++
++  const buffer = Buffer.from(await req.arrayBuffer());
++  await fs.mkdir(path.dirname(targetPath), { recursive: true });
++  await fs.writeFile(targetPath, buffer);
++
++  return NextResponse.json({ ok: true });
++}
+diff --git a/src/app/globals.css b/src/app/globals.css
+index 838f848..a027e00 100644
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -655,6 +655,106 @@ html[dir="rtl"] .ev-route-line, html[dir="rtl"] .ev-booking-fields { direction:
+   .ev-footer { align-items: flex-start; flex-direction: column; }
+ }
+ 
++/* ---------- CMS admin kabuğu ---------- */
++.ev-btn--danger {
++  background: linear-gradient(135deg, var(--rose), #ff9dc2);
++  color: #250012;
++  box-shadow: 0 14px 30px rgba(255, 124, 168, 0.18);
++}
++.ev-btn--sm { min-height: 36px; padding: 8px 16px; font-size: 13px; }
++.ev-btn--icon { display: inline-flex; align-items: center; gap: 8px; }
++.ev-textarea {
++  width: 100%;
++  padding: 13px 14px;
++  border-radius: 14px;
++  border: 1px solid var(--line-strong);
++  background: rgba(8, 16, 31, 0.92);
++  color: var(--text);
++  font-size: 14px;
++  font-family: "IBM Plex Mono", monospace;
++  line-height: 1.6;
++  resize: vertical;
++  transition: border-color 0.2s ease, box-shadow 0.2s ease;
++}
++:root[data-theme="light"] .ev-textarea { border-color: var(--line); background: var(--surface); color: var(--text); }
++.ev-textarea:focus { outline: none; border-color: rgba(92, 232, 255, 0.35); box-shadow: 0 0 0 4px rgba(92, 232, 255, 0.12); }
++.ev-switch-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border: 1px solid var(--line-strong); border-radius: 14px; background: rgba(255,255,255,0.03); cursor: pointer; }
++:root[data-theme="light"] .ev-switch-row { background: rgba(15,23,42,0.03); border-color: var(--line); }
++.ev-switch-row input { accent-color: var(--accent); width: 18px; height: 18px; }
++
++.ev-cms-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); align-items: start; gap: 26px; max-width: 1320px; margin: 0 auto; padding: 32px 24px 72px; }
++.ev-cms-sidebar { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 18px; padding: 20px; border-radius: 22px; border: 1px solid var(--line); background: linear-gradient(180deg, rgba(7,15,29,0.95), rgba(12,22,39,0.9)); box-shadow: var(--shadow); }
++:root[data-theme="light"] .ev-cms-sidebar { background: var(--panel); }
++.ev-cms-brand { display: flex; align-items: center; gap: 10px; padding-bottom: 4px; border-bottom: 1px solid var(--line); }
++.ev-cms-brand img { width: 34px; height: 34px; border-radius: 10px; object-fit: cover; background: #fff; }
++.ev-cms-brand strong { display: block; font-family: "Fraunces", serif; font-size: 15px; color: var(--text); }
++.ev-cms-brand span { display: block; color: var(--text-faint); font-size: 11px; }
++.ev-cms-nav { display: flex; flex-direction: column; gap: 4px; }
++.ev-cms-nav a { display: flex; align-items: center; gap: 11px; padding: 11px 13px; border-radius: 13px; color: var(--text-muted); font-size: 13.5px; font-weight: 500; text-decoration: none; transition: background 0.15s ease, color 0.15s ease; }
++.ev-cms-nav a:hover { background: rgba(255,255,255,0.05); color: var(--text); }
++.ev-cms-nav a.ev-cms-nav-active { background: var(--accent-soft); color: var(--accent); }
++.ev-cms-nav svg { flex: 0 0 auto; opacity: 0.9; }
++.ev-cms-nav-back { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line); }
++.ev-cms-main { min-width: 0; }
++.ev-cms-topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
++.ev-cms-topbar h1 { margin: 0 0 4px; }
++.ev-cms-topbar p { margin: 0; color: var(--text-muted); font-size: 13.5px; max-width: 520px; }
++.ev-cms-breadcrumb { display: flex; align-items: center; gap: 6px; color: var(--text-faint); font-size: 12px; margin-bottom: 10px; }
++.ev-cms-breadcrumb a { color: var(--text-faint); text-decoration: none; }
++.ev-cms-breadcrumb a:hover { color: var(--text); }
++
++.ev-stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; margin-bottom: 24px; }
++.ev-stat-card { display: flex; flex-direction: column; gap: 10px; padding: 20px; border-radius: 20px; border: 1px solid var(--line); background: linear-gradient(150deg, rgba(21,59,71,.55), rgba(13,33,44,.7)); text-decoration: none; transition: transform 0.15s ease, border-color 0.15s ease; }
++.ev-stat-card:hover { transform: translateY(-2px); border-color: var(--accent); }
++.ev-stat-card-icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; }
++.ev-stat-card strong { font-family: "Fraunces", serif; font-size: 30px; color: var(--text); }
++.ev-stat-card span { color: var(--text-muted); font-size: 12.5px; }
++
++.ev-cms-list { display: grid; gap: 10px; }
++.ev-cms-item { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 18px; border-radius: 18px; border: 1px solid var(--line); background: linear-gradient(150deg, rgba(21,59,71,.35), rgba(13,33,44,.5)); flex-wrap: wrap; }
++.ev-cms-item-main { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
++.ev-cms-item-title { font-size: 14.5px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
++.ev-cms-item-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; color: var(--text-faint); font-size: 11.5px; }
++.ev-cms-item-desc { color: var(--text-muted); font-size: 12.5px; max-width: 620px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
++.ev-cms-item-actions { display: flex; gap: 8px; flex: 0 0 auto; }
++.ev-cms-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
++.ev-cms-filters { display: flex; gap: 8px; flex-wrap: wrap; }
++
++.ev-media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
++.ev-media-card { display: flex; flex-direction: column; gap: 0; border-radius: 18px; overflow: hidden; border: 1px solid var(--line); background: rgba(255,255,255,0.02); }
++.ev-media-thumb { height: 130px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); overflow: hidden; }
++.ev-media-thumb img { width: 100%; height: 100%; object-fit: cover; }
++.ev-media-body { padding: 12px 13px 14px; display: flex; flex-direction: column; gap: 8px; }
++.ev-media-name { font-size: 12.5px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
++.ev-media-actions { display: flex; gap: 6px; }
++.ev-media-actions .ev-btn { flex: 1; text-align: center; }
++
++.ev-logo-card { display: flex; align-items: center; gap: 20px; padding: 20px; border-radius: 20px; border: 1px solid var(--line); background: linear-gradient(150deg, rgba(21,59,71,.45), rgba(13,33,44,.6)); margin-bottom: 20px; flex-wrap: wrap; }
++.ev-logo-preview { width: 96px; height: 96px; border-radius: 18px; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; flex: 0 0 auto; box-shadow: 0 10px 24px rgba(0,0,0,0.2); }
++.ev-logo-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
++.ev-logo-info { flex: 1; min-width: 220px; }
++.ev-logo-info h3 { margin: 0 0 4px; font-size: 15px; }
++.ev-logo-info p { margin: 0; color: var(--text-muted); font-size: 12.5px; }
++
++.ev-dropzone { border: 1.5px dashed var(--line-strong); border-radius: 20px; padding: 40px 20px; text-align: center; color: var(--text-muted); cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease; }
++.ev-dropzone:hover, .ev-dropzone--active { border-color: var(--accent); background: var(--accent-soft); }
++.ev-dropzone input { display: none; }
++
++@media (max-width: 980px) {
++  .ev-cms-shell { grid-template-columns: 1fr; padding: 20px 16px 56px; }
++  .ev-cms-sidebar { position: static; flex-direction: row; flex-wrap: wrap; }
++  .ev-cms-nav { flex-direction: row; flex-wrap: wrap; }
++  .ev-cms-nav-back { margin-top: 0; padding-top: 0; border-top: 0; }
++  .ev-stat-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
++}
++@media (max-width: 560px) {
++  .ev-stat-grid { grid-template-columns: 1fr; }
++  .ev-cms-item { flex-direction: column; align-items: stretch; }
++  .ev-cms-item-actions { width: 100%; }
++  .ev-cms-item-actions .ev-btn { flex: 1; }
++  .ev-logo-card { flex-direction: column; text-align: center; }
++}
++
+ /* ---------- Cross-page responsive safeguards ---------- */
+ @media (max-width: 980px) {
+   .ev-page--wide { max-width: 100%; }
+diff --git a/src/components/admin/cms/CmsNav.tsx b/src/components/admin/cms/CmsNav.tsx
+new file mode 100644
+index 0000000..4c11831
+--- /dev/null
++++ b/src/components/admin/cms/CmsNav.tsx
+@@ -0,0 +1,36 @@
++"use client";
++
++import Link from "next/link";
++import { usePathname } from "next/navigation";
++import { IconBack, IconMedia, IconOverview, IconPages, IconSettings } from "./icons";
++
++const links = [
++  { href: "/admin/cms", label: "Genel Bakış", icon: IconOverview, exact: true },
++  { href: "/admin/content", label: "Sayfalar & Metinler", icon: IconPages, exact: false },
++  { href: "/admin/media", label: "Medya & Logolar", icon: IconMedia, exact: false },
++  { href: "/admin/settings", label: "Site Ayarları", icon: IconSettings, exact: false },
++];
++
++export function CmsNav() {
++  const pathname = usePathname() || "";
++
++  return (
++    <nav className="ev-cms-nav">
++      {links.map(({ href, label, icon: Icon, exact }) => {
++        const active = exact ? pathname === href : pathname.startsWith(href);
++        return (
++          <Link key={href} href={href} className={active ? "ev-cms-nav-active" : ""}>
++            <Icon />
++            {label}
++          </Link>
++        );
++      })}
++      <div className="ev-cms-nav-back">
++        <Link href="/admin">
++          <IconBack />
++          Operasyon Paneline Dön
++        </Link>
++      </div>
++    </nav>
++  );
++}
+diff --git a/src/components/admin/cms/ContentForm.tsx b/src/components/admin/cms/ContentForm.tsx
+new file mode 100644
+index 0000000..3928b4d
+--- /dev/null
++++ b/src/components/admin/cms/ContentForm.tsx
+@@ -0,0 +1,140 @@
++"use client";
++
++import { useRouter } from "next/navigation";
++import { useState } from "react";
++import { CONTENT_TYPE_LABELS, CONTENT_TYPES, LOCALE_LABELS } from "@/lib/cms/constants";
++
++type ContentEntry = {
++  id: string;
++  key: string;
++  locale: string;
++  type: string;
++  title: string | null;
++  body: string | null;
++  slug: string | null;
++  published: boolean;
++  sortOrder: number;
++};
++
++export function ContentForm({ initial }: { initial?: ContentEntry }) {
++  const router = useRouter();
++  const isEdit = Boolean(initial);
++  const [key, setKey] = useState(initial?.key ?? "");
++  const [locale, setLocale] = useState(initial?.locale ?? "tr");
++  const [type, setType] = useState(initial?.type ?? "PAGE");
++  const [title, setTitle] = useState(initial?.title ?? "");
++  const [slug, setSlug] = useState(initial?.slug ?? "");
++  const [body, setBody] = useState(initial?.body ?? "");
++  const [published, setPublished] = useState(initial?.published ?? false);
++  const [sortOrder, setSortOrder] = useState(initial?.sortOrder ?? 0);
++  const [saving, setSaving] = useState(false);
++  const [error, setError] = useState<string | null>(null);
++
++  const submit = async () => {
++    setError(null);
++    if (!key.trim()) {
++      setError("Anahtar (key) zorunludur.");
++      return;
++    }
++    setSaving(true);
++    try {
++      const payload = { key: key.trim(), locale, type, title, slug, body, published, sortOrder: Number(sortOrder) || 0 };
++      const res = await fetch(isEdit ? `/api/admin/content/${initial!.id}` : "/api/admin/content", {
++        method: isEdit ? "PATCH" : "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify(payload),
++      });
++      const data = await res.json().catch(() => ({}));
++      if (!res.ok) {
++        setError(data.error || "Kaydedilemedi.");
++        return;
++      }
++      router.push("/admin/content");
++      router.refresh();
++    } finally {
++      setSaving(false);
++    }
++  };
++
++  return (
++    <div className="ev-card">
++      {error && (
++        <div className="ev-empty" style={{ borderColor: "var(--rose)", color: "var(--rose)", marginBottom: 16 }}>
++          {error}
++        </div>
++      )}
++      <div className="ev-form-section">
++        <div className="ev-field-grid">
++          <div className="ev-field">
++            <label className="ev-label">Anahtar (key)</label>
++            <input
++              className="ev-input"
++              value={key}
++              onChange={(e) => setKey(e.target.value)}
++              placeholder="ornek: hakkimizda.giris"
++              disabled={isEdit}
++            />
++          </div>
++          <div className="ev-field">
++            <label className="ev-label">Tür</label>
++            <select className="ev-select" value={type} onChange={(e) => setType(e.target.value)}>
++              {CONTENT_TYPES.map((t) => (
++                <option key={t} value={t}>{CONTENT_TYPE_LABELS[t]}</option>
++              ))}
++            </select>
++          </div>
++          <div className="ev-field">
++            <label className="ev-label">Dil</label>
++            <select className="ev-select" value={locale} onChange={(e) => setLocale(e.target.value)}>
++              {Object.entries(LOCALE_LABELS).map(([code, label]) => (
++                <option key={code} value={code}>{label} ({code})</option>
++              ))}
++            </select>
++          </div>
++          <div className="ev-field">
++            <label className="ev-label">Sıra (sortOrder)</label>
++            <input
++              className="ev-input"
++              type="number"
++              value={sortOrder}
++              onChange={(e) => setSortOrder(Number(e.target.value))}
++            />
++          </div>
++          <div className="ev-field ev-field--full">
++            <label className="ev-label">Başlık</label>
++            <input className="ev-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Görünen başlık" />
++          </div>
++          <div className="ev-field ev-field--full">
++            <label className="ev-label">Slug (opsiyonel)</label>
++            <input className="ev-input" value={slug} onChange={(e) => setSlug(e.target.value)} placeholder="ornek-sayfa-yolu" />
++          </div>
++          <div className="ev-field ev-field--full">
++            <label className="ev-label">İçerik metni</label>
++            <textarea
++              className="ev-textarea"
++              rows={12}
++              value={body}
++              onChange={(e) => setBody(e.target.value)}
++              placeholder="Sayfa veya statik metin içeriği (HTML/Markdown/düz metin olabilir)"
++            />
++          </div>
++          <div className="ev-field ev-field--full">
++            <label className="ev-switch-row">
++              <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} />
++              Yayında (published)
++            </label>
++          </div>
++        </div>
++      </div>
++
++      <div className="ev-actions" style={{ marginTop: 20 }}>
++        <button className="ev-btn" onClick={submit} disabled={saving}>
++          {saving ? "Kaydediliyor…" : isEdit ? "Değişiklikleri Kaydet" : "İçeriği Oluştur"}
++        </button>
++        <button className="ev-btn ev-btn--ghost" onClick={() => router.push("/admin/content")} disabled={saving}>
++          İptal
++        </button>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/components/admin/cms/LogoPicker.tsx b/src/components/admin/cms/LogoPicker.tsx
+new file mode 100644
+index 0000000..0a31e6f
+--- /dev/null
++++ b/src/components/admin/cms/LogoPicker.tsx
+@@ -0,0 +1,91 @@
++"use client";
++
++import { useState } from "react";
++import Link from "next/link";
++import { useRouter } from "next/navigation";
++
++type MediaItem = { id: string; url: string; filename: string; mime: string | null };
++
++export function LogoPicker({ currentUrl, settingKey }: { currentUrl: string | null; settingKey: string }) {
++  const router = useRouter();
++  const [open, setOpen] = useState(false);
++  const [loading, setLoading] = useState(false);
++  const [items, setItems] = useState<MediaItem[] | null>(null);
++  const [saving, setSaving] = useState(false);
++
++  const openPicker = async () => {
++    setOpen((v) => !v);
++    if (!items) {
++      setLoading(true);
++      try {
++        const res = await fetch("/api/admin/media");
++        const data = await res.json();
++        setItems((data.results || []).filter((m: MediaItem) => m.mime?.startsWith("image")));
++      } finally {
++        setLoading(false);
++      }
++    }
++  };
++
++  const selectLogo = async (url: string) => {
++    setSaving(true);
++    try {
++      await fetch("/api/admin/settings", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ key: settingKey, value: { url } }),
++      });
++      setOpen(false);
++      router.refresh();
++    } finally {
++      setSaving(false);
++    }
++  };
++
++  return (
++    <div className="ev-logo-card">
++      <div className="ev-logo-preview">
++        {/* eslint-disable-next-line @next/next/no-img-element */}
++        <img src={currentUrl || "/eurosianviptransferlogo.png"} alt="Site logosu" />
++      </div>
++      <div className="ev-logo-info">
++        <h3>Site Logosu</h3>
++        <p>Bu logo sitenin genelinde ve admin panelinde kullanılır. Medya kütüphanenizden seçin ya da yeni bir dosya yükleyin.</p>
++      </div>
++      <div className="ev-actions">
++        <button className="ev-btn ev-btn--ghost ev-btn--sm" onClick={openPicker} disabled={saving}>
++          {open ? "Kapat" : "Medyadan Seç"}
++        </button>
++        <Link className="ev-btn ev-btn--sm" href="/admin/media/upload">Yeni Logo Yükle</Link>
++      </div>
++
++      {open && (
++        <div style={{ width: "100%", marginTop: 12 }}>
++          {loading && <div className="ev-empty">Yükleniyor…</div>}
++          {!loading && items && items.length === 0 && (
++            <div className="ev-empty">Medya kütüphanesinde görsel yok. Önce bir dosya yükleyin.</div>
++          )}
++          {!loading && items && items.length > 0 && (
++            <div className="ev-media-grid">
++              {items.map((m) => (
++                <button
++                  key={m.id}
++                  type="button"
++                  className="ev-media-card"
++                  style={{ border: "none", cursor: "pointer", padding: 0 }}
++                  onClick={() => selectLogo(m.url)}
++                  disabled={saving}
++                >
++                  <div className="ev-media-thumb">
++                    {/* eslint-disable-next-line @next/next/no-img-element */}
++                    <img src={m.url} alt={m.filename} />
++                  </div>
++                </button>
++              ))}
++            </div>
++          )}
++        </div>
++      )}
++    </div>
++  );
++}
+diff --git a/src/components/admin/cms/MediaUploader.tsx b/src/components/admin/cms/MediaUploader.tsx
+new file mode 100644
+index 0000000..4386ad9
+--- /dev/null
++++ b/src/components/admin/cms/MediaUploader.tsx
+@@ -0,0 +1,107 @@
++"use client";
++
++import { useRef, useState } from "react";
++import { useRouter } from "next/navigation";
++import { IconUpload } from "./icons";
++
++const ACCEPTED = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
++
++async function uploadFile(file: File): Promise<{ url: string; filename: string; mime: string; size: number }> {
++  const targetRes = await fetch("/api/uploads/media", {
++    method: "POST",
++    headers: { "Content-Type": "application/json" },
++    body: JSON.stringify({ contentType: file.type }),
++  });
++  const target = await targetRes.json();
++  if (!targetRes.ok) throw new Error(target.error || "Yükleme hedefi alınamadı.");
++
++  if (target.fields) {
++    // Cloudinary-style multipart form upload
++    const form = new FormData();
++    Object.entries(target.fields as Record<string, string>).forEach(([k, v]) => form.append(k, String(v)));
++    form.append("file", file);
++    const res = await fetch(target.uploadUrl, { method: "POST", body: form });
++    const data = await res.json();
++    if (!res.ok) throw new Error(data.error?.message || "Yükleme başarısız.");
++    return { url: data.secure_url, filename: file.name, mime: file.type, size: file.size };
++  }
++
++  // Direct PUT upload (R2 presigned URL or local dev fallback)
++  const putRes = await fetch(target.uploadUrl, {
++    method: "PUT",
++    headers: { "Content-Type": file.type },
++    body: file,
++  });
++  if (!putRes.ok) throw new Error("Dosya yüklenemedi.");
++  return { url: target.publicUrl, filename: file.name, mime: file.type, size: file.size };
++}
++
++export function MediaUploader({ onUploaded }: { onUploaded?: (url: string) => void }) {
++  const router = useRouter();
++  const inputRef = useRef<HTMLInputElement>(null);
++  const [dragActive, setDragActive] = useState(false);
++  const [busy, setBusy] = useState(false);
++  const [error, setError] = useState<string | null>(null);
++
++  const handleFiles = async (files: FileList | null) => {
++    if (!files || files.length === 0) return;
++    setError(null);
++    setBusy(true);
++    try {
++      for (const file of Array.from(files)) {
++        if (!ACCEPTED.includes(file.type)) {
++          setError(`Desteklenmeyen dosya türü: ${file.type || file.name}`);
++          continue;
++        }
++        const uploaded = await uploadFile(file);
++        const registerRes = await fetch("/api/media", {
++          method: "POST",
++          headers: { "Content-Type": "application/json" },
++          body: JSON.stringify(uploaded),
++        });
++        const registered = await registerRes.json();
++        if (!registerRes.ok) throw new Error(registered.error || "Medya kaydedilemedi.");
++        onUploaded?.(uploaded.url);
++      }
++      router.refresh();
++    } catch (err) {
++      setError((err as Error).message || "Yükleme sırasında bir hata oluştu.");
++    } finally {
++      setBusy(false);
++    }
++  };
++
++  return (
++    <div>
++      {error && (
++        <div className="ev-empty" style={{ borderColor: "var(--rose)", color: "var(--rose)", marginBottom: 12 }}>
++          {error}
++        </div>
++      )}
++      <div
++        className={`ev-dropzone ${dragActive ? "ev-dropzone--active" : ""}`}
++        onClick={() => inputRef.current?.click()}
++        onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
++        onDragLeave={() => setDragActive(false)}
++        onDrop={(e) => {
++          e.preventDefault();
++          setDragActive(false);
++          handleFiles(e.dataTransfer.files);
++        }}
++      >
++        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
++          <IconUpload />
++          <div>{busy ? "Yükleniyor…" : "Dosyaları sürükleyip bırakın ya da tıklayarak seçin"}</div>
++          <div style={{ fontSize: 11, color: "var(--text-faint)" }}>JPG, PNG, WebP veya SVG</div>
++        </div>
++        <input
++          ref={inputRef}
++          type="file"
++          accept={ACCEPTED.join(",")}
++          multiple
++          onChange={(e) => handleFiles(e.target.files)}
++        />
++      </div>
++    </div>
++  );
++}
+diff --git a/src/components/admin/cms/SettingForm.tsx b/src/components/admin/cms/SettingForm.tsx
+new file mode 100644
+index 0000000..aa95c2c
+--- /dev/null
++++ b/src/components/admin/cms/SettingForm.tsx
+@@ -0,0 +1,109 @@
++"use client";
++
++import { useRouter } from "next/navigation";
++import { useState } from "react";
++import { LOCALE_LABELS } from "@/lib/cms/constants";
++
++type SiteSettingRow = {
++  id: string;
++  key: string;
++  locale: string | null;
++  value: unknown;
++};
++
++export function SettingForm({ initial }: { initial?: SiteSettingRow }) {
++  const router = useRouter();
++  const isEdit = Boolean(initial);
++  const [key, setKey] = useState(initial?.key ?? "");
++  const [locale, setLocale] = useState(initial?.locale ?? "");
++  const [valueText, setValueText] = useState(
++    initial ? JSON.stringify(initial.value, null, 2) : '{\n  \n}'
++  );
++  const [saving, setSaving] = useState(false);
++  const [error, setError] = useState<string | null>(null);
++
++  const submit = async () => {
++    setError(null);
++    if (!key.trim()) {
++      setError("Anahtar (key) zorunludur.");
++      return;
++    }
++    let parsedValue: unknown;
++    try {
++      parsedValue = JSON.parse(valueText);
++    } catch {
++      setError("Değer geçerli bir JSON olmalıdır. Örn: \"metin\", 123, true, {\"a\":1} veya [1,2,3]");
++      return;
++    }
++
++    setSaving(true);
++    try {
++      const res = await fetch(isEdit ? `/api/admin/settings/${initial!.id}` : "/api/admin/settings", {
++        method: isEdit ? "PATCH" : "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ key: key.trim(), locale: locale || null, value: parsedValue }),
++      });
++      const data = await res.json().catch(() => ({}));
++      if (!res.ok) {
++        setError(data.error || "Kaydedilemedi.");
++        return;
++      }
++      router.push("/admin/settings");
++      router.refresh();
++    } finally {
++      setSaving(false);
++    }
++  };
++
++  return (
++    <div className="ev-card">
++      {error && (
++        <div className="ev-empty" style={{ borderColor: "var(--rose)", color: "var(--rose)", marginBottom: 16 }}>
++          {error}
++        </div>
++      )}
++      <div className="ev-form-section">
++        <div className="ev-field-grid">
++          <div className="ev-field">
++            <label className="ev-label">Anahtar (key)</label>
++            <input
++              className="ev-input"
++              value={key}
++              onChange={(e) => setKey(e.target.value)}
++              placeholder="ornek: iletisim.telefon"
++              disabled={isEdit}
++            />
++          </div>
++          <div className="ev-field">
++            <label className="ev-label">Dil (opsiyonel — boş = global)</label>
++            <select className="ev-select" value={locale} onChange={(e) => setLocale(e.target.value)}>
++              <option value="">Global</option>
++              {Object.entries(LOCALE_LABELS).map(([code, label]) => (
++                <option key={code} value={code}>{label} ({code})</option>
++              ))}
++            </select>
++          </div>
++          <div className="ev-field ev-field--full">
++            <label className="ev-label">Değer (JSON)</label>
++            <textarea
++              className="ev-textarea"
++              rows={10}
++              value={valueText}
++              onChange={(e) => setValueText(e.target.value)}
++              placeholder='"basit bir metin" ya da {"telefon": "+90 5xx xxx xx xx"}'
++            />
++          </div>
++        </div>
++      </div>
++
++      <div className="ev-actions" style={{ marginTop: 20 }}>
++        <button className="ev-btn" onClick={submit} disabled={saving}>
++          {saving ? "Kaydediliyor…" : isEdit ? "Değişiklikleri Kaydet" : "Ayarı Oluştur"}
++        </button>
++        <button className="ev-btn ev-btn--ghost" onClick={() => router.push("/admin/settings")} disabled={saving}>
++          İptal
++        </button>
++      </div>
++    </div>
++  );
++}
+diff --git a/src/components/admin/cms/icons.tsx b/src/components/admin/cms/icons.tsx
+new file mode 100644
+index 0000000..7772875
+--- /dev/null
++++ b/src/components/admin/cms/icons.tsx
+@@ -0,0 +1,90 @@
++import type { SVGProps } from "react";
++
++function base(props: SVGProps<SVGSVGElement>) {
++  return {
++    width: 18,
++    height: 18,
++    viewBox: "0 0 24 24",
++    fill: "none",
++    stroke: "currentColor",
++    strokeWidth: 1.8,
++    strokeLinecap: "round" as const,
++    strokeLinejoin: "round" as const,
++    ...props,
++  };
++}
++
++export function IconOverview(props: SVGProps<SVGSVGElement>) {
++  return (
++    <svg {...base(props)}>
++      <rect x="3" y="3" width="7" height="9" rx="2" />
++      <rect x="14" y="3" width="7" height="5" rx="2" />
++      <rect x="14" y="12" width="7" height="9" rx="2" />
++      <rect x="3" y="16" width="7" height="5" rx="2" />
++    </svg>
++  );
++}
++
++export function IconPages(props: SVGProps<SVGSVGElement>) {
++  return (
++    <svg {...base(props)}>
++      <path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" />
++      <path d="M14 3v5h5" />
++      <path d="M9 13h6M9 17h6" />
++    </svg>
++  );
++}
++
++export function IconMedia(props: SVGProps<SVGSVGElement>) {
++  return (
++    <svg {...base(props)}>
++      <rect x="3" y="4" width="18" height="15" rx="2" />
++      <circle cx="8.5" cy="9.5" r="1.6" />
++      <path d="M21 16l-5.5-5.5a2 2 0 0 0-2.8 0L4 19" />
++    </svg>
++  );
++}
++
++export function IconSettings(props: SVGProps<SVGSVGElement>) {
++  return (
++    <svg {...base(props)}>
++      <circle cx="12" cy="12" r="3.2" />
++      <path d="M19.4 13.5a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V20a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.55 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.65 9.6a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" />
++    </svg>
++  );
++}
++
++export function IconBack(props: SVGProps<SVGSVGElement>) {
++  return (
++    <svg {...base(props)}>
++      <path d="M15 18l-6-6 6-6" />
++    </svg>
++  );
++}
++
++export function IconPlus(props: SVGProps<SVGSVGElement>) {
++  return (
++    <svg {...base(props)}>
++      <path d="M12 5v14M5 12h14" />
++    </svg>
++  );
++}
++
++export function IconUpload(props: SVGProps<SVGSVGElement>) {
++  return (
++    <svg {...base(props)}>
++      <path d="M12 16V4M7 9l5-5 5 5" />
++      <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
++    </svg>
++  );
++}
++
++export function IconImage(props: SVGProps<SVGSVGElement>) {
++  return (
++    <svg {...base(props)}>
++      <rect x="3" y="4" width="18" height="15" rx="2" />
++      <circle cx="8.5" cy="9.5" r="1.6" />
++      <path d="M21 16l-5.5-5.5a2 2 0 0 0-2.8 0L4 19" />
++    </svg>
++  );
++}
+diff --git a/src/lib/cms/constants.ts b/src/lib/cms/constants.ts
+new file mode 100644
+index 0000000..65d01fd
+--- /dev/null
++++ b/src/lib/cms/constants.ts
+@@ -0,0 +1,21 @@
++export const LOGO_SETTING_KEY = "branding.logo";
++
++export const CONTENT_TYPE_LABELS: Record<string, string> = {
++  PAGE: "Sayfa",
++  SNIPPET: "Metin Parçası",
++  BANNER: "Banner",
++  HERO: "Hero / Kapak",
++  NAV: "Navigasyon",
++  FOOTER: "Footer",
++  OTHER: "Diğer",
++};
++
++export const CONTENT_TYPES = Object.keys(CONTENT_TYPE_LABELS);
++
++export const LOCALE_LABELS: Record<string, string> = {
++  tr: "Türkçe",
++  en: "English",
++  ar: "العربية",
++  ru: "Русский",
++  de: "Deutsch",
++};
+diff --git a/src/lib/providers/storage/media.ts b/src/lib/providers/storage/media.ts
+new file mode 100644
+index 0000000..0dc21b9
+--- /dev/null
++++ b/src/lib/providers/storage/media.ts
+@@ -0,0 +1,50 @@
++import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
++import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
++
++function normalizeUrl(value: string) {
++  return value.replace(/\/$/, "");
++}
++
++function r2Config() {
++  const accountId = process.env.R2_ACCOUNT_ID;
++  const bucket = process.env.R2_BUCKET_NAME;
++  const publicBaseUrl = normalizeUrl(process.env.R2_PUBLIC_BASE_URL ?? "");
++  if (!accountId || !bucket || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY || !publicBaseUrl) return null;
++  return { accountId, bucket, publicBaseUrl };
++}
++
++function appUrl() {
++  return normalizeUrl(process.env.APP_URL || "http://localhost:3000");
++}
++
++function client(accountId: string) {
++  return new S3Client({ region: "auto", endpoint: `https://${accountId}.r2.cloudflarestorage.com`, credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID!, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY! } });
++}
++
++/**
++ * Creates an upload target for a CMS media-library file (logo, page image, etc.).
++ * Falls back through: R2 presigned PUT -> local dev route (never used in production).
++ */
++export async function createMediaLibraryUpload(contentType: string, extension: string) {
++  const config = r2Config();
++  const key = `media-library/${new Date().toISOString().slice(0, 10)}/${crypto.randomUUID()}.${extension}`;
++
++  if (config) {
++    const uploadUrl = await getSignedUrl(
++      client(config.accountId),
++      new PutObjectCommand({ Bucket: config.bucket, Key: key, ContentType: contentType }),
++      { expiresIn: 600 }
++    );
++    return { uploadUrl, publicUrl: `${config.publicBaseUrl}/${key}`, method: "PUT" as const };
++  }
++
++  if (process.env.NODE_ENV === "production") {
++    throw new Error("R2 depolama yapılandırması eksik. Medya yükleme için R2 veya Cloudinary yapılandırın.");
++  }
++
++  return {
++    uploadUrl: `/api/uploads/media?localKey=${encodeURIComponent(key)}`,
++    publicUrl: `${appUrl()}/${key}`,
++    method: "PUT" as const,
++  };
++}
+-- 
+2.43.0
+
