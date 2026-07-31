@@ -25,7 +25,7 @@ export default async function CmsIndex() {
           <p>Sayfalar, statik metinler, medya ve site ayarlarını buradan yönetin.</p>
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={logoUrl || "/eurosianviptransferlogo.png"} alt="Site logosu" style={{ height: 40, borderRadius: 8, background: "#fff", padding: 4 }} />
+        <img src={logoUrl || "/eurosianviptransferlogo.png"} alt="Site logosu" style={{ height: 40, width: "auto", maxWidth: 140, borderRadius: 8, background: "#fff", padding: 4, objectFit: "contain" }} />
       </div>
 
       <div className="ev-stat-grid">
