@@ -31,46 +31,61 @@ function resolveBrowserLocale(): Locale | undefined {
   return undefined;
 }
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("en");
+export function LanguageProvider({ children, initialLocale: serverInitial }: { children: ReactNode; initialLocale?: Locale }) {
+  // If server provided an initialLocale, prefer it on first render to avoid
+  // hydration mismatch and content flicker. Otherwise fall back to the previous
+  // client-side resolution logic.
+  const initialLocale = (() => {
+    if (serverInitial) return serverInitial;
+    if (typeof window === "undefined") return "en" as Locale;
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const queryLocale = params.get("lang");
-    if (queryLocale && locales.includes(queryLocale as Locale)) {
-      setLocaleState(queryLocale as Locale);
-      window.localStorage.setItem("ev-locale", queryLocale);
-      return;
-    }
+    // 1) query param
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const queryLocale = params.get("lang");
+      if (queryLocale && locales.includes(queryLocale as Locale)) return queryLocale as Locale;
+    } catch (e) {}
 
-    const pathLocale = window.location.pathname.match(/^\/(\w{2})(?:\/|$)/)?.[1];
-    if (pathLocale && locales.includes(pathLocale as Locale)) {
-      setLocaleState(pathLocale as Locale);
-      window.localStorage.setItem("ev-locale", pathLocale);
-      return;
-    }
+    // 2) path prefix (/tr/...) — keep parity with previous logic
+    try {
+      const pathLocale = window.location.pathname.match(/^\/(\w{2})(?:\/|$)/)?.[1];
+      if (pathLocale && locales.includes(pathLocale as Locale)) return pathLocale as Locale;
+    } catch (e) {}
 
-    const saved = window.localStorage.getItem("ev-locale");
-    if (saved && locales.includes(saved as Locale)) {
-      setLocaleState(saved as Locale);
-      return;
-    }
+    // 3) saved in localStorage
+    try {
+      const saved = window.localStorage.getItem("ev-locale");
+      if (saved && locales.includes(saved as Locale)) return saved as Locale;
+    } catch (e) {}
 
+    // 4) browser preferences
     const browserLocale = resolveBrowserLocale();
-    if (browserLocale) {
-      setLocaleState(browserLocale);
-    }
-  }, []);
+    if (browserLocale) return browserLocale;
+
+    return "en" as Locale;
+  })();
+
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   useEffect(() => {
-    document.documentElement.lang = locale;
-    document.documentElement.dir = rtlLocales.includes(locale) ? "rtl" : "ltr";
-    window.localStorage.setItem("ev-locale", locale);
+    // Keep URL in sync and persist preference
+    try {
+      document.documentElement.lang = locale;
+      document.documentElement.dir = rtlLocales.includes(locale) ? "rtl" : "ltr";
+      window.localStorage.setItem("ev-locale", locale);
 
-    const url = new URL(window.location.href);
-    if (url.searchParams.get("lang") !== locale) {
-      url.searchParams.set("lang", locale);
-      window.history.replaceState({}, "", url.toString());
+      const url = new URL(window.location.href);
+      if (url.searchParams.get("lang") !== locale) {
+        url.searchParams.set("lang", locale);
+        window.history.replaceState({}, "", url.toString());
+      }
+
+      // Also set a cookie so the server can pick it up on the next request
+      try {
+        document.cookie = `ev-locale=${locale}; path=/; max-age=${60 * 60 * 24 * 365}`;
+      } catch (e) {}
+    } catch (e) {
+      // non-fatal
     }
   }, [locale]);
 
