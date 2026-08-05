@@ -1,14 +1,12 @@
-"use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useLocale } from "@/components/LanguageProvider";
 import { getBookingCopy } from "@/lib/guest-copy";
+import TrackBookingClient from "@/components/TrackBookingClient";
+import { locales, type Locale } from "@/lib/i18n";
 
-export default function TrackBookingPage() {
-  const router = useRouter();
-  const { locale } = useLocale();
-  const copy = getBookingCopy(locale);
-  const [code, setCode] = useState("");
-  return <main className="ev-page ev-shell"><div className="ev-card ev-track-card"><div className="ev-eyebrow">Eurosian VIP Transfer</div><h1 className="ev-h1">{copy.trackTitle}</h1><p className="ev-muted">{copy.trackSubtitle}</p><label className="ev-label" htmlFor="tracking-code">{copy.trackCode}</label><input id="tracking-code" className="ev-input" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} placeholder="EVT-1001" /><button className="ev-btn" style={{ marginTop: 14, width: "100%" }} disabled={!code.trim()} onClick={() => router.push(`/takip/${encodeURIComponent(code.trim())}`)}>{copy.trackButton} →</button></div></main>;
+// Server component wrapper. Reads the lang query param server-side via searchParams
+// so the initial HTML is rendered with the correct locale and strings.
+export default function TrackBookingPage({ searchParams }: { searchParams?: { lang?: string } }) {
+  const lang = searchParams?.lang;
+  const serverLocale: Locale = (lang && locales.includes(lang as Locale) ? (lang as Locale) : "en");
+  const copy = getBookingCopy(serverLocale);
+  return <TrackBookingClient initialLocale={serverLocale} copy={copy} />;
 }

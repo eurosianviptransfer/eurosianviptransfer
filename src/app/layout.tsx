@@ -36,6 +36,7 @@ export const metadata = {
 import { cookies, headers } from "next/headers";
 import { getSiteLogoUrl } from "@/lib/cms/read";
 import { locales, type Locale, messages } from "@/lib/i18n";
+import { getNavLabel } from "@/lib/nav-copy";
 
 function resolveServerLocale(cookieStore: any, headersStore: any): Locale {
   // 1) special header set by middleware when ?lang=... is present on the same request
@@ -93,9 +94,9 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
                 <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
                   <li className="nav-item"><a className="nav-link" href={`/rezervasyon?airport=AYT&destination=&date=&passengers=2&lang=${serverLocale}`}>{messages[serverLocale].navBook}</a></li>
                   <li className="nav-item"><a className="nav-link" href={`/takip?lang=${serverLocale}`}>{messages[serverLocale].navTrack}</a></li>
-                  <li className="nav-item"><a className="nav-link" href={`/karsilamaci-basvuru?lang=${serverLocale}`}>{messages[serverLocale].navGreeter ?? messages[serverLocale].navBook}</a></li>
-                  <li className="nav-item"><a className="nav-link" href={`/sofor-basvuru?lang=${serverLocale}`}>{messages[serverLocale].navDriver ?? messages[serverLocale].navBook}</a></li>
-                  <li className="nav-item"><a className="nav-link" href={`/basvuru-takip?lang=${serverLocale}`}>{messages[serverLocale].navApplicationTrack ?? messages[serverLocale].navBook}</a></li>
+                  <li className="nav-item"><a className="nav-link" href={`/karsilamaci-basvuru?lang=${serverLocale}`}>{getNavLabel(serverLocale, 'greeter')}</a></li>
+                  <li className="nav-item"><a className="nav-link" href={`/sofor-basvuru?lang=${serverLocale}`}>{getNavLabel(serverLocale, 'driver')}</a></li>
+                  <li className="nav-item"><a className="nav-link" href={`/basvuru-takip?lang=${serverLocale}`}>{getNavLabel(serverLocale, 'applicationTrack')}</a></li>
                   <li className="nav-item"><a className="nav-link" href={`/giris?lang=${serverLocale}`}>{messages[serverLocale].navTeam}</a></li>
                   <li className="nav-item d-flex ms-2"><label className="ev-locale" dir="ltr" aria-label="Language"><span aria-hidden="true">◎</span><select dir="ltr" defaultValue={serverLocale}>
                     <option value="tr">🇹🇷 Türkçe</option>

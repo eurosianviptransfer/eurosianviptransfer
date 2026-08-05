@@ -15,27 +15,27 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
         <nav className="p-2">
           <ul className="list-unstyled">
             <li className="mb-1">
-              <Link className="d-block p-2 rounded text-decoration-none text-dark" href="/admin">
+              <Link className="d-block p-2 rounded text-decoration-none text-dark" href="/admin-revamp">
                 Dashboard
               </Link>
             </li>
             <li className="mb-1">
-              <Link className="d-block p-2 rounded text-decoration-none text-dark" href="/admin/content">
+              <Link className="d-block p-2 rounded text-decoration-none text-dark" href="/admin-revamp/content">
                 Content
               </Link>
             </li>
             <li className="mb-1">
-              <Link className="d-block p-2 rounded text-decoration-none text-dark" href="/admin/media">
+              <Link className="d-block p-2 rounded text-decoration-none text-dark" href="/admin-revamp/media">
                 Media
               </Link>
             </li>
             <li className="mb-1">
-              <Link className="d-block p-2 rounded text-decoration-none text-dark" href="/admin/users">
+              <Link className="d-block p-2 rounded text-decoration-none text-dark" href="/admin-revamp/users">
                 Users
               </Link>
             </li>
             <li className="mb-1">
-              <Link className="d-block p-2 rounded text-decoration-none text-dark" href="/admin/settings">
+              <Link className="d-block p-2 rounded text-decoration-none text-dark" href="/admin-revamp/settings">
                 Settings
               </Link>
             </li>
@@ -58,7 +58,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               <div className="fw-bold">Super Admin</div>
               <small className="text-muted">admin@eurosian.com</small>
             </div>
-            <img src="/avatar-placeholder.png" alt="avatar" width={40} height={40} className="rounded-circle" />
+            <img src="/avatar-placeholder.svg" alt="avatar" width={40} height={40} className="rounded-circle" />
           </div>
         </header>
 

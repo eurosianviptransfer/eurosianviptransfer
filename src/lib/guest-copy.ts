@@ -90,6 +90,11 @@ const tr: BookingCopy = {
   googleApiRequired: "Google adres araması için API anahtarı gerekiyor",
   loadingAddresses: "Adres araması yükleniyor…",
   selectedAddressPrefix: "Seçilen konum:",
+  // Turkish strings for the tracking card
+  trackTitle: "Rezervasyonunuzu takip edin",
+  trackSubtitle: "Transfer durumunu görmek için rezervasyon kodunuzu girin.",
+  trackCode: "Rezervasyon kodu",
+  trackButton: "Takibi görüntüle",
 };
 const de: BookingCopy = { ...en, title: "Flughafentransfer buchen", airport: "Abholflughafen", destination: "Ziel — Hotel / Adresse", hotelSearch: "Hotel oder Adresse suchen", region: "Region", regionLoading: "Regionen werden geladen…", regionChoose: "Region wählen", selectedAddress: "Ausgewähltes Hotel/Adresse", addressPlaceholder: "Suchergebnis oder manuelle Eingabe", mapsNote: "Google Places ist nicht konfiguriert. Sie können eine Region auswählen.", name: "Name", phone: "WhatsApp-Telefon", email: "E-Mail (optional)", passengers: "Passagiere", flight: "Flugnummer (optional)", vehicleSmall: "Vito / Transporter (klein)", vehicleLarge: "Sprinter (groß)", returnTrip: "Rücktransfer hinzufügen", payVehicle: "Im Fahrzeug zahlen", payCard: "Jetzt zahlen (Karte)", total: "Gesamtpreis", confirm: "Buchung bestätigen", required: "Name, Telefon und Datum sind erforderlich.", destinationRequired: "Zieladresse ist erforderlich.", regionRequired: "Bitte wählen Sie eine Region.", addressRequired: "Hotel- oder Adressdaten sind erforderlich.", estimate: "Geschätzter Preis", searchButton: "Suchen", searchExample: "z. B. Lara Beach Hotel", searchError: "Suche fehlgeschlagen." };
 const es: BookingCopy = { ...en, title: "Reserva de traslado desde el aeropuerto", airport: "Aeropuerto de salida", destination: "Destino — Hotel / Dirección", hotelSearch: "Buscar hotel o dirección", region: "Zona", regionChoose: "Elija una zona", selectedAddress: "Hotel/dirección seleccionada", name: "Nombre completo", phone: "Teléfono de WhatsApp", passengers: "Pasajeros", returnTrip: "Añadir traslado de vuelta", payVehicle: "Pagar en el vehículo", payCard: "Pagar ahora (tarjeta)", total: "Precio total", confirm: "Confirmar reserva", required: "El nombre, teléfono y fecha son obligatorios.", destinationRequired: "La dirección de destino es obligatoria.", regionRequired: "Elija una zona.", addressRequired: "Indique el hotel o la dirección." };

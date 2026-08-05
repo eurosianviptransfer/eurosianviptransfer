@@ -21,21 +21,6 @@ export default function HomePageClient({ logoUrl }: { logoUrl: string }) {
   const bookingParams = new URLSearchParams({ airport: originAirport, destination, date, passengers: String(passengers), lang: locale });
   const bookingHref = `/rezervasyon?${bookingParams.toString()}`;
   return <main className="ev-home">
-    <header className="ev-site-header ev-container">
-      <Link href="/" className="ev-brand" aria-label="Eurosian VIP Transfer home" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={logoUrl}
-          alt="Eurosian VIP Transfer Logo"
-          width={180}
-          height={60}
-          style={{ height: "36px", width: "auto", objectFit: "contain" }}
-        />
-        <span>EUROSIAN <small>VIP TRANSFER</small></span>
-      </Link>
-      <nav className="ev-main-nav" aria-label="Main navigation"><Link href={bookingHref}>{t.navBook}</Link><Link href={`/takip?lang=${locale}`}>{t.navTrack}</Link><Link href={`/karsilamaci-basvuru?lang=${locale}`}>{navGreeterLabel}</Link><Link href={`/sofor-basvuru?lang=${locale}`}>{navDriverLabel}</Link><Link href={`/basvuru-takip?lang=${locale}`}>{navApplyLabel}</Link><Link href={`/giris?lang=${locale}`}>{t.navTeam}</Link></nav>
-      <LocaleSwitcher />
-    </header>
 
     <section className="ev-landing-hero ev-container">
       <div className="ev-hero-copy">
