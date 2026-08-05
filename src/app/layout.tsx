@@ -34,7 +34,7 @@ export const metadata = {
 };
 
 import { cookies, headers } from "next/headers";
-import SiteHeader from "@/components/SiteHeader";
+import SiteHeader from "../components/SiteHeader";
 import { getSiteLogoUrl } from "@/lib/cms/read";
 import { locales, type Locale } from "@/lib/i18n";
 
