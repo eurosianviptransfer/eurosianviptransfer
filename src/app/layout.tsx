@@ -34,13 +34,12 @@ export const metadata = {
 };
 
 import { cookies, headers } from "next/headers";
-import SiteHeader from "../components/SiteHeader";
 import { getSiteLogoUrl } from "@/lib/cms/read";
-import { locales, type Locale } from "@/lib/i18n";
+import { locales, type Locale, messages } from "@/lib/i18n";
 
-function resolveServerLocale(cookieStore: any, headersStore: ReturnType<typeof headers>): Locale {
+function resolveServerLocale(cookieStore: any, headersStore: any): Locale {
   // 1) special header set by middleware when ?lang=... is present on the same request
-  const headerLocale = headersStore.get("x-ev-locale");
+  const headerLocale = headersStore && typeof headersStore.get === 'function' ? headersStore.get("x-ev-locale") : undefined;
   if (headerLocale && locales.includes(headerLocale as Locale)) return headerLocale as Locale;
 
   // 2) cookie (set by middleware on prior requests)
@@ -48,7 +47,7 @@ function resolveServerLocale(cookieStore: any, headersStore: ReturnType<typeof h
   if (cookieLocale && locales.includes(cookieLocale as Locale)) return cookieLocale as Locale;
 
   // 3) Accept-Language header fallback
-  const accept = headersStore.get("accept-language") || "";
+  const accept = headersStore && typeof headersStore.get === 'function' ? (headersStore.get("accept-language") || "") : "";
   const first = accept.split(",")[0]?.split(";")[0]?.trim()?.toLowerCase();
   const code = first?.split("-")[0];
   if (code && locales.includes(code as Locale)) return code as Locale;
@@ -59,7 +58,8 @@ function resolveServerLocale(cookieStore: any, headersStore: ReturnType<typeof h
 export default async function RootLayout({ children }: { children: ReactNode }) {
   // Determine server-side theme from cookie so SSR markup matches client pre-hydration
   const cookieStore = await cookies();
-  const headersStore = headers();
+  // headers() may have different typings across Next versions; await it so we always have the resolved headers object
+  const headersStore = await headers();
   const serverTheme = cookieStore.get("admin-theme")?.value === "light" ? "light" : "dark";
 
   // Resolve site logo on the server so the client header can render immediately
@@ -77,7 +77,38 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       </head>
       <body>
         <LanguageProvider initialLocale={serverLocale}><SessionProviderWrapper>
-          <SiteHeader logoUrl={logoUrl} />
+          <header className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+            <div className="container">
+              <a className="navbar-brand d-flex align-items-center" href="/">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={logoUrl || "/logo.png"} alt="Eurosian VIP Transfer" style={{ height: 36, width: "auto", objectFit: "contain" }} />
+                <span className="ms-2">EUROSIAN <small>VIP TRANSFER</small></span>
+              </a>
+
+              <button className="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle navigation">
+                <span className="navbar-toggler-icon" />
+              </button>
+
+              <div className={"collapse navbar-collapse"}>
+                <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
+                  <li className="nav-item"><a className="nav-link" href={`/rezervasyon?airport=AYT&destination=&date=&passengers=2&lang=${serverLocale}`}>{messages[serverLocale].navBook}</a></li>
+                  <li className="nav-item"><a className="nav-link" href={`/takip?lang=${serverLocale}`}>{messages[serverLocale].navTrack}</a></li>
+                  <li className="nav-item"><a className="nav-link" href={`/karsilamaci-basvuru?lang=${serverLocale}`}>{messages[serverLocale].navGreeter ?? messages[serverLocale].navBook}</a></li>
+                  <li className="nav-item"><a className="nav-link" href={`/sofor-basvuru?lang=${serverLocale}`}>{messages[serverLocale].navDriver ?? messages[serverLocale].navBook}</a></li>
+                  <li className="nav-item"><a className="nav-link" href={`/basvuru-takip?lang=${serverLocale}`}>{messages[serverLocale].navApplicationTrack ?? messages[serverLocale].navBook}</a></li>
+                  <li className="nav-item"><a className="nav-link" href={`/giris?lang=${serverLocale}`}>{messages[serverLocale].navTeam}</a></li>
+                  <li className="nav-item d-flex ms-2"><label className="ev-locale" dir="ltr" aria-label="Language"><span aria-hidden="true">◎</span><select dir="ltr" defaultValue={serverLocale}>
+                    <option value="tr">🇹🇷 Türkçe</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="ru">🇷🇺 Русский</option>
+                    <option value="nl">🇳🇱 Nederlands</option>
+                  </select></label></li>
+                </ul>
+              </div>
+            </div>
+          </header>
+
           {children}
         </SessionProviderWrapper></LanguageProvider>
       </body>
