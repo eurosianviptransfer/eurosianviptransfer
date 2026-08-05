@@ -5,7 +5,13 @@ export default async function ContentListPage() {
   let entries = [] as Array<{ id: string; key: string; locale: string; title: string }>;
   let error: string | null = null;
   try {
-    entries = await prisma.contentEntry.findMany({ orderBy: { updatedAt: "desc" }, take: 200 });
+    const rawEntries = await prisma.contentEntry.findMany({ orderBy: { updatedAt: "desc" }, take: 200 });
+    entries = rawEntries.map((entry) => ({
+      id: entry.id,
+      key: entry.key,
+      locale: entry.locale,
+      title: entry.title ?? "Untitled",
+    }));
   } catch (e: any) {
     error = e?.message ?? String(e);
   }

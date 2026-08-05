@@ -5,7 +5,12 @@ export default async function MediaListPage() {
   let items: Array<{ id: string; url: string; filename: string }> = [];
   let error: string | null = null;
   try {
-    items = await prisma.media.findMany({ orderBy: { createdAt: "desc" }, take: 200 });
+    const rawItems = await prisma.mediaItem.findMany({ orderBy: { createdAt: "desc" }, take: 200 });
+    items = rawItems.map((item) => ({
+      id: item.id,
+      url: item.url,
+      filename: item.filename,
+    }));
   } catch (e: any) {
     error = e?.message ?? String(e);
   }

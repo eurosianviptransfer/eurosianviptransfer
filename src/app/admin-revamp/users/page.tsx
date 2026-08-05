@@ -4,7 +4,13 @@ export default async function UsersPage() {
   let users: Array<{ id: string; name: string; email: string; role: string }> = [];
   let error: string | null = null;
   try {
-    users = await prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 200 });
+    const rawUsers = await prisma.user.findMany({ orderBy: { createdAt: "desc" }, take: 200 });
+    users = rawUsers.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email ?? "",
+      role: user.role,
+    }));
   } catch (e: any) {
     error = e?.message ?? String(e);
   }
