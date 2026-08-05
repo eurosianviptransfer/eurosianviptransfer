@@ -9,9 +9,13 @@ export function middleware(request: NextRequest) {
     const lang = request.nextUrl.searchParams.get('lang');
     if (lang && ALLOWED.includes(lang as typeof ALLOWED[number])) {
       const res = NextResponse.next();
-      // set a cookie that will be available server-side on subsequent requests
+      // Set a cookie so subsequent server requests can read the preference.
       // maxAge 1 year
-      res.cookies.set('ev-locale', lang, { path: '/', maxAge: 60 * 60 * 24 * 365 });
+      try {
+        res.cookies.set('ev-locale', lang, { path: '/', maxAge: 60 * 60 * 24 * 365 });
+      } catch (e) {
+        // no-op if cookie API not available
+      }
       return res;
     }
   } catch (e) {
