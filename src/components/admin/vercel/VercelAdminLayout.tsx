@@ -26,7 +26,7 @@ export const VercelAdminLayout: React.FC<{ children: React.ReactNode }> = ({ chi
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans antialiased selection:bg-blue-500 selection:text-white m-0 p-0 transition-colors">
+    <div className="min-h-screen bg-[#070b15] text-amber-400 font-sans antialiased selection:bg-amber-500 selection:text-slate-950 m-0 p-0">
       {/* VERCEL HEADER STUCK AT TOP-0 */}
       <VercelHeader
         onOpenCommandK={() => setCommandKOpen(true)}

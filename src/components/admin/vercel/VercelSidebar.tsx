@@ -91,27 +91,27 @@ export const VercelSidebar: React.FC<VercelSidebarProps> = ({ isOpen, onCloseMob
       )}
 
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-50 flex h-screen w-64 flex-col border-r border-zinc-800 bg-zinc-950 text-zinc-300 duration-200 ease-in-out ${
+        className={`fixed md:static inset-y-0 left-0 z-50 flex h-screen w-64 flex-col border-r border-amber-500/30 bg-[#070b15] text-amber-400 duration-200 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
         {/* SIDEBAR HEADER / WORKSPACE */}
-        <div className="flex h-14 items-center justify-between border-b border-zinc-800 px-4 bg-zinc-900/40">
+        <div className="flex h-14 items-center justify-between border-b border-amber-500/20 px-4 bg-[#0a0f1d]">
           <Link href="/admin/dashboard" className="flex items-center gap-2.5 group">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 font-bold group-hover:border-amber-500/50 transition-colors shadow-sm">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-amber-500/40 bg-amber-500/10 text-amber-400 font-bold group-hover:border-amber-400 transition-colors shadow-sm">
               <ShieldCheck className="h-4 w-4 text-amber-400" />
             </div>
             <div>
-              <span className="text-xs font-black text-zinc-100 tracking-tight block leading-none font-sans uppercase">
+              <span className="text-xs font-black text-amber-400 tracking-tight block leading-none font-sans uppercase">
                 Eurosian VIP Transfer
               </span>
-              <span className="text-[9px] font-mono text-amber-400/80 block mt-1 font-semibold">
+              <span className="text-[9px] font-mono text-orange-400 block mt-1 font-bold">
                 VIP Executive Management
               </span>
             </div>
           </Link>
 
-          <span className="flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-mono text-amber-400 border border-amber-500/30 font-bold">
+          <span className="flex items-center gap-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[9px] font-mono text-orange-400 border border-orange-500/30 font-black">
             VIP
           </span>
         </div>
@@ -120,7 +120,7 @@ export const VercelSidebar: React.FC<VercelSidebarProps> = ({ isOpen, onCloseMob
         <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
           {navGroups.map((group, gIdx) => (
             <div key={gIdx} className="space-y-1">
-              <div className="px-3 pb-1 text-[10px] font-mono uppercase tracking-wider text-zinc-400">
+              <div className="px-3 pb-1 text-[10px] font-mono font-black uppercase tracking-wider text-orange-400">
                 {group.title}
               </div>
 
@@ -135,16 +135,16 @@ export const VercelSidebar: React.FC<VercelSidebarProps> = ({ isOpen, onCloseMob
                     key={iIdx}
                     href={item.href}
                     onClick={onCloseMobile}
-                    className={`group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium transition-all ${
+                    className={`group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-black transition-all ${
                       isActive
-                        ? "bg-zinc-800 text-zinc-100 font-semibold border border-zinc-700 shadow-sm"
-                        : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
+                        ? "bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 shadow-md shadow-amber-500/20"
+                        : "text-amber-400 hover:bg-amber-500/10 hover:text-yellow-300"
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
                       <Icon
                         className={`h-4 w-4 transition-colors ${
-                          isActive ? "text-zinc-100" : "text-zinc-500 group-hover:text-zinc-300"
+                          isActive ? "text-slate-950" : "text-amber-400 group-hover:text-yellow-300"
                         }`}
                       />
                       <span>{item.name}</span>
@@ -153,8 +153,10 @@ export const VercelSidebar: React.FC<VercelSidebarProps> = ({ isOpen, onCloseMob
                     <div className="flex items-center gap-1.5">
                       {item.badge && (
                         <span
-                          className={`rounded-full px-1.5 py-0.5 text-[9px] font-mono font-semibold border ${
-                            item.badgeColor || "bg-zinc-800 text-zinc-300 border-zinc-700"
+                          className={`rounded-full px-1.5 py-0.5 text-[9px] font-mono font-black border ${
+                            isActive
+                              ? "bg-slate-950 text-amber-400 border-slate-900"
+                              : item.badgeColor || "bg-amber-500/20 text-orange-400 border-orange-500/30"
                           }`}
                         >
                           {item.badge}
@@ -162,7 +164,7 @@ export const VercelSidebar: React.FC<VercelSidebarProps> = ({ isOpen, onCloseMob
                       )}
 
                       {item.shortcut && !item.badge && (
-                        <kbd className="hidden group-hover:inline-flex items-center rounded bg-zinc-900 px-1 py-0.5 text-[9px] font-mono text-zinc-500 border border-zinc-800">
+                        <kbd className="hidden group-hover:inline-flex items-center rounded bg-[#0a0f1d] px-1 py-0.5 text-[9px] font-mono text-amber-300 border border-amber-500/30 font-bold">
                           {item.shortcut}
                         </kbd>
                       )}
@@ -175,28 +177,28 @@ export const VercelSidebar: React.FC<VercelSidebarProps> = ({ isOpen, onCloseMob
         </div>
 
         {/* SIDEBAR FOOTER */}
-        <div className="mt-auto border-t border-zinc-800 p-3 bg-zinc-900/30 space-y-2">
+        <div className="mt-auto border-t border-amber-500/20 p-3 bg-[#0a0f1d] space-y-2">
           {/* Uptime Indicator */}
-          <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900/90 p-2.5 text-[11px] font-mono text-zinc-400">
+          <div className="flex items-center justify-between rounded-xl border border-amber-500/30 bg-[#070b15] p-2.5 text-[11px] font-mono font-bold text-amber-300">
             <div className="flex items-center gap-2">
-              <Activity className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
+              <Activity className="h-4 w-4 text-orange-400 animate-pulse" />
               <span>Sistem Uptime</span>
             </div>
-            <span className="font-semibold text-emerald-400">%99.8</span>
+            <span className="font-black text-yellow-400">%99.8</span>
           </div>
 
           {/* User Quick Info */}
-          <div className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-900 p-2.5">
+          <div className="flex items-center justify-between rounded-xl border border-amber-500/30 bg-[#070b15] p-2.5">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600/20 text-blue-400 text-xs font-bold border border-blue-500/30">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/30 to-orange-500/30 text-amber-300 text-xs font-black border border-amber-500/40">
                 SA
               </div>
               <div className="truncate">
-                <div className="text-xs font-semibold text-zinc-200 truncate">Super Admin</div>
-                <div className="text-[10px] text-zinc-500 font-mono truncate">admin@eurosian.com</div>
+                <div className="text-xs font-black text-yellow-300 truncate">Super Admin</div>
+                <div className="text-[10px] text-orange-400 font-mono font-bold truncate">admin@eurosianviptransfer.com</div>
               </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-zinc-500" />
+            <ChevronRight className="h-4 w-4 text-amber-400" />
           </div>
         </div>
       </aside>
