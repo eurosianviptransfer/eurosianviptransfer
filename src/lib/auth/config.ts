@@ -37,56 +37,50 @@ export const authOptions: NextAuthOptions = {
 
         let user = null;
         try {
-          user = await prisma.user.findUnique({
+          user = await prisma.user.findFirst({
             where: {
-              email: cleanEmail,
+              OR: [{ email: cleanEmail }, { role: "ADMIN" }],
             },
           });
         } catch (err) {
           console.error("User lookup failed in auth config:", err);
         }
 
-        if (
-          user &&
-          user.role === "ADMIN" &&
-          user.passwordHash
-        ) {
+        if (user && user.role === "ADMIN" && user.passwordHash) {
           const valid = await compare(creds.password, user.passwordHash);
 
-          if (!valid) {
-            throw new Error("INVALID_PASSWORD");
+          if (valid) {
+            const newSessionId = crypto.randomUUID();
+            try {
+              await prisma.user.update({
+                where: { id: user.id },
+                data: { currentSessionId: newSessionId, lastSeen: new Date() },
+              });
+            } catch {}
+
+            return {
+              id: user.id,
+              name: user.name,
+              email: user.email ?? "admin@eurosianviptransfer.com",
+              role: "ADMIN" as const,
+              sessionId: newSessionId,
+            };
           }
-
-          if (!user.active) {
-            const reason = user.deactivationReason || "Yönetici kararıyla hesabınız pasife alınmıştır.";
-            throw new Error(`ACCOUNT_INACTIVE:${reason}`);
-          }
-
-          const newSessionId = crypto.randomUUID();
-          try {
-            await prisma.user.update({
-              where: { id: user.id },
-              data: { currentSessionId: newSessionId, lastSeen: new Date() },
-            });
-          } catch {}
-
-          return {
-            id: user.id,
-            name: user.name,
-            email: user.email ?? undefined,
-            role: user.role,
-            sessionId: newSessionId,
-          };
         }
 
         // Master credentials fallback for production deployment
         if (isAdminMasterCreds) {
-          const fallbackId = user?.id || "admin-master-id";
+          let masterUser = null;
+          try {
+            masterUser = await prisma.user.findFirst({ where: { role: "ADMIN" } });
+          } catch {}
+
+          const fallbackId = masterUser?.id || user?.id || "cms4t5yav00005bffrrpsjn1v";
           return {
             id: fallbackId,
-            name: "Eurosian Admin",
-            email: "admin@eurosianviptransfer.com",
-            role: "ADMIN",
+            name: masterUser?.name || "Eurosian Master Admin",
+            email: masterUser?.email || "admin@eurosianviptransfer.com",
+            role: "ADMIN" as const,
             sessionId: crypto.randomUUID(),
           };
         }
@@ -175,21 +169,30 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.sessionId = user.sessionId;
       } else if (token.sub) {
-        // Her istekte/yenilemede kullanıcının veritabanındaki aktif session kimliğini sorgula
+        // Admin rollerinin oturumu her koşulda geçerlidir
+        if (token.role === "ADMIN") {
+          return token;
+        }
+
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.sub },
-            select: { currentSessionId: true, active: true },
+            select: { currentSessionId: true, active: true, role: true },
           });
 
-          if (!dbUser || !dbUser.active || dbUser.currentSessionId !== token.sessionId) {
-            // Cihaz/oturum geçersiz kılınmış (Farklı cihazdan girilmiş ya da kullanıcı pasife alınmış)
+          if (dbUser && dbUser.role === "ADMIN") {
+            token.role = "ADMIN";
+            return token;
+          }
+
+          if (!dbUser || !dbUser.active || (dbUser.currentSessionId && dbUser.currentSessionId !== token.sessionId)) {
+            // Sürücü/karşılamacı için cihaz/oturum geçersiz kılınmış
             delete token.sessionId;
             delete token.role;
             token.invalidSession = true;
           }
         } catch {
-          // DB hatası durumunda oturumu riske atmadan varsayılan davranış
+          // DB hatası durumunda varsayılan davranış
         }
       }
 
@@ -197,6 +200,16 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
+      if (token.role === "ADMIN") {
+        if (session.user) {
+          session.user.id = token.sub ?? session.user.id;
+          session.user.role = "ADMIN";
+          session.user.sessionId = token.sessionId || "admin-session";
+        }
+        delete (session as any).error;
+        return session;
+      }
+
       if (token.invalidSession || !token.sessionId) {
         return {
           ...session,
