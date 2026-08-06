@@ -9,9 +9,24 @@
 }
 .dark body {
   color: #f8fafc;
+  background-color: #020617;
 }
 .dark a {
-  color: inherit;
+  color: #f59e0b;
+  text-decoration: none;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+.dark a:hover {
+  color: #fbbf24;
+}
+.dark table {
+  color: #f1f5f9;
+}
+.dark input, .dark select, .dark textarea {
+  color: #ffffff;
+}
+.dark input::placeholder, .dark textarea::placeholder {
+  color: #94a3b8;
 }
 
 :root {

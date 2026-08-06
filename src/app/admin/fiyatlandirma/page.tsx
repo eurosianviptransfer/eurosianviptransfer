@@ -102,12 +102,14 @@ export default function FiyatlandirmaPage() {
                 <span className="text-sm font-black text-amber-400">€{r.maybachPriceEur}</span>
               </div>
 
-              <div className="flex items-center gap-1 border-l border-slate-800 pl-4">
-                <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-amber-400">
-                  <Edit className="h-4 w-4" />
+              <div className="flex items-center gap-2 border-l border-slate-800 pl-4">
+                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-200 hover:text-amber-400 hover:bg-slate-700 border border-slate-700/60 transition-all">
+                  <Edit className="h-3.5 w-3.5 text-amber-400" />
+                  <span>Düzenle</span>
                 </button>
-                <button className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-rose-400">
-                  <Trash2 className="h-4 w-4" />
+                <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 border border-rose-500/30 transition-all">
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Sil</span>
                 </button>
               </div>
             </div>

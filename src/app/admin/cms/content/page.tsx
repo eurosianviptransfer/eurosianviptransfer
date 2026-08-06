@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { FileText, Plus, Search, Edit, Trash2, Globe2, Eye, CheckCircle2 } from "lucide-react";
+import { CmsNav } from "@/components/admin/cms/CmsNav";
 
 interface ContentItem {
   id: string;
@@ -48,6 +49,9 @@ export default function CMSContentPage() {
 
   return (
     <div className="space-y-6">
+      {/* CMS pill menu */}
+      <CmsNav />
+
       {/* HEADER */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -55,12 +59,12 @@ export default function CMSContentPage() {
             <FileText className="h-7 w-7 text-amber-400" />
             CMS Sayfa İçerikleri
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs font-semibold text-slate-300 mt-1">
             Sitede yayınlanan Hakkımızda, Hizmetler ve İletişim içeriklerini çok dilli (TR/EN/DE/RU) olarak yönetin.
           </p>
         </div>
 
-        <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 px-4 py-2.5 text-xs font-bold text-slate-950 shadow-lg shadow-amber-500/20 hover:scale-105 transition-all">
+        <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 px-4 py-2.5 text-xs font-black text-slate-950 shadow-lg shadow-amber-500/20 hover:scale-105 transition-all">
           <Plus className="h-4 w-4 stroke-[3]" />
           <span>Yeni İçerik Ekle</span>
         </button>
@@ -69,8 +73,8 @@ export default function CMSContentPage() {
       {/* TABLE */}
       <div className="rounded-2xl border border-slate-800 bg-slate-900/90 shadow-xl backdrop-blur-md overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-950 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+          <table className="w-full text-left text-sm text-slate-200">
+            <thead className="bg-slate-950 text-xs font-bold uppercase tracking-wider text-amber-400/90 border-b border-slate-800">
               <tr>
                 <th className="py-4 px-5">İçerik Başlığı & Key</th>
                 <th className="py-4 px-5">Dil</th>
@@ -80,32 +84,34 @@ export default function CMSContentPage() {
                 <th className="py-4 px-5 text-right">İşlemler</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
+            <tbody className="divide-y divide-slate-800/60 font-semibold">
               {contents.map((item) => (
                 <tr key={item.id} className="hover:bg-slate-800/40 transition-colors">
                   <td className="py-4 px-5">
                     <div className="font-bold text-white text-sm">{item.title}</div>
-                    <div className="text-xs font-mono text-amber-400/80 mt-0.5">key="{item.key}"</div>
+                    <div className="text-xs font-mono text-amber-400 mt-0.5">key="{item.key}"</div>
                   </td>
                   <td className="py-4 px-5">
-                    <span className="inline-flex items-center gap-1 font-bold text-xs bg-slate-950 px-2 py-0.5 rounded border border-slate-800 text-slate-200">
-                      <Globe2 className="h-3 w-3 text-amber-400" /> {item.lang}
+                    <span className="inline-flex items-center gap-1 font-bold text-xs bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-100 shadow-sm">
+                      <Globe2 className="h-3.5 w-3.5 text-amber-400" /> {item.lang}
                     </span>
                   </td>
-                  <td className="py-4 px-5 text-xs text-slate-300">{item.category}</td>
+                  <td className="py-4 px-5 text-xs text-slate-200">{item.category}</td>
                   <td className="py-4 px-5 text-xs text-slate-400">{item.updatedAt}</td>
                   <td className="py-4 px-5">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/20">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-300 border border-emerald-500/30 shadow-sm">
                       <CheckCircle2 className="h-3.5 w-3.5" /> Yayında
                     </span>
                   </td>
                   <td className="py-4 px-5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-amber-400">
-                        <Edit className="h-4 w-4" />
+                    <div className="flex items-center justify-end gap-2">
+                      <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-200 hover:text-amber-400 hover:bg-slate-700 border border-slate-700/60 transition-all">
+                        <Edit className="h-3.5 w-3.5 text-amber-400" />
+                        <span>Düzenle</span>
                       </button>
-                      <button className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-rose-400">
-                        <Trash2 className="h-4 w-4" />
+                      <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 border border-rose-500/30 transition-all">
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>Sil</span>
                       </button>
                     </div>
                   </td>
@@ -118,3 +124,4 @@ export default function CMSContentPage() {
     </div>
   );
 }
+

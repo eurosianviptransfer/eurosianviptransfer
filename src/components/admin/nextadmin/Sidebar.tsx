@@ -1,4 +1,3 @@
-"use me";
 "use client";
 
 import React, { useState } from "react";
@@ -28,11 +27,6 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const pathname = usePathname();
-  const [openGroup, setOpenGroup] = useState<string | null>("YÖNETİM");
-
-  const toggleGroup = (groupName: string) => {
-    setOpenGroup(openGroup === groupName ? null : groupName);
-  };
 
   const navGroups = [
     {
@@ -105,21 +99,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen })
 
   return (
     <aside
-      className={`absolute left-0 top-0 z-50 flex h-screen w-72 flex-col overflow-y-hidden bg-slate-900 duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      className={`fixed lg:static inset-y-0 left-0 z-50 flex h-screen w-72 flex-col overflow-y-hidden bg-slate-950/95 backdrop-blur-2xl border-r border-slate-800/80 duration-300 ease-in-out shadow-2xl ${
+        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       }`}
     >
       {/* SIDEBAR HEADER */}
-      <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6 border-b border-slate-800">
-        <Link href="/admin/dashboard" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 font-bold shadow-lg shadow-amber-500/20">
-            <Shield className="h-6 w-6 stroke-[2.5]" />
+      <div className="flex items-center justify-between gap-2 px-6 py-5 border-b border-slate-800/80">
+        <Link href="/admin/dashboard" className="flex items-center gap-3 group">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 font-bold shadow-lg shadow-amber-500/25 group-hover:scale-105 transition-all">
+            <Shield className="h-5 w-5 stroke-[2.5]" />
           </div>
           <div>
-            <span className="text-lg font-bold text-white tracking-wider block leading-none">
+            <span className="text-lg font-black text-white tracking-wider block leading-none">
               EUROSIA
             </span>
-            <span className="text-[10px] font-semibold tracking-widest text-amber-400 uppercase">
+            <span className="text-[10px] font-bold tracking-widest text-amber-400 uppercase mt-0.5 block">
               VIP Admin Suite
             </span>
           </div>
@@ -129,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen })
           onClick={() => setSidebarOpen(!sidebarOpen)}
           aria-controls="sidebar"
           aria-expanded={sidebarOpen}
-          className="block lg:hidden text-slate-400 hover:text-white"
+          className="block lg:hidden rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-all"
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
@@ -140,7 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen })
         <nav className="space-y-6">
           {navGroups.map((group, groupIdx) => (
             <div key={groupIdx}>
-              <h3 className="mb-3 px-3 text-xs font-bold uppercase tracking-widest text-amber-400/90">
+              <h3 className="mb-3 px-3 text-[11px] font-black uppercase tracking-widest text-amber-400/90">
                 {group.name}
               </h3>
 
@@ -154,20 +148,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen })
                     <li key={itemIdx}>
                       <Link
                         href={item.href}
-                        className={`group relative flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 font-semibold text-sm duration-200 ease-in-out ${
+                        className={`group relative flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 font-bold text-xs transition-all duration-200 shadow-sm ${
                           isActive
-                            ? "bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-md shadow-amber-500/10 font-bold"
-                            : "text-slate-200 hover:bg-slate-800 hover:text-white"
+                            ? "bg-gradient-to-r from-amber-500/20 to-amber-500/10 text-white border border-amber-500/40 shadow-md shadow-amber-500/10"
+                            : "text-slate-200 hover:bg-slate-800/80 hover:text-white hover:border-slate-700/60 border border-transparent"
                         }`}
                       >
                         <Icon
-                          className={`h-5 w-5 shrink-0 transition-colors ${
+                          className={`h-4 w-4 shrink-0 transition-colors ${
                             isActive ? "text-amber-400 stroke-[2.5]" : "text-slate-400 group-hover:text-amber-400"
                           }`}
                         />
                         <span className="truncate">{item.name}</span>
                         {item.badge && (
-                          <span className="ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/40">
+                          <span className="ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-black text-emerald-300 border border-emerald-500/40 animate-pulse">
                             {item.badge}
                           </span>
                         )}

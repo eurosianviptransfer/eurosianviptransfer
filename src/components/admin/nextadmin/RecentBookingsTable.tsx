@@ -186,9 +186,13 @@ export const RecentBookingsTable: React.FC = () => {
                 </td>
 
                 <td className="py-4 px-4 text-right">
-                  <button className="rounded-lg p-2 text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                    <MoreVertical className="h-4 w-4" />
-                  </button>
+                  <Link
+                    href={`/admin/rezervasyonlar?id=${b.id}`}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-200 hover:text-amber-300 hover:bg-slate-700 border border-slate-700/60 shadow-sm transition-all"
+                  >
+                    <span>Detay</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
                 </td>
               </tr>
             ))}
