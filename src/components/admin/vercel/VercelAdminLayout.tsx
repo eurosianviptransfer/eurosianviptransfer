@@ -24,8 +24,34 @@ export const VercelAdminLayout: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   }, [isLoginPage, status, router]);
 
-  const handleSaveCmsEntry = (entry: CmsEntry) => {
-    console.log("Saving CMS Entry from Vercel Geist Panel:", entry);
+  const handleSaveCmsEntry = async (entry: CmsEntry) => {
+    try {
+      const res = await fetch("/api/admin/content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          key: entry.key,
+          title: entry.title,
+          body: entry.content,
+          locale: entry.lang.toLowerCase(),
+          published: entry.status === "PUBLISHED",
+          type: "PAGE",
+          meta: null,
+          slug: null,
+          sortOrder: 0,
+        }),
+      });
+
+      if (!res.ok) {
+        console.error("CMS create failed", await res.text());
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("CMS create error:", error);
+      return false;
+    }
   };
 
   if (isLoginPage) {

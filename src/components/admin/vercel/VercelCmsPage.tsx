@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FileText,
   Plus,
@@ -12,68 +12,20 @@ import {
   LayoutGrid,
   List,
   Sparkles,
-  Layers,
-  Check,
   X,
-  AlertCircle,
 } from "lucide-react";
 import { VercelCmsDrawer, type CmsEntry } from "./VercelCmsDrawer";
 
-const initialContents: CmsEntry[] = [
-  {
-    id: "1",
-    key: "hakkimizda",
-    title: "Eurosia VIP Transfer Kurumsal Hakkımızda Metni",
-    lang: "TR",
-    category: "Hakkımızda",
-    content: "Eurosia VIP Transfer, Antalya ve Türkiye genelinde yüksek standartlarda VIP transfer hizmetleri sunar.",
-    status: "PUBLISHED",
-  },
-  {
-    id: "2",
-    key: "about-us",
-    title: "Eurosia VIP Transfer Corporate About Us Page",
-    lang: "EN",
-    category: "Hakkımızda",
-    content: "Eurosia VIP Transfer delivers premier luxury chauffeur services across Turkey.",
-    status: "PUBLISHED",
-  },
-  {
-    id: "3",
-    key: "vito-transfer-hizmetleri",
-    title: "Mercedes-Benz Vito VIP Transfer Detayları",
-    lang: "TR",
-    category: "Hizmetler",
-    content: "Ultra lüks dizayn edilmiş Mercedes Vito araçlarımız ile 6 kişiye kadar konforlu seyahat.",
-    status: "PUBLISHED",
-  },
-  {
-    id: "4",
-    key: "sprinter-vip-details",
-    title: "Mercedes Sprinter Large Group VIP Experience",
-    lang: "EN",
-    category: "Hizmetler",
-    content: "Spacious Sprinter VIP buses for up to 13 passengers with reclining leather seats.",
-    status: "DRAFT",
-  },
-  {
-    id: "5",
-    key: "iletisim-sayfasi",
-    title: "7/24 VIP Destek ve İletişim Bilgileri",
-    lang: "TR",
-    category: "İletisim",
-    content: "Havalimanı ve otel transferleriniz için 7 gün 24 saat kesintisiz whatsapp & telefon desteği.",
-    status: "PUBLISHED",
-  },
-];
+const emptyContents: CmsEntry[] = [];
 
 export const VercelCmsPage: React.FC = () => {
-  const [contents, setContents] = useState<CmsEntry[]>(initialContents);
+  const [contents, setContents] = useState<CmsEntry[]>(emptyContents);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedLang, setSelectedLang] = useState<string>("ALL");
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [notification, setNotification] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // Drawer state
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -94,30 +46,111 @@ export const VercelCmsPage: React.FC = () => {
     setDrawerOpen(true);
   };
 
-  const handleDelete = (id?: string) => {
+  const handleDelete = async (id?: string) => {
     if (!id) return;
     const target = contents.find((c) => c.id === id);
-    if (confirm(`"${target?.title || 'İçerik'}" silinsin mi?`)) {
+    if (!confirm(`"${target?.title || 'İçerik'}" silinsin mi?`)) return;
+
+    try {
+      const res = await fetch(`/api/admin/content/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Silme işlemi başarısız.");
       setContents((prev) => prev.filter((item) => item.id !== id));
       showFeedback("İçerik başarıyla silindi.");
+    } catch (error) {
+      console.error(error);
+      showFeedback("İçerik silinirken hata oluştu.");
     }
   };
 
-  const handleSaveEntry = (savedEntry: CmsEntry) => {
-    if (savedEntry.id) {
-      // Update
-      setContents((prev) => prev.map((item) => (item.id === savedEntry.id ? savedEntry : item)));
-      showFeedback(`"${savedEntry.title}" güncellendi.`);
-    } else {
-      // Add
-      const newEntry = {
-        ...savedEntry,
-        id: Date.now().toString(),
-      };
-      setContents((prev) => [newEntry, ...prev]);
+  const handleSaveEntry = async (savedEntry: CmsEntry) => {
+    try {
+      if (savedEntry.id) {
+        const res = await fetch(`/api/admin/content/${savedEntry.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: savedEntry.title,
+            body: savedEntry.content,
+            locale: savedEntry.lang.toLowerCase(),
+            published: savedEntry.status === "PUBLISHED",
+            type: "PAGE",
+            meta: null,
+            sortOrder: 0,
+          }),
+        });
+        if (!res.ok) throw new Error("Güncelleme başarısız.");
+        const json = await res.json();
+        setContents((prev) => prev.map((item) => (item.id === savedEntry.id ? { ...item, ...savedEntry } : item)));
+        showFeedback(`"${savedEntry.title}" güncellendi.`);
+        return true;
+      }
+
+      const res = await fetch(`/api/admin/content`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          key: savedEntry.key,
+          title: savedEntry.title,
+          body: savedEntry.content,
+          locale: savedEntry.lang.toLowerCase(),
+          published: savedEntry.status === "PUBLISHED",
+          type: "PAGE",
+          meta: null,
+          slug: null,
+          sortOrder: 0,
+        }),
+      });
+      if (!res.ok) throw new Error("Ekleme başarısız.");
+      const json = await res.json();
+      const created = json?.content;
+      if (created) {
+        setContents((prev) => [
+          {
+            ...savedEntry,
+            id: created.id,
+            locale: created.locale?.toUpperCase?.() || savedEntry.lang,
+          },
+          ...prev,
+        ]);
+      }
       showFeedback(`"${savedEntry.title}" eklendi.`);
+      return true;
+    } catch (error) {
+      console.error(error);
+      showFeedback("İçerik kaydedilirken hata oluştu.");
+      return false;
     }
   };
+
+  useEffect(() => {
+    const loadContents = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/admin/content?q=&locale=", { cache: "no-store" });
+        if (!res.ok) throw new Error("İçerikler yüklenemedi.");
+        const data = await res.json();
+        const list = Array.isArray(data?.results) ? data.results : [];
+        setContents(
+          list.map((item: any) => ({
+            id: item.id,
+            key: item.key,
+            title: item.title || "",
+            lang: (item.locale || "tr").toUpperCase(),
+            category: item.type || "Hizmetler",
+            content: item.body || "",
+            status: item.published ? "PUBLISHED" : "DRAFT",
+          }))
+        );
+      } catch (error) {
+        console.error(error);
+        setContents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadContents();
+  }, []);
 
   const filteredContents = contents.filter((item) => {
     const matchesSearch =

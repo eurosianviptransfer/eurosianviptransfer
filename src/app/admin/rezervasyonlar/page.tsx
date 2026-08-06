@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import {
   CalendarCheck,
   Search,
-  Filter,
   Download,
   Plus,
   Car,
@@ -13,115 +12,25 @@ import {
   Clock3,
   XCircle,
   Phone,
-  Mail,
   MapPin,
   Edit,
   Trash2,
   X,
   Save,
-  Check,
   AlertTriangle,
-  User,
-  ShieldCheck,
-  DollarSign
 } from "lucide-react";
+import { normalizeBookingForAdmin, type AdminBookingRow } from "@/lib/admin/admin-data";
 
-interface Booking {
-  id: string;
-  pnrCode: string;
-  customerName: string;
-  customerPhone: string;
-  customerEmail: string;
-  pickupLocation: string;
-  dropoffLocation: string;
-  vehicleType: string;
-  date: string;
-  time: string;
-  passengers: number;
-  luggage: number;
-  amount: string;
-  paymentStatus: "PAID" | "PENDING_CASH" | "FAILED";
-  status: "CONFIRMED" | "PENDING" | "COMPLETED" | "CANCELLED";
-}
-
-const mockBookingsData: Booking[] = [
-  {
-    id: "1",
-    pnrCode: "EV-8921",
-    customerName: "Alexander Wright",
-    customerPhone: "+44 7700 900077",
-    customerEmail: "alex.w@vip-client.co.uk",
-    pickupLocation: "İstanbul Havalimanı (IST) - Dış Hatlar C Çıkışı",
-    dropoffLocation: "Çırağan Palace Kempinski",
-    vehicleType: "Mercedes Vito VIP Extra",
-    date: "06 Ağu 2026",
-    time: "14:30",
-    passengers: 4,
-    luggage: 4,
-    amount: "€140",
-    paymentStatus: "PAID",
-    status: "CONFIRMED",
-  },
-  {
-    id: "2",
-    pnrCode: "EV-8922",
-    customerName: "Dr. Mehmet Yılmaz",
-    customerPhone: "+90 532 555 0199",
-    customerEmail: "mehmet.yilmaz@medholding.com",
-    pickupLocation: "Sabiha Gökçen (SAW) Havalimanı",
-    dropoffLocation: "Bodrum Yalıkavak VIP Marina",
-    vehicleType: "Mercedes Sprinter VIP (10 Kişi)",
-    date: "06 Ağu 2026",
-    time: "16:00",
-    passengers: 8,
-    luggage: 8,
-    amount: "€650",
-    paymentStatus: "PENDING_CASH",
-    status: "PENDING",
-  },
-  {
-    id: "3",
-    pnrCode: "EV-8920",
-    customerName: "Sarah Jenkins",
-    customerPhone: "+1 202 555 0143",
-    customerEmail: "s.jenkins@diplomatic.us",
-    pickupLocation: "Four Seasons Hotel Bosphorus",
-    dropoffLocation: "İstanbul Havalimanı (IST)",
-    vehicleType: "Maybach S-Class VIP",
-    date: "06 Ağu 2026",
-    time: "11:15",
-    passengers: 2,
-    luggage: 2,
-    amount: "€320",
-    paymentStatus: "PAID",
-    status: "COMPLETED",
-  },
-  {
-    id: "4",
-    pnrCode: "EV-8919",
-    customerName: "Khaled Al-Mansoor",
-    customerPhone: "+971 50 123 4567",
-    customerEmail: "k.almansoor@emiratesgroup.ae",
-    pickupLocation: "Galataport VIP Kruvaziyer Limanı",
-    dropoffLocation: "Sapanca Swissôtel Resort",
-    vehicleType: "Mercedes Vito VIP Extra",
-    date: "05 Ağu 2026",
-    time: "19:00",
-    passengers: 5,
-    luggage: 5,
-    amount: "€280",
-    paymentStatus: "PAID",
-    status: "COMPLETED",
-  },
-];
+type Booking = AdminBookingRow;
 
 function RezervasyonlarContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [bookings, setBookings] = useState<Booking[]>(mockBookingsData);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [loading, setLoading] = useState(true);
 
   // Modals state
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
@@ -129,7 +38,28 @@ function RezervasyonlarContent() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Check URL query id parameter on mount
+  useEffect(() => {
+    const loadBookings = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/admin/bookings?page=1&limit=100", { cache: "no-store" });
+        if (!res.ok) throw new Error("Rezervasyonlar alınamadı");
+        const data = await res.json();
+        const nextBookings = Array.isArray(data?.bookings)
+          ? data.bookings.map((item: any) => normalizeBookingForAdmin(item))
+          : [];
+        setBookings(nextBookings);
+      } catch (error) {
+        console.error(error);
+        setBookings([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadBookings();
+  }, []);
+
   useEffect(() => {
     const idParam = searchParams?.get("id");
     if (idParam) {
@@ -163,29 +93,9 @@ function RezervasyonlarContent() {
     setDeletingBooking(null);
   };
 
-  const handleAddSubmit = (e: React.FormEvent) => {
+  const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newId = (bookings.length + 1).toString();
-    const newPnr = `EV-${Math.floor(8000 + Math.random() * 1000)}`;
-    const newBooking: Booking = {
-      id: newId,
-      pnrCode: newPnr,
-      customerName: "Yeni VIP Müşteri",
-      customerPhone: "+90 532 111 22 33",
-      customerEmail: "musteri@vip.com",
-      pickupLocation: "İstanbul Havalimanı (IST)",
-      dropoffLocation: "Beşiktaş VIP Otel",
-      vehicleType: "Mercedes Vito VIP Extra",
-      date: "07 Ağu 2026",
-      time: "12:00",
-      passengers: 3,
-      luggage: 3,
-      amount: "€150",
-      paymentStatus: "PENDING_CASH",
-      status: "CONFIRMED",
-    };
-    setBookings([newBooking, ...bookings]);
-    showNotification(`${newPnr} yeni manuel rezervasyon başarıyla eklendi!`);
+    showNotification("Yeni rezervasyon ekleme sadece üretim entegrasyonunda desteklenir.");
     setIsAddModalOpen(false);
   };
 
@@ -293,10 +203,16 @@ function RezervasyonlarContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-semibold">
-              {filteredBookings.length === 0 ? (
+              {loading ? (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-400 font-bold">
-                    Arama kriterlerinize uygun rezarvasyon bulunamadı.
+                    Rezervasyonlar yükleniyor...
+                  </td>
+                </tr>
+              ) : filteredBookings.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-400 font-bold">
+                    Arama kriterlerinize uygun rezervasyon bulunamadı.
                   </td>
                 </tr>
               ) : (

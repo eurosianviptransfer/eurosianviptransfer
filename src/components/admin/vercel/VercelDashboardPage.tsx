@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -17,7 +17,47 @@ import {
   Activity,
 } from "lucide-react";
 
+interface OverviewData {
+  totalBookings: number;
+  approvedBookings: number;
+  pendingBookings: number;
+  completedBookings: number;
+  cancelledBookings: number;
+  paidRevenue: number;
+  vehicleCount: number;
+  driverCount: number;
+  greeterCount: number;
+}
+
 export const VercelDashboardPage: React.FC = () => {
+  const [overview, setOverview] = useState<OverviewData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadOverview = async () => {
+      try {
+        const res = await fetch("/api/admin/overview", { cache: "no-store" });
+        if (!res.ok) {
+          const json = await res.json().catch(() => null);
+          throw new Error(json?.error || "Dashboard verileri yüklenemedi.");
+        }
+        const data = await res.json();
+        setOverview(data);
+      } catch (err: any) {
+        console.error(err);
+        setError(err?.message || "Dashboard verileri alınamadı.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadOverview();
+  }, []);
+
+  const formatCurrency = (value: number) =>
+    value.toLocaleString("tr-TR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
+
   return (
     <div className="space-y-4 font-sans text-xs">
       {/* VERCEL BANNER: SYSTEM STATUS & QUICK DEPLOYMENT INFO */}
@@ -33,8 +73,11 @@ export const VercelDashboardPage: React.FC = () => {
               <Sparkles className="h-5 w-5 text-amber-400" />
             </h1>
             <p className="text-xs font-bold text-amber-300 max-w-xl leading-relaxed">
-              Bugün <span className="text-orange-400 font-extrabold">18 VIP transfer</span> var. Filonuzun <span className="text-yellow-300 font-extrabold">%92'si görevde</span> ve sürücüler canlı izleniyor.
+              Bugün <span className="text-orange-400 font-extrabold">{loading ? "..." : overview?.pendingBookings ?? "0"} bekleyen rezervasyon</span> var. Filonuzun <span className="text-yellow-300 font-extrabold">{loading ? "..." : overview?.vehicleCount ?? "0"} araç</span> hazır durumda.
             </p>
+            {error && (
+              <p className="text-xs font-semibold text-rose-300">Dashboard verileri yüklenemedi: {error}</p>
+            )}
           </div>
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
