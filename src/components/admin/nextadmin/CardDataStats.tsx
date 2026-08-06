@@ -1,5 +1,4 @@
-import React from "react";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import React, { ReactNode } from "react";
 
 interface CardDataStatsProps {
   title: string;
@@ -7,7 +6,7 @@ interface CardDataStatsProps {
   rate: string;
   levelUp?: boolean;
   levelDown?: boolean;
-  children: React.ReactNode;
+  children: ReactNode;
   subtitle?: string;
   badgeText?: string;
 }
@@ -16,33 +15,18 @@ export const CardDataStats: React.FC<CardDataStatsProps> = ({
   title,
   total,
   rate,
-  levelUp,
-  levelDown,
   children,
   subtitle,
   badgeText,
 }) => {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-slate-800/90 bg-gradient-to-b from-slate-900/95 to-slate-950/90 p-5 shadow-xl backdrop-blur-xl hover:border-amber-500/50 transition-all duration-300 group hover:-translate-y-1">
-      {/* Top Bar */}
+    <div className="relative overflow-hidden rounded-3xl border border-amber-500/20 bg-gradient-to-b from-slate-900/90 via-slate-950 to-slate-950 p-6 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-amber-500/40 hover:-translate-y-1 group">
+      {/* CARD HEADER */}
       <div className="flex items-center justify-between">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800/80 border border-slate-700/70 text-amber-400 group-hover:scale-110 group-hover:bg-amber-500/10 group-hover:border-amber-500/40 transition-all shadow-md">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-inner group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-slate-950 transition-all duration-300">
           {children}
         </div>
 
-        <span
-          className={`flex items-center gap-1 text-xs font-black px-2.5 py-1 rounded-xl shadow-sm ${
-            levelUp
-              ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
-              : levelDown
-              ? "bg-rose-500/15 text-rose-300 border border-rose-500/30"
-              : "bg-slate-800 text-slate-200"
-          }`}
-        >
-          {rate}
-          {levelUp && <TrendingUp className="h-3.5 w-3.5 stroke-[2.5]" />}
-          {levelDown && <TrendingDown className="h-3.5 w-3.5 stroke-[2.5]" />}
-        </span>
       </div>
 
       {/* Content */}
