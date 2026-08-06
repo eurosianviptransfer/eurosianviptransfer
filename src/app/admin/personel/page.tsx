@@ -157,11 +157,12 @@ export default function PersonelPage() {
   // Action: Toggle Staff Active / Inactive
   async function handleToggleActive(user: StaffUser, newActiveState: boolean) {
     if (!newActiveState && !deactivationReasonInput.trim()) {
-      alert("Lütfen bir pasife alma nedeni giriniz.");
+      setError("Lütfen bir pasife alma nedeni giriniz.");
       return;
     }
 
     setActionLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/admin/personel", {
         method: "PATCH",
@@ -182,7 +183,7 @@ export default function PersonelPage() {
       setDeactivationReasonInput("");
       await loadData();
     } catch (err: any) {
-      alert("Hata: " + err.message);
+      setError("Hata: " + err.message);
     } finally {
       setActionLoading(false);
     }
@@ -192,11 +193,12 @@ export default function PersonelPage() {
   async function handleSaveEditInfo() {
     if (!editUserModal) return;
     if (!editFormData.name.trim() || !editFormData.phone.trim()) {
-      alert("Ad Soyad ve Telefon zorunludur.");
+      setError("Ad Soyad ve Telefon zorunludur.");
       return;
     }
 
     setActionLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/admin/personel", {
         method: "PATCH",
@@ -218,7 +220,7 @@ export default function PersonelPage() {
       setEditUserModal(null);
       await loadData();
     } catch (err: any) {
-      alert("Hata: " + err.message);
+      setError("Hata: " + err.message);
     } finally {
       setActionLoading(false);
     }
@@ -226,11 +228,8 @@ export default function PersonelPage() {
 
   // Action: Reset Password
   async function handleResetPassword(user: StaffUser) {
-    if (!confirm(`${user.name} kullanıcısının şifresini sıfırlamak istediğinize emin misiniz?`)) {
-      return;
-    }
-
     setActionLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/admin/personel", {
         method: "PATCH",
@@ -249,9 +248,10 @@ export default function PersonelPage() {
         phone: user.phone,
         tempPassword: data.tempPassword,
       });
+      setActionSuccess(`${user.name} için yeni geçici şifre başarıyla üretildi.`);
       await loadData();
     } catch (err: any) {
-      alert("Hata: " + err.message);
+      setError("Hata: " + err.message);
     } finally {
       setActionLoading(false);
     }

@@ -55,7 +55,6 @@ export function FleetManagement({ vehicles, drivers, greeters }: { vehicles: Veh
   }
 
   async function handleResetPassword(person: Person) {
-    if (!confirm(`${person.name} adlı kullanıcının şifresini sıfırlamak istediğinize emin misiniz?`)) return;
     setSaving(person.id);
     try {
       const res = await updateFleet({ action: "reset-password", id: person.id });
