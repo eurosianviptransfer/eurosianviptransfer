@@ -1,32 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-import { Sidebar } from "./Sidebar";
-import { Header } from "./Header";
+import React from "react";
+import { VercelAdminLayout } from "../vercel/VercelAdminLayout";
 
 export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  return (
-    <div className="bg-slate-100 text-slate-900 min-h-screen font-sans antialiased selection:bg-amber-500 selection:text-white">
-      <div className="flex h-screen overflow-hidden">
-        {/* SIDEBAR */}
-        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-        {/* CONTENT AREA */}
-        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden bg-slate-100">
-          {/* HEADER */}
-          <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
-
-          {/* MAIN CONTENT */}
-          <main className="flex-1 px-4 py-6 md:px-6 2xl:px-10">
-            <div className="mx-auto max-w-7xl space-y-6">
-              {children}
-            </div>
-          </main>
-        </div>
-      </div>
-    </div>
-  );
+  return <VercelAdminLayout>{children}</VercelAdminLayout>;
 };
-
