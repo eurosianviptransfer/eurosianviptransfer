@@ -3,11 +3,11 @@ export type Theme = "dark" | "light";
 export const STORAGE_KEY = "admin-theme";
 
 export function getPreferredTheme(): Theme {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
 
   const saved = window.localStorage.getItem(STORAGE_KEY);
-  if (saved === "dark") return "dark";
-  return "light";
+  if (saved === "light") return "light";
+  return "dark";
 }
 
 export function setTheme(theme: Theme): Theme {
