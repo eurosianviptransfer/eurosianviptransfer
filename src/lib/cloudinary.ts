@@ -31,22 +31,25 @@ export function signPayload(params: Record<string, any>, apiSecret: string) {
 }
 
 /**
- * Verilen resim/görsel yolunu Cloudinary CDN URL'sine dönüştürür.
- * Cloudinary tanımlıysa otomatik CDN URL'si oluşturur, aksi halde orijinal yolu döndürür.
+ * Verilen resim/görsel yolunu Cloudinary CDN URL'sine veya geçerli statik yola dönüştürür.
  */
 export function getCloudinaryImageUrl(src: string | null | undefined, defaultFallback = "/eurosianviptransferlogo.png"): string {
-  if (!src) src = defaultFallback;
+  const target = src?.trim() || defaultFallback;
 
-  if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("data:")) {
-    return src;
+  // Tam URL veya data URI ise doğrudan döndür
+  if (target.startsWith("http://") || target.startsWith("https://") || target.startsWith("data:")) {
+    return target;
+  }
+
+  // Yerel statik assets (public dizinindeki dosyalar) için güvenli erişim
+  if (target.startsWith("/") || target.startsWith("media-library/") || target.startsWith("assets/")) {
+    return target.startsWith("/") ? target : `/${target}`;
   }
 
   const { cloudName } = getCloudinaryConfig();
-  if (cloudName) {
-    // Cloudinary CDN URL formatı
-    const cleanPath = src.startsWith("/") ? src.slice(1) : src;
-    return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto/v1/eurosian-vip-transfer/${cleanPath}`;
+  if (cloudName && !target.includes("/")) {
+    return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto/${target}`;
   }
 
-  return src;
+  return target.startsWith("/") ? target : `/${target}`;
 }

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { LOGO_SETTING_KEY } from "@/lib/cms/constants";
 import { getCloudinaryImageUrl } from "@/lib/cloudinary";
 
-export const DEFAULT_LOGO_URL = "https://res.cloudinary.com/pkl92piq/image/upload/f_auto,q_auto/v1/eurosian-vip-transfer/eurosianviptransferlogo.png";
+export const DEFAULT_LOGO_URL = "/eurosianviptransferlogo.png";
 
 /**
  * Reads the site logo from the SiteSetting table (managed in /admin/settings).
