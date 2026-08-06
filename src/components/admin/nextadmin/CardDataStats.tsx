@@ -23,30 +23,19 @@ export const CardDataStats: React.FC<CardDataStatsProps> = ({
   badgeText,
 }) => {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5 shadow-xl backdrop-blur-md hover:border-amber-500/40 transition-all duration-300 group">
-      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-800 border border-slate-700 text-amber-400 group-hover:scale-110 group-hover:border-amber-500/50 transition-all">
-        {children}
-      </div>
-
-      <div className="mt-4 flex items-end justify-between">
-        <div>
-          <span className="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-1">
-            {title}
-          </span>
-          <h4 className="text-2xl font-black text-white tracking-tight">
-            {total}
-          </h4>
-          {subtitle && (
-            <p className="text-xs text-slate-300 mt-1 font-semibold">{subtitle}</p>
-          )}
+    <div className="relative overflow-hidden rounded-2xl border border-slate-800/90 bg-gradient-to-b from-slate-900/95 to-slate-950/90 p-5 shadow-xl backdrop-blur-xl hover:border-amber-500/50 transition-all duration-300 group hover:-translate-y-1">
+      {/* Top Bar */}
+      <div className="flex items-center justify-between">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-800/80 border border-slate-700/70 text-amber-400 group-hover:scale-110 group-hover:bg-amber-500/10 group-hover:border-amber-500/40 transition-all shadow-md">
+          {children}
         </div>
 
         <span
-          className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg ${
+          className={`flex items-center gap-1 text-xs font-black px-2.5 py-1 rounded-xl shadow-sm ${
             levelUp
-              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+              ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
               : levelDown
-              ? "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+              ? "bg-rose-500/15 text-rose-300 border border-rose-500/30"
               : "bg-slate-800 text-slate-200"
           }`}
         >
@@ -56,12 +45,33 @@ export const CardDataStats: React.FC<CardDataStatsProps> = ({
         </span>
       </div>
 
+      {/* Content */}
+      <div className="mt-5">
+        <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1">
+          {title}
+        </span>
+        <h4 className="text-2xl md:text-3xl font-black text-white tracking-tight group-hover:text-amber-300 transition-colors">
+          {total}
+        </h4>
+        {subtitle && (
+          <p className="text-xs text-slate-300 mt-1 font-semibold">{subtitle}</p>
+        )}
+      </div>
+
+      {/* Footer Badge */}
       {badgeText && (
-        <div className="mt-3.5 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-medium">
+        <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold">
           <span className="text-slate-300">{badgeText}</span>
-          <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+          </span>
         </div>
       )}
+
+      {/* Ambient Corner Glow */}
+      <div className="absolute -right-8 -bottom-8 h-24 w-24 rounded-full bg-amber-500/5 blur-2xl group-hover:bg-amber-500/15 transition-all pointer-events-none" />
     </div>
   );
 };
+
