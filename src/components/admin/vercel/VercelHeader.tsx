@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
 import {
   Search,
   Plus,
@@ -19,6 +20,8 @@ import {
   DollarSign,
   Settings,
   ShieldCheck,
+  LogOut,
+  User,
 } from "lucide-react";
 import { initTheme, setTheme, getPreferredTheme, type Theme } from "@/lib/theme";
 
@@ -89,7 +92,7 @@ export const VercelHeader: React.FC<VercelHeaderProps> = ({
           </div>
         </div>
 
-        {/* Right: Cmd+K, New Content, Theme, User Profile */}
+        {/* Right: Cmd+K, New Content, User Profile & SignOut */}
         <div className="flex items-center gap-2">
           {/* Cmd+K Search Button */}
           <button
@@ -111,17 +114,34 @@ export const VercelHeader: React.FC<VercelHeaderProps> = ({
             className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-3.5 py-1.5 text-xs font-black text-slate-950 shadow-md shadow-amber-500/20 hover:from-amber-400 hover:to-orange-400 active:scale-95 transition-all"
           >
             <Plus className="h-4 w-4 stroke-[3]" />
-            <span>Yeni İçerik</span>
+            <span className="hidden sm:inline">Yeni İçerik</span>
           </button>
 
           <div className="h-4 w-px bg-amber-500/20 hidden sm:block" />
 
           {/* User Profile Avatar */}
-          <div className="flex items-center gap-1 pl-0.5">
+          <div className="flex items-center gap-2 pl-0.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 text-amber-300 border border-amber-500/40 text-xs font-black shadow-sm">
               EA
             </div>
+            <div className="hidden lg:block text-left">
+              <div className="text-[11px] font-extrabold text-yellow-300 leading-tight">Admin Portal</div>
+              <div className="text-[9px] font-mono text-orange-400 font-bold">admin@eurosianviptransfer.com</div>
+            </div>
           </div>
+
+          {/* SignOut (Oturumu Kapat) Button */}
+          <button
+            type="button"
+            onClick={async () => {
+              await signOut({ callbackUrl: "/admin/giris" });
+            }}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-red-500/40 bg-red-500/15 px-3 py-1.5 text-xs font-black text-red-400 hover:bg-red-500/25 hover:border-red-500/60 active:scale-95 transition-all shadow-sm cursor-pointer ml-1"
+            title="Oturumu Güvenle Kapat"
+          >
+            <LogOut className="h-3.5 w-3.5 stroke-[2.5]" />
+            <span className="hidden sm:inline">Çıkış Yap</span>
+          </button>
         </div>
       </div>
 

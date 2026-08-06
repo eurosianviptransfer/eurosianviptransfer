@@ -1,17 +1,26 @@
 "use client";
 
-import React, { useState } from "react";
-import { usePathname } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { VercelHeader } from "./VercelHeader";
 import { VercelCommandKModal } from "./VercelCommandKModal";
 import { VercelCmsDrawer, type CmsEntry } from "./VercelCmsDrawer";
 
 export const VercelAdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [commandKOpen, setCommandKOpen] = useState(false);
   const [cmsDrawerOpen, setCmsDrawerOpen] = useState(false);
 
   const isLoginPage = pathname === "/admin/giris" || pathname?.endsWith("/admin/giris");
+
+  useEffect(() => {
+    if (!isLoginPage && status === "unauthenticated") {
+      router.push("/admin/giris");
+    }
+  }, [isLoginPage, status, router]);
 
   const handleSaveCmsEntry = (entry: CmsEntry) => {
     console.log("Saving CMS Entry from Vercel Geist Panel:", entry);

@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
   FileText,
@@ -21,6 +22,7 @@ import {
   Database,
   Activity,
   Terminal,
+  LogOut,
   type LucideIcon,
 } from "lucide-react";
 
@@ -187,18 +189,27 @@ export const VercelSidebar: React.FC<VercelSidebarProps> = ({ isOpen, onCloseMob
             <span className="font-black text-yellow-400">%99.8</span>
           </div>
 
-          {/* User Quick Info */}
+          {/* User Quick Info & SignOut */}
           <div className="flex items-center justify-between rounded-xl border border-amber-500/30 bg-[#070b15] p-2.5">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/30 to-orange-500/30 text-amber-300 text-xs font-black border border-amber-500/40">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500/30 to-orange-500/30 text-amber-300 text-xs font-black border border-amber-500/40">
                 SA
               </div>
               <div className="truncate">
                 <div className="text-xs font-black text-yellow-300 truncate">Super Admin</div>
-                <div className="text-[10px] text-orange-400 font-mono font-bold truncate">admin@eurosianviptransfer.com</div>
+                <div className="text-[9px] text-orange-400 font-mono font-bold truncate">admin@eurosianviptransfer.com</div>
               </div>
             </div>
-            <ChevronRight className="h-4 w-4 text-amber-400" />
+            <button
+              type="button"
+              onClick={async () => {
+                await signOut({ callbackUrl: "/admin/giris" });
+              }}
+              className="p-1.5 rounded-lg border border-red-500/40 bg-red-500/15 text-red-400 hover:bg-red-500/30 hover:border-red-500/60 active:scale-95 transition-all shadow-sm cursor-pointer shrink-0"
+              title="Oturumu Kapat"
+            >
+              <LogOut className="h-4 w-4 stroke-[2.5]" />
+            </button>
           </div>
         </div>
       </aside>
