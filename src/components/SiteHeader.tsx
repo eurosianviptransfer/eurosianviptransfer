@@ -2,16 +2,23 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useLocale } from "@/components/LanguageProvider";
 import { getNavLabel } from "@/lib/nav-copy";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 
 export default function SiteHeader({ logoUrl }: { logoUrl: string }) {
+  const pathname = usePathname();
   const { t, locale } = useLocale();
   const navDriverLabel = getNavLabel(locale, "driver");
   const navApplyLabel = getNavLabel(locale, "applicationTrack");
   const navGreeterLabel = getNavLabel(locale, "greeter");
   const [open, setOpen] = useState(false);
+
+  // Hide customer site header on admin dashboard & CMS pages
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   return (
     <header className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">

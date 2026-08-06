@@ -55,6 +55,7 @@ function resolveServerLocale(cookieStore: any, headersStore: any): Locale {
 
   return "en" as Locale;
 }
+import SiteHeader from "@/components/SiteHeader";
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   // Determine server-side theme from cookie so SSR markup matches client pre-hydration
@@ -78,38 +79,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       </head>
       <body>
         <LanguageProvider initialLocale={serverLocale}><SessionProviderWrapper>
-          <header className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-            <div className="container">
-              <a className="navbar-brand d-flex align-items-center" href="/">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={logoUrl || "/logo.png"} alt="Eurosian VIP Transfer" style={{ height: 36, width: "auto", objectFit: "contain" }} />
-                <span className="ms-2">EUROSIAN <small>VIP TRANSFER</small></span>
-              </a>
-
-              <button className="navbar-toggler" type="button" aria-expanded="false" aria-label="Toggle navigation">
-                <span className="navbar-toggler-icon" />
-              </button>
-
-              <div className={"collapse navbar-collapse"}>
-                <ul className="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
-                  <li className="nav-item"><a className="nav-link" href={`/rezervasyon?airport=AYT&destination=&date=&passengers=2&lang=${serverLocale}`}>{messages[serverLocale].navBook}</a></li>
-                  <li className="nav-item"><a className="nav-link" href={`/takip?lang=${serverLocale}`}>{messages[serverLocale].navTrack}</a></li>
-                  <li className="nav-item"><a className="nav-link" href={`/karsilamaci-basvuru?lang=${serverLocale}`}>{getNavLabel(serverLocale, 'greeter')}</a></li>
-                  <li className="nav-item"><a className="nav-link" href={`/sofor-basvuru?lang=${serverLocale}`}>{getNavLabel(serverLocale, 'driver')}</a></li>
-                  <li className="nav-item"><a className="nav-link" href={`/basvuru-takip?lang=${serverLocale}`}>{getNavLabel(serverLocale, 'applicationTrack')}</a></li>
-                  <li className="nav-item"><a className="nav-link" href={`/giris?lang=${serverLocale}`}>{messages[serverLocale].navTeam}</a></li>
-                  <li className="nav-item d-flex ms-2"><label className="ev-locale" dir="ltr" aria-label="Language"><span aria-hidden="true">◎</span><select dir="ltr" defaultValue={serverLocale}>
-                    <option value="tr">🇹🇷 Türkçe</option>
-                    <option value="en">🇬🇧 English</option>
-                    <option value="de">🇩🇪 Deutsch</option>
-                    <option value="ru">🇷🇺 Русский</option>
-                    <option value="nl">🇳🇱 Nederlands</option>
-                  </select></label></li>
-                </ul>
-              </div>
-            </div>
-          </header>
-
+          <SiteHeader logoUrl={logoUrl} />
           {children}
         </SessionProviderWrapper></LanguageProvider>
       </body>
