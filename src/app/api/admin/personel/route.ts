@@ -170,13 +170,12 @@ export async function PATCH(req: NextRequest) {
           phone: true,
           email: true,
           supplierName: true,
-          currentSessionId: true,
         },
       });
     } catch (lookupErr: any) {
       console.warn("User lookup via findUnique failed, using raw query fallback:", lookupErr.message);
       const rows: any[] = await prisma.$queryRawUnsafe(
-        `SELECT "id", "name", "phone", "email", "supplierName", "currentSessionId" FROM "User" WHERE "id" = $1 LIMIT 1`,
+        `SELECT "id", "name", "phone", "email", "supplierName" FROM "User" WHERE "id" = $1 LIMIT 1`,
         userId
       );
       user = rows[0] || null;
@@ -201,18 +200,24 @@ export async function PATCH(req: NextRequest) {
           data: {
             active,
             deactivationReason: reasonText,
-            currentSessionId: active ? user.currentSessionId : null,
           },
         });
       } catch (patchErr: any) {
         console.warn("Standard user.update failed for toggle-active, using raw SQL fallback:", patchErr.message);
-        await prisma.$executeRawUnsafe(
-          `UPDATE "User" SET "active" = $1, "deactivationReason" = $2, "currentSessionId" = $3 WHERE "id" = $4`,
-          active,
-          reasonText,
-          active ? user.currentSessionId : null,
-          userId
-        );
+        try {
+          await prisma.$executeRawUnsafe(
+            `UPDATE "User" SET "active" = $1, "deactivationReason" = $2 WHERE "id" = $3`,
+            active,
+            reasonText,
+            userId
+          );
+        } catch (innerErr) {
+          await prisma.$executeRawUnsafe(
+            `UPDATE "User" SET "active" = $1 WHERE "id" = $2`,
+            active,
+            userId
+          );
+        }
       }
 
       return NextResponse.json({
@@ -288,13 +293,12 @@ export async function PATCH(req: NextRequest) {
           where: { id: userId },
           data: {
             passwordHash,
-            currentSessionId: null, // Force re-login
           },
         });
       } catch (passErr: any) {
         console.warn("Standard reset-password failed, trying raw SQL fallback:", passErr.message);
         await prisma.$executeRawUnsafe(
-          `UPDATE "User" SET "passwordHash" = $1, "currentSessionId" = NULL WHERE "id" = $2`,
+          `UPDATE "User" SET "passwordHash" = $1 WHERE "id" = $2`,
           passwordHash,
           userId
         );
