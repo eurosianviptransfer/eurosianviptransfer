@@ -22,6 +22,7 @@ export function PhonePasswordForm({ expectedRole, defaultRedirect }: Props) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [inactiveReason, setInactiveReason] = useState("");
 
   const reason = params.get("reason");
   const logoUrl = getCloudinaryImageUrl("/eurosianviptransferlogo.png");
@@ -40,6 +41,7 @@ export function PhonePasswordForm({ expectedRole, defaultRedirect }: Props) {
 
     setLoading(true);
     setError("");
+    setInactiveReason("");
 
     try {
       const res = await signIn("phone-credentials", {
@@ -50,14 +52,22 @@ export function PhonePasswordForm({ expectedRole, defaultRedirect }: Props) {
       });
 
       if (res?.error) {
-        setError("Telefon numarası veya şifre hatalı.");
+        if (res.error.includes("ACCOUNT_INACTIVE")) {
+          const parts = res.error.split("ACCOUNT_INACTIVE:");
+          const reasonText = parts[1] || "Yönetici kararıyla hesabınız pasife alınmıştır.";
+          setInactiveReason(reasonText);
+          setError("ACCOUNT_INACTIVE");
+        } else {
+          setInactiveReason("");
+          setError("Girdiğiniz şifre veya telefon numarası hatalı.");
+        }
         return;
       }
 
       router.push(safeCallbackUrl(params.get("callbackUrl"), defaultRedirect));
     } catch (err) {
       console.error(err);
-      setError("Giriş sırasında bir hata oluştu.");
+      setError("Giriş sırasında bir sunucu hatası oluştu.");
     } finally {
       setLoading(false);
     }
@@ -397,11 +407,36 @@ export function PhonePasswordForm({ expectedRole, defaultRedirect }: Props) {
         )}
 
         {error && (
-          <div className="ev-alert ev-alert--error">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+          <div className={`ev-alert ${error === "ACCOUNT_INACTIVE" ? "ev-alert--warning" : "ev-alert--error"}`}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+              {error === "ACCOUNT_INACTIVE" ? (
+                <>
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </>
+              ) : (
+                <>
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/>
+                </>
+              )}
             </svg>
-            <div>{error}</div>
+            <div style={{ textAlign: "left" }}>
+              {error === "ACCOUNT_INACTIVE" ? (
+                <div>
+                  <strong style={{ display: "block", fontSize: "14px", fontWeight: "700", marginBottom: "3px" }}>
+                    Hesabınız Pasif Durumdadır!
+                  </strong>
+                  <span style={{ fontSize: "13px", opacity: 0.95 }}>
+                    {inactiveReason || "Yönetici kararıyla hesabınız pasife alınmıştır."}
+                  </span>
+                </div>
+              ) : (
+                error
+              )}
+            </div>
           </div>
         )}
 

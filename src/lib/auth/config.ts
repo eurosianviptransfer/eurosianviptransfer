@@ -49,28 +49,34 @@ export const authOptions: NextAuthOptions = {
         if (
           user &&
           user.role === "ADMIN" &&
-          user.active &&
           user.passwordHash
         ) {
           const valid = await compare(creds.password, user.passwordHash);
 
-          if (valid) {
-            const newSessionId = crypto.randomUUID();
-            try {
-              await prisma.user.update({
-                where: { id: user.id },
-                data: { currentSessionId: newSessionId, lastSeen: new Date() },
-              });
-            } catch {}
-
-            return {
-              id: user.id,
-              name: user.name,
-              email: user.email ?? undefined,
-              role: user.role,
-              sessionId: newSessionId,
-            };
+          if (!valid) {
+            throw new Error("INVALID_PASSWORD");
           }
+
+          if (!user.active) {
+            const reason = user.deactivationReason || "Yönetici kararıyla hesabınız pasife alınmıştır.";
+            throw new Error(`ACCOUNT_INACTIVE:${reason}`);
+          }
+
+          const newSessionId = crypto.randomUUID();
+          try {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { currentSessionId: newSessionId, lastSeen: new Date() },
+            });
+          } catch {}
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email ?? undefined,
+            role: user.role,
+            sessionId: newSessionId,
+          };
         }
 
         // Master credentials fallback for production deployment
@@ -106,46 +112,56 @@ export const authOptions: NextAuthOptions = {
 
         const phone = normalizePhone(creds.phone);
 
-        const user = await prisma.user.findUnique({
-          where: {
-            phone,
-          },
-        });
+        let user = null;
+        try {
+          user = await prisma.user.findUnique({
+            where: {
+              phone,
+            },
+          });
+        } catch (err) {
+          console.error("User lookup by phone failed:", err);
+        }
 
-        if (!user || !user.active) {
-          return null;
+        if (!user) {
+          throw new Error("USER_NOT_FOUND");
         }
 
         if (!["DRIVER", "GREETER"].includes(user.role)) {
-          return null;
+          throw new Error("ROLE_MISMATCH");
         }
 
-        if (
-          creds.expectedRole &&
-          user.role !== creds.expectedRole
-        ) {
-          return null;
+        if (creds.expectedRole && user.role !== creds.expectedRole) {
+          throw new Error("ROLE_MISMATCH");
         }
 
         if (!user.passwordHash) {
-          return null;
+          throw new Error("NO_PASSWORD_SET");
         }
 
         const valid = await compare(creds.password, user.passwordHash);
 
         if (!valid) {
-          return null;
+          throw new Error("INVALID_PASSWORD");
+        }
+
+        if (!user.active) {
+          const reason = user.deactivationReason || "Yönetici kararıyla hesabınız pasife alınmıştır. Detaylar için merkez ile iletişime geçiniz.";
+          throw new Error(`ACCOUNT_INACTIVE:${reason}`);
         }
 
         const newSessionId = crypto.randomUUID();
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { currentSessionId: newSessionId, lastSeen: new Date() },
-        });
+        try {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { currentSessionId: newSessionId, lastSeen: new Date() },
+          });
+        } catch {}
 
         return {
           id: user.id,
           name: user.name,
+          email: user.email ?? undefined,
           role: user.role,
           sessionId: newSessionId,
         };
