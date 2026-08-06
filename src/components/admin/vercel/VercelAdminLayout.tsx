@@ -1,17 +1,29 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import { VercelHeader } from "./VercelHeader";
 import { VercelCommandKModal } from "./VercelCommandKModal";
 import { VercelCmsDrawer, type CmsEntry } from "./VercelCmsDrawer";
 
 export const VercelAdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const pathname = usePathname();
   const [commandKOpen, setCommandKOpen] = useState(false);
   const [cmsDrawerOpen, setCmsDrawerOpen] = useState(false);
+
+  const isLoginPage = pathname === "/admin/giris" || pathname?.endsWith("/admin/giris");
 
   const handleSaveCmsEntry = (entry: CmsEntry) => {
     console.log("Saving CMS Entry from Vercel Geist Panel:", entry);
   };
+
+  if (isLoginPage) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans antialiased m-0 p-0 flex flex-col justify-start">
+        {children}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans antialiased selection:bg-blue-500 selection:text-white m-0 p-0 transition-colors">

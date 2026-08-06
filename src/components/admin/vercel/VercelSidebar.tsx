@@ -98,21 +98,21 @@ export const VercelSidebar: React.FC<VercelSidebarProps> = ({ isOpen, onCloseMob
         {/* SIDEBAR HEADER / WORKSPACE */}
         <div className="flex h-14 items-center justify-between border-b border-zinc-800 px-4 bg-zinc-900/40">
           <Link href="/admin/dashboard" className="flex items-center gap-2.5 group">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-100 font-bold group-hover:border-zinc-500 transition-colors">
-              <ShieldCheck className="h-4 w-4 text-emerald-400" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400 font-bold group-hover:border-amber-500/50 transition-colors shadow-sm">
+              <ShieldCheck className="h-4 w-4 text-amber-400" />
             </div>
             <div>
-              <span className="text-xs font-bold text-zinc-100 tracking-tight block leading-none font-sans">
-                EUROSIA VIP
+              <span className="text-xs font-black text-zinc-100 tracking-tight block leading-none font-sans uppercase">
+                Eurosian VIP Transfer
               </span>
-              <span className="text-[9px] font-mono text-zinc-400 block mt-0.5">
-                v2.6.0 Geist Suite
+              <span className="text-[9px] font-mono text-amber-400/80 block mt-1 font-semibold">
+                VIP Executive Management
               </span>
             </div>
           </Link>
 
-          <span className="flex items-center gap-1 rounded bg-zinc-900 px-1.5 py-0.5 text-[9px] font-mono text-zinc-400 border border-zinc-800">
-            PRO
+          <span className="flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-mono text-amber-400 border border-amber-500/30 font-bold">
+            VIP
           </span>
         </div>
 

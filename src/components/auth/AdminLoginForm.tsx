@@ -35,7 +35,9 @@ export function AdminLoginForm() {
         setError("E-posta adresi veya şifre hatalı.");
         return;
       }
-      router.push(safeCallbackUrl(params.get("callbackUrl"), "/admin"));
+      const targetUrl = safeCallbackUrl(params.get("callbackUrl"), "/admin/dashboard");
+      router.push(targetUrl);
+      router.refresh();
     } catch {
       setError("Giriş yapılırken sunucu hatası oluştu.");
     } finally {
@@ -87,12 +89,12 @@ export function AdminLoginForm() {
         }
 
         .ev-auth-card {
-          background: linear-gradient(145deg, rgba(18, 24, 38, 0.9) 0%, rgba(10, 14, 23, 0.95) 100%);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(212, 175, 55, 0.2);
+          background: linear-gradient(145deg, rgba(20, 26, 40, 0.95) 0%, rgba(8, 11, 18, 0.98) 100%);
+          backdrop-filter: blur(24px);
+          border: 1px solid rgba(212, 175, 55, 0.35);
           border-radius: 24px;
-          padding: 36px 32px;
-          box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(212, 175, 55, 0.1);
+          padding: 38px 34px;
+          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(212, 175, 55, 0.15);
           display: flex;
           flex-direction: column;
           gap: 22px;
@@ -113,31 +115,32 @@ export function AdminLoginForm() {
         .ev-logo-box {
           display: flex;
           justify-content: center;
-          margin-bottom: 4px;
+          margin-bottom: 2px;
         }
 
         .ev-logo-img {
-          height: 44px;
+          height: 48px;
           width: auto;
           object-fit: contain;
-          filter: drop-shadow(0 4px 12px rgba(212, 175, 55, 0.2));
+          filter: drop-shadow(0 4px 14px rgba(212, 175, 55, 0.3));
         }
 
         .ev-auth-badge {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 5px 14px;
-          background: rgba(212, 175, 55, 0.12);
-          border: 1px solid rgba(212, 175, 55, 0.3);
+          padding: 6px 16px;
+          background: rgba(212, 175, 55, 0.15);
+          border: 1px solid rgba(212, 175, 55, 0.4);
           border-radius: 99px;
           color: #f3ce72;
           font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.8px;
+          font-weight: 800;
+          letter-spacing: 1px;
           text-transform: uppercase;
           width: fit-content;
           margin: 0 auto;
+          box-shadow: 0 2px 10px rgba(212, 175, 55, 0.1);
         }
 
         .ev-auth-header {

@@ -62,12 +62,12 @@ export const VercelHeader: React.FC<VercelHeaderProps> = ({
       <div className="flex h-11 items-center justify-between px-3 md:px-5 border-b border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950">
         {/* Left: Brand & Scope */}
         <div className="flex items-center gap-2">
-          <Link href="/admin/dashboard" className="flex items-center gap-1.5 group">
-            <div className="flex h-5 w-5 items-center justify-center rounded bg-zinc-900 dark:bg-zinc-100 text-zinc-100 dark:text-zinc-950 font-black">
-              <ShieldCheck className="h-3 w-3" />
+          <Link href="/admin/dashboard" className="flex items-center gap-2 group">
+            <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-500 font-black shadow-sm group-hover:scale-105 transition-transform">
+              <ShieldCheck className="h-4 w-4" />
             </div>
-            <span className="text-[11px] font-extrabold tracking-tight text-zinc-900 dark:text-zinc-100 font-sans">
-              EUROSIA VIP
+            <span className="text-xs font-black tracking-tight text-zinc-900 dark:text-zinc-100 font-sans uppercase">
+              Eurosian VIP Transfer
             </span>
           </Link>
 

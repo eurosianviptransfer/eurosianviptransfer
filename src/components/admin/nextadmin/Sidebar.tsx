@@ -82,11 +82,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen })
               <Shield className="h-6 w-6 stroke-[2.5]" />
             </div>
             <div>
-              <span className="text-lg font-black text-slate-900 tracking-tight block leading-none font-sans">
-                EUROSIAN
+              <span className="text-base font-black text-slate-900 tracking-tight block leading-none font-sans">
+                Eurosian VIP Transfer
               </span>
-              <span className="text-[10px] font-black tracking-widest text-blue-600 uppercase mt-1 block">
-                PLATINUM SUITE
+              <span className="text-[10px] font-black tracking-widest text-amber-600 uppercase mt-1 block">
+                VIP EXECUTIVE PORTAL
               </span>
             </div>
           </Link>
