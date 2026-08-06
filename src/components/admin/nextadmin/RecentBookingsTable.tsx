@@ -87,21 +87,21 @@ const mockBookings: BookingRow[] = [
 
 export const RecentBookingsTable: React.FC = () => {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-6 shadow-xl backdrop-blur-md">
+    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-xl backdrop-blur-md">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <Car className="h-5 w-5 text-amber-400" />
             Son VIP Transfer Rezervasyonları
           </h3>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs font-medium text-slate-300 mt-1">
             Anlık rezervasyon istekleri ve karşılama durumları
           </p>
         </div>
 
         <Link
           href="/admin/rezervasyonlar"
-          className="flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 rounded-xl border border-amber-500/20 transition-all"
+          className="flex items-center gap-1.5 text-xs font-bold text-amber-300 hover:text-amber-200 bg-amber-500/20 hover:bg-amber-500/30 px-3.5 py-2 rounded-xl border border-amber-500/40 transition-all shadow-sm"
         >
           <span>Tümünü Gör</span>
           <ArrowRight className="h-3.5 w-3.5" />
@@ -109,89 +109,84 @@ export const RecentBookingsTable: React.FC = () => {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm text-slate-300">
-          <thead className="bg-slate-950/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+        <table className="w-full text-left text-sm text-slate-200">
+          <thead className="bg-slate-950 text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-slate-800">
             <tr>
-              <th className="py-3.5 px-4 rounded-l-xl">PNR / Müşteri</th>
-              <th className="py-3.5 px-4">Rota (Nereden ➔ Nereye)</th>
-              <th className="py-3.5 px-4">Araç Segmenti</th>
-              <th className="py-3.5 px-4">Tarih & Saat</th>
-              <th className="py-3.5 px-4">Tutar</th>
-              <th className="py-3.5 px-4">Durum</th>
-              <th className="py-3.5 px-4 rounded-r-xl text-right">İşlem</th>
+              <th className="py-4 px-4 rounded-l-xl">PNR / Müşteri</th>
+              <th className="py-4 px-4">Rota (Nereden ➔ Nereye)</th>
+              <th className="py-4 px-4">Araç Segmenti</th>
+              <th className="py-4 px-4">Tarih & Saat</th>
+              <th className="py-4 px-4">Tutar</th>
+              <th className="py-4 px-4">Durum</th>
+              <th className="py-4 px-4 rounded-r-xl text-right">İşlem</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/60 font-medium">
+          <tbody className="divide-y divide-slate-800 font-semibold">
             {mockBookings.map((b) => (
-              <tr key={b.id} className="hover:bg-slate-800/40 transition-colors">
+              <tr key={b.id} className="hover:bg-slate-800/60 transition-colors">
                 <td className="py-4 px-4">
                   <div className="font-bold text-white flex items-center gap-2">
-                    <span className="text-xs font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                    <span className="text-xs font-mono font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30">
                       {b.pnrCode}
                     </span>
                     <span>{b.customerName}</span>
                   </div>
-                  <div className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                    <Phone className="h-3 w-3 text-slate-500" />
+                  <div className="text-xs text-slate-300 flex items-center gap-1 mt-1 font-normal">
+                    <Phone className="h-3 w-3 text-slate-400" />
                     <span>{b.customerPhone}</span>
                   </div>
                 </td>
 
                 <td className="py-4 px-4 max-w-xs">
-                  <div className="flex items-center gap-1.5 text-xs text-slate-200 truncate">
+                  <div className="flex items-center gap-1.5 text-xs text-slate-100 font-bold truncate">
                     <Navigation className="h-3.5 w-3.5 text-amber-400 shrink-0" />
                     <span className="truncate">{b.pickupLocation}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-400 truncate mt-1">
-                    <span className="text-slate-600 font-bold ml-1">➔</span>
+                  <div className="flex items-center gap-1.5 text-xs text-slate-300 truncate mt-1 font-medium">
+                    <span className="text-amber-400 font-bold ml-1">➔</span>
                     <span className="truncate">{b.dropoffLocation}</span>
                   </div>
                 </td>
 
-                <td className="py-4 px-4 text-xs font-semibold text-slate-200">
+                <td className="py-4 px-4 text-xs font-bold text-slate-100">
                   {b.vehicleType}
                 </td>
 
                 <td className="py-4 px-4">
-                  <div className="text-xs text-slate-200 flex items-center gap-1">
+                  <div className="text-xs text-slate-100 font-bold flex items-center gap-1">
                     <Calendar className="h-3.5 w-3.5 text-slate-400" />
                     <span>{b.date}</span>
                   </div>
-                  <div className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
-                    <Clock className="h-3 w-3 text-slate-500" />
+                  <div className="text-xs text-slate-300 font-medium flex items-center gap-1 mt-0.5">
+                    <Clock className="h-3 w-3 text-slate-400" />
                     <span>{b.time}</span>
                   </div>
                 </td>
 
-                <td className="py-4 px-4 font-black text-amber-400 text-sm">
+                <td className="py-4 px-4 font-black text-amber-400 text-base">
                   {b.amount}
                 </td>
 
                 <td className="py-4 px-4">
                   {b.status === "CONFIRMED" && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-bold text-emerald-400 border border-emerald-500/20">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-300 border border-emerald-500/30">
                       <CheckCircle2 className="h-3.5 w-3.5" /> Onaylandı
                     </span>
                   )}
                   {b.status === "PENDING" && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-bold text-amber-400 border border-amber-500/20">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-1 text-xs font-bold text-amber-300 border border-amber-500/30">
                       <Clock3 className="h-3.5 w-3.5 animate-spin" /> Beklemede
                     </span>
                   )}
                   {b.status === "COMPLETED" && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-bold text-blue-400 border border-blue-500/20">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/20 px-3 py-1 text-xs font-bold text-blue-300 border border-blue-500/30">
                       <CheckCircle2 className="h-3.5 w-3.5" /> Tamamlandı
-                    </span>
-                  )}
-                  {b.status === "CANCELLED" && (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-bold text-rose-400 border border-rose-500/20">
-                      <XCircle className="h-3.5 w-3.5" /> İptal
                     </span>
                   )}
                 </td>
 
                 <td className="py-4 px-4 text-right">
-                  <button className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-all">
+                  <button className="rounded-lg p-2 text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
                     <MoreVertical className="h-4 w-4" />
                   </button>
                 </td>

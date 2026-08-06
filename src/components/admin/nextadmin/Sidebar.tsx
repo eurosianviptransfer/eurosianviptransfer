@@ -140,11 +140,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen })
         <nav className="space-y-6">
           {navGroups.map((group, groupIdx) => (
             <div key={groupIdx}>
-              <h3 className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <h3 className="mb-3 px-3 text-xs font-bold uppercase tracking-widest text-amber-400/90">
                 {group.name}
               </h3>
 
-              <ul className="space-y-1">
+              <ul className="space-y-1.5">
                 {group.items.map((item, itemIdx) => {
                   const Icon = item.icon;
                   const isActive =
@@ -154,20 +154,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen })
                     <li key={itemIdx}>
                       <Link
                         href={item.href}
-                        className={`group relative flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 font-medium text-sm duration-200 ease-in-out ${
+                        className={`group relative flex items-center gap-3.5 rounded-xl px-3.5 py-2.5 font-semibold text-sm duration-200 ease-in-out ${
                           isActive
-                            ? "bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-sm"
-                            : "text-slate-300 hover:bg-slate-800/60 hover:text-white"
+                            ? "bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-md shadow-amber-500/10 font-bold"
+                            : "text-slate-200 hover:bg-slate-800 hover:text-white"
                         }`}
                       >
                         <Icon
                           className={`h-5 w-5 shrink-0 transition-colors ${
-                            isActive ? "text-amber-400" : "text-slate-400 group-hover:text-amber-400"
+                            isActive ? "text-amber-400 stroke-[2.5]" : "text-slate-400 group-hover:text-amber-400"
                           }`}
                         />
                         <span className="truncate">{item.name}</span>
                         {item.badge && (
-                          <span className="ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/30">
+                          <span className="ml-auto rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300 border border-emerald-500/40">
                             {item.badge}
                           </span>
                         )}
