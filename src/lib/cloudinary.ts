@@ -29,3 +29,24 @@ export function signPayload(params: Record<string, any>, apiSecret: string) {
   const toSign = keys.map(k => `${k}=${params[k]}`).join("&");
   return crypto.createHash("sha1").update(toSign + apiSecret).digest("hex");
 }
+
+/**
+ * Verilen resim/görsel yolunu Cloudinary CDN URL'sine dönüştürür.
+ * Cloudinary tanımlıysa otomatik CDN URL'si oluşturur, aksi halde orijinal yolu döndürür.
+ */
+export function getCloudinaryImageUrl(src: string | null | undefined, defaultFallback = "/eurosianviptransferlogo.png"): string {
+  if (!src) src = defaultFallback;
+
+  if (src.startsWith("http://") || src.startsWith("https://") || src.startsWith("data:")) {
+    return src;
+  }
+
+  const { cloudName } = getCloudinaryConfig();
+  if (cloudName) {
+    // Cloudinary CDN URL formatı
+    const cleanPath = src.startsWith("/") ? src.slice(1) : src;
+    return `https://res.cloudinary.com/${cloudName}/image/upload/f_auto,q_auto/v1/eurosian-vip-transfer/${cleanPath}`;
+  }
+
+  return src;
+}

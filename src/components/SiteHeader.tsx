@@ -7,6 +7,8 @@ import { useLocale } from "@/components/LanguageProvider";
 import { getNavLabel } from "@/lib/nav-copy";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 
+import { getCloudinaryImageUrl } from "@/lib/cloudinary";
+
 export default function SiteHeader({ logoUrl }: { logoUrl: string }) {
   const pathname = usePathname();
   const { t, locale } = useLocale();
@@ -20,12 +22,14 @@ export default function SiteHeader({ logoUrl }: { logoUrl: string }) {
     return null;
   }
 
+  const finalLogoUrl = getCloudinaryImageUrl(logoUrl);
+
   return (
     <header className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
       <div className="container">
         <Link href="/" className="navbar-brand d-flex align-items-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={logoUrl || "/logo.png"} alt="Eurosian VIP Transfer" style={{ height: 36, width: "auto", objectFit: "contain" }} />
+          <img src={finalLogoUrl} alt="Eurosian VIP Transfer" style={{ height: 36, width: "auto", objectFit: "contain" }} />
           <span className="ms-2">EUROSIAN <small>VIP TRANSFER</small></span>
         </Link>
 

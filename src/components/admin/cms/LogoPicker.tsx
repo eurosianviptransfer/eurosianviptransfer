@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { getCloudinaryImageUrl } from "@/lib/cloudinary";
+
 type MediaItem = { id: string; url: string; filename: string; mime: string | null };
 
 export function LogoPicker({ currentUrl, settingKey }: { currentUrl: string | null; settingKey: string }) {
@@ -13,6 +15,8 @@ export function LogoPicker({ currentUrl, settingKey }: { currentUrl: string | nu
   const [items, setItems] = useState<MediaItem[] | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const logoDisplayUrl = getCloudinaryImageUrl(currentUrl);
 
   const openPicker = async () => {
     setOpen((v) => !v);
@@ -56,7 +60,7 @@ export function LogoPicker({ currentUrl, settingKey }: { currentUrl: string | nu
     <div className="ev-logo-card">
       <div className="ev-logo-preview">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={currentUrl || "/eurosianviptransferlogo.png"} alt="Site logosu" />
+        <img src={logoDisplayUrl} alt="Site logosu" />
       </div>
       <div className="ev-logo-info">
         <h3>Site Logosu</h3>

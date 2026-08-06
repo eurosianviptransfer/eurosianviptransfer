@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db";
 import { LOGO_SETTING_KEY } from "@/lib/cms/constants";
+import { getCloudinaryImageUrl } from "@/lib/cloudinary";
 
-export const DEFAULT_LOGO_URL = "/eurosianviptransferlogo.png";
+export const DEFAULT_LOGO_URL = "https://res.cloudinary.com/pkl92piq/image/upload/f_auto,q_auto/v1/eurosian-vip-transfer/eurosianviptransferlogo.png";
 
 /**
  * Reads the site logo from the SiteSetting table (managed in /admin/settings).
@@ -12,7 +13,7 @@ export async function getSiteLogoUrl(): Promise<string> {
   try {
     const setting = await prisma.siteSetting.findFirst({ where: { key: LOGO_SETTING_KEY } });
     const url = (setting?.value as { url?: string } | null)?.url;
-    return url || DEFAULT_LOGO_URL;
+    return getCloudinaryImageUrl(url, DEFAULT_LOGO_URL);
   } catch (err) {
     console.error("getSiteLogoUrl failed, using default logo:", err);
     return DEFAULT_LOGO_URL;

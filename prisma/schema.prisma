@@ -76,6 +76,7 @@ model User {
   email           String?   @unique // admin email+şifre girişi için
   passwordHash    String?
   active          Boolean   @default(true)
+  currentSessionId String?  // Tek cihaz/oturum kısıtlaması (Single Active Session)
   lastSeen        DateTime? // Anlık online takibi (Heartbeat) için son sinyal zamanı
   createdAt       DateTime  @default(now())
   supplierName    String?

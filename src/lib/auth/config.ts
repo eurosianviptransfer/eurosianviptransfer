@@ -4,6 +4,8 @@ import { compare } from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { normalizePhone } from "./otp";
 
+import crypto from "crypto";
+
 export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
@@ -49,11 +51,18 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const newSessionId = crypto.randomUUID();
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { currentSessionId: newSessionId, lastSeen: new Date() },
+        });
+
         return {
           id: user.id,
           name: user.name,
           email: user.email ?? undefined,
           role: user.role,
+          sessionId: newSessionId,
         };
       },
     }),
@@ -106,10 +115,17 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const newSessionId = crypto.randomUUID();
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { currentSessionId: newSessionId, lastSeen: new Date() },
+        });
+
         return {
           id: user.id,
           name: user.name,
           role: user.role,
+          sessionId: newSessionId,
         };
       },
     }),
@@ -119,15 +135,42 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role;
+        token.sessionId = user.sessionId;
+      } else if (token.sub) {
+        // Her istekte/yenilemede kullanıcının veritabanındaki aktif session kimliğini sorgula
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.sub },
+            select: { currentSessionId: true, active: true },
+          });
+
+          if (!dbUser || !dbUser.active || dbUser.currentSessionId !== token.sessionId) {
+            // Cihaz/oturum geçersiz kılınmış (Farklı cihazdan girilmiş ya da kullanıcı pasife alınmış)
+            delete token.sessionId;
+            delete token.role;
+            token.invalidSession = true;
+          }
+        } catch {
+          // DB hatası durumunda oturumu riske atmadan varsayılan davranış
+        }
       }
 
       return token;
     },
 
     async session({ session, token }) {
+      if (token.invalidSession || !token.sessionId) {
+        return {
+          ...session,
+          user: undefined as any,
+          error: "SESSION_EXPIRED_OTHER_DEVICE",
+        };
+      }
+
       if (session.user) {
         session.user.id = token.sub ?? session.user.id;
         session.user.role = token.role ?? session.user.role;
+        session.user.sessionId = token.sessionId;
       }
 
       return session;
