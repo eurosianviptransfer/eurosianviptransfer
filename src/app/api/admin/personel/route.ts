@@ -160,7 +160,28 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Kullanıcı ID gereklidir." }, { status: 400 });
     }
 
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    let user: any = null;
+    try {
+      user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+          supplierName: true,
+          currentSessionId: true,
+        },
+      });
+    } catch (lookupErr: any) {
+      console.warn("User lookup via findUnique failed, using raw query fallback:", lookupErr.message);
+      const rows: any[] = await prisma.$queryRawUnsafe(
+        `SELECT "id", "name", "phone", "email", "supplierName", "currentSessionId" FROM "User" WHERE "id" = $1 LIMIT 1`,
+        userId
+      );
+      user = rows[0] || null;
+    }
+
     if (!user) {
       return NextResponse.json({ error: "Kullanıcı bulunamadı." }, { status: 404 });
     }
@@ -184,22 +205,14 @@ export async function PATCH(req: NextRequest) {
           },
         });
       } catch (patchErr: any) {
-        console.warn("Standard user.update failed for toggle-active, trying raw SQL fallback:", patchErr.message);
-        // Fallback to raw SQL execution if schema column sync issue occurs
+        console.warn("Standard user.update failed for toggle-active, using raw SQL fallback:", patchErr.message);
         await prisma.$executeRawUnsafe(
           `UPDATE "User" SET "active" = $1, "deactivationReason" = $2, "currentSessionId" = $3 WHERE "id" = $4`,
           active,
           reasonText,
           active ? user.currentSessionId : null,
           userId
-        ).catch(async () => {
-          // Ultimate fallback if deactivationReason column doesn't exist yet
-          await prisma.$executeRawUnsafe(
-            `UPDATE "User" SET "active" = $1 WHERE "id" = $2`,
-            active,
-            userId
-          );
-        });
+        );
       }
 
       return NextResponse.json({
@@ -226,34 +239,42 @@ export async function PATCH(req: NextRequest) {
         }
       }
 
-      let updatedUser: any = null;
+      const finalName = name ? name.trim() : user.name;
+      const finalEmail = email !== undefined ? (email ? email.trim().toLowerCase() : null) : user.email;
+      const finalSupplier = supplierName !== undefined ? (supplierName ? supplierName.trim() : null) : user.supplierName;
+
       try {
-        updatedUser = await prisma.user.update({
+        await prisma.user.update({
           where: { id: userId },
           data: {
-            name: name ? name.trim() : user.name,
+            name: finalName,
             phone: cleanPhone,
-            email: email !== undefined ? (email ? email.trim().toLowerCase() : null) : user.email,
-            supplierName: supplierName !== undefined ? (supplierName ? supplierName.trim() : null) : user.supplierName,
+            email: finalEmail,
+            supplierName: finalSupplier,
           },
         });
       } catch (err: any) {
         console.warn("Standard update-info failed, using raw SQL fallback:", err.message);
         await prisma.$executeRawUnsafe(
           `UPDATE "User" SET "name" = $1, "phone" = $2, "email" = $3, "supplierName" = $4 WHERE "id" = $5`,
-          name ? name.trim() : user.name,
+          finalName,
           cleanPhone,
-          email !== undefined ? (email ? email.trim().toLowerCase() : null) : user.email,
-          supplierName !== undefined ? (supplierName ? supplierName.trim() : null) : user.supplierName,
+          finalEmail,
+          finalSupplier,
           userId
         );
-        updatedUser = await prisma.user.findUnique({ where: { id: userId } });
       }
 
       return NextResponse.json({
         success: true,
         message: "Personel bilgileri güncellendi.",
-        user: updatedUser,
+        user: {
+          id: userId,
+          name: finalName,
+          phone: cleanPhone,
+          email: finalEmail,
+          supplierName: finalSupplier,
+        },
       });
     }
 
