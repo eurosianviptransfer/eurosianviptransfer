@@ -22,27 +22,27 @@ import { RecentBookingsTable } from "@/components/admin/nextadmin/RecentBookings
 export default function AdminDashboardPage() {
   return (
     <div className="space-y-8 pb-12">
-      {/* OBSIDIAN GOLD HERO WELCOME BANNER */}
-      <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950/40 p-6 md:p-10 shadow-2xl backdrop-blur-2xl">
+      {/* PLATINUM LIGHT HERO WELCOME BANNER */}
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-6 md:p-10 shadow-xl text-white">
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/15 px-4 py-1.5 text-xs font-black text-amber-300 border border-amber-500/30 mb-4 shadow-md">
-              <Zap className="h-4 w-4 text-amber-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-xs font-black text-white border border-white/25 mb-4 shadow-sm backdrop-blur-md">
+              <Zap className="h-4 w-4 text-amber-300 animate-pulse" />
               <span>CANLI VİP OPERASYON DURUMU: KUSURSUZ (%99.8)</span>
             </div>
-            <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight flex items-center gap-3 font-serif">
-              Eurosian VIP Executive Suite
-              <Sparkles className="h-7 w-7 text-amber-400 shrink-0" />
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight flex items-center gap-3 font-sans">
+              Executive Platinum Dashboard
+              <Sparkles className="h-7 w-7 text-amber-300 shrink-0" />
             </h1>
-            <p className="text-xs md:text-sm font-semibold text-slate-300 mt-3 max-w-2xl leading-relaxed">
-              Bugün toplam <span className="text-amber-400 font-black">18 VIP transfer</span> gerçekleşiyor. VIP filonuzun <span className="text-emerald-400 font-black">%92&apos;si aktif görevde</span> ve sürücüleriniz GPS ile izleniyor.
+            <p className="text-xs md:text-sm font-medium text-blue-100 mt-3 max-w-2xl leading-relaxed">
+              Bugün toplam <span className="text-amber-300 font-black">18 VIP transfer</span> gerçekleşiyor. VIP filonuzun <span className="text-emerald-300 font-black">%92&apos;si aktif görevde</span> ve sürücüleriniz canlı GPS ile izleniyor.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3.5">
             <Link
               href="/admin/rezervasyonlar"
-              className="inline-flex items-center gap-2.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 px-6 py-4 text-xs font-black text-slate-950 shadow-xl shadow-amber-500/30 hover:scale-105 active:scale-95 transition-all duration-200"
+              className="inline-flex items-center gap-2.5 rounded-2xl bg-white px-6 py-4 text-xs font-black text-blue-700 shadow-lg hover:bg-blue-50 active:scale-95 transition-all duration-200"
             >
               <Plus className="h-4 w-4 stroke-[3]" />
               <span>Yeni Rezervasyon Gir</span>
@@ -50,20 +50,20 @@ export default function AdminDashboardPage() {
 
             <Link
               href="/admin/operasyon"
-              className="inline-flex items-center gap-2.5 rounded-2xl border border-amber-500/40 bg-slate-900/90 px-6 py-4 text-xs font-black text-amber-400 hover:bg-amber-500 hover:text-slate-950 shadow-lg transition-all duration-200"
+              className="inline-flex items-center gap-2.5 rounded-2xl border border-white/30 bg-white/10 px-6 py-4 text-xs font-black text-white hover:bg-white/20 shadow-sm backdrop-blur-md transition-all duration-200"
             >
-              <Compass className="h-4 w-4 text-amber-400" />
+              <Compass className="h-4 w-4 text-amber-300" />
               <span>Canlı Harita Takibi</span>
             </Link>
           </div>
         </div>
 
-        {/* Ambient Gradient Glows */}
-        <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
-        <div className="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-amber-600/10 blur-3xl pointer-events-none" />
+        {/* Ambient Overlay Patterns */}
+        <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-white/10 blur-3xl pointer-events-none" />
+        <div className="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
       </div>
 
-      {/* OBSIDIAN GOLD STAT CARDS GRID */}
+      {/* PLATINUM LIGHT STAT CARDS GRID */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:gap-6 xl:grid-cols-4">
         <CardDataStats
           title="Toplam Transfer Ciro"
@@ -72,7 +72,7 @@ export default function AdminDashboardPage() {
           subtitle="Bu ayki toplam VIP cirosu"
           badgeText="Stripe & Nakit Dahil"
         >
-          <Euro className="h-6 w-6 text-amber-400" />
+          <Euro className="h-6 w-6 text-blue-600" />
         </CardDataStats>
 
         <CardDataStats
@@ -82,7 +82,7 @@ export default function AdminDashboardPage() {
           subtitle="Onaylı & Bekleyen talepler"
           badgeText="Bugün 18 Transfer Var"
         >
-          <CalendarCheck className="h-6 w-6 text-emerald-400" />
+          <CalendarCheck className="h-6 w-6 text-emerald-600" />
         </CardDataStats>
 
         <CardDataStats
@@ -92,7 +92,7 @@ export default function AdminDashboardPage() {
           subtitle="Vito, Sprinter, Maybach"
           badgeText="22 Araç Görevde"
         >
-          <Car className="h-6 w-6 text-amber-400" />
+          <Car className="h-6 w-6 text-blue-600" />
         </CardDataStats>
 
         <CardDataStats
@@ -102,49 +102,49 @@ export default function AdminDashboardPage() {
           subtitle="Kusursuz karşılama"
           badgeText="Müşteri Puanı: 4.9/5"
         >
-          <CheckCircle2 className="h-6 w-6 text-amber-400" />
+          <CheckCircle2 className="h-6 w-6 text-indigo-600" />
         </CardDataStats>
       </div>
 
       {/* QUICK LIVE STATUS STRIP */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="rounded-3xl border border-amber-500/20 bg-slate-950/80 p-5 flex items-center justify-between shadow-xl backdrop-blur-xl">
+        <div className="rounded-3xl border border-slate-200/80 bg-white p-5 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100">
               <UserCheck className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs font-black text-white">18 Aktif Şoför Sahada</p>
-              <p className="text-[11px] font-semibold text-slate-400 mt-0.5">Tüm sürücüler üniformalı & GPS aktif</p>
+              <p className="text-xs font-black text-slate-900">18 Aktif Şoför Sahada</p>
+              <p className="text-[11px] font-semibold text-slate-500 mt-0.5">Tüm sürücüler üniformalı & GPS aktif</p>
             </div>
           </div>
-          <span className="h-3 w-3 rounded-full bg-emerald-400 animate-ping" />
+          <span className="h-3 w-3 rounded-full bg-emerald-500 animate-ping" />
         </div>
 
-        <div className="rounded-3xl border border-amber-500/20 bg-slate-950/80 p-5 flex items-center justify-between shadow-xl backdrop-blur-xl">
+        <div className="rounded-3xl border border-slate-200/80 bg-white p-5 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
+            <div className="p-3 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100">
               <ShieldCheck className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs font-black text-white">4 Karşılamacı Havalimanında</p>
-              <p className="text-[11px] font-semibold text-slate-400 mt-0.5">AYT VIP Karşılama Ekibi Hazır</p>
+              <p className="text-xs font-black text-slate-900">4 Karşılamacı Havalimanında</p>
+              <p className="text-[11px] font-semibold text-slate-500 mt-0.5">AYT VIP Karşılama Ekibi Hazır</p>
             </div>
           </div>
-          <span className="h-3 w-3 rounded-full bg-amber-400 animate-pulse" />
+          <span className="h-3 w-3 rounded-full bg-blue-600 animate-pulse" />
         </div>
 
-        <div className="rounded-3xl border border-amber-500/20 bg-slate-950/80 p-5 flex items-center justify-between shadow-xl backdrop-blur-xl">
+        <div className="rounded-3xl border border-slate-200/80 bg-white p-5 flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/30">
+            <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100">
               <Sliders className="h-6 w-6" />
             </div>
             <div>
-              <p className="text-xs font-black text-white">Otomatik Fiyatlandırma</p>
-              <p className="text-[11px] font-semibold text-slate-400 mt-0.5">Dinamik Sezon Tarifesi Aktif</p>
+              <p className="text-xs font-black text-slate-900">Otomatik Fiyatlandırma</p>
+              <p className="text-[11px] font-semibold text-slate-500 mt-0.5">Dinamik Sezon Tarifesi Aktif</p>
             </div>
           </div>
-          <Link href="/admin/fiyatlandirma" className="text-xs font-black text-amber-400 hover:text-amber-300 flex items-center gap-1">
+          <Link href="/admin/fiyatlandirma" className="text-xs font-black text-blue-600 hover:text-blue-700 flex items-center gap-1">
             <span>Ayarla</span>
             <ArrowUpRight className="h-4 w-4" />
           </Link>
@@ -162,5 +162,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-

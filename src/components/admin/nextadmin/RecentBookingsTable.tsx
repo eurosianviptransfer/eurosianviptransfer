@@ -57,25 +57,25 @@ const sampleBookings = [
 
 export const RecentBookingsTable: React.FC = () => {
   return (
-    <div className="rounded-3xl border border-amber-500/20 bg-gradient-to-b from-slate-900/90 via-slate-950 to-slate-950 p-6 md:p-8 shadow-2xl backdrop-blur-xl">
+    <div className="rounded-3xl border border-slate-200/80 bg-white p-6 md:p-8 shadow-sm">
       {/* TABLE HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-amber-500/20">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
         <div>
-          <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-[10px] font-black text-amber-400 border border-amber-500/30 mb-2">
+          <div className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-[10px] font-black text-blue-600 border border-blue-200 mb-2">
             <Clock className="h-3 w-3" />
             <span>CANLI REZERVASYON AKIŞI</span>
           </div>
-          <h3 className="text-xl md:text-2xl font-black text-white tracking-tight font-serif">
+          <h3 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight font-sans">
             Son VIP Transfer Talepleri
           </h3>
-          <p className="text-xs font-semibold text-slate-400 mt-1">
+          <p className="text-xs font-semibold text-slate-500 mt-1">
             Anlık rezervasyon onayları, şoför atamaları ve karşılama durumları
           </p>
         </div>
 
         <Link
           href="/admin/rezervasyonlar"
-          className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-5 py-3 text-xs font-black text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-all shadow-md active:scale-95"
+          className="inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-3 text-xs font-black text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-xs active:scale-95"
         >
           <span>Tüm Rezervasyonları Gör</span>
           <ArrowUpRight className="h-4 w-4 stroke-[3]" />
@@ -86,7 +86,7 @@ export const RecentBookingsTable: React.FC = () => {
       <div className="hidden lg:block overflow-x-auto mt-6">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <tr className="border-b border-slate-200 text-[10px] font-black uppercase tracking-wider text-slate-400">
               <th className="py-4 px-4">Kod / Müşteri</th>
               <th className="py-4 px-4">Güzergah</th>
               <th className="py-4 px-4">Tarih / Zaman</th>
@@ -96,14 +96,14 @@ export const RecentBookingsTable: React.FC = () => {
               <th className="py-4 px-4 text-right">İşlem</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/80 text-xs font-bold text-slate-200">
+          <tbody className="divide-y divide-slate-100 text-xs font-bold text-slate-700">
             {sampleBookings.map((b) => (
-              <tr key={b.id} className="hover:bg-slate-900/60 transition-colors group">
+              <tr key={b.id} className="hover:bg-slate-50 transition-colors group">
                 <td className="py-4 px-4">
-                  <span className="inline-block rounded-lg bg-amber-500/15 px-2 py-0.5 text-[10px] font-black text-amber-400 border border-amber-500/30 mb-1">
+                  <span className="inline-block rounded-lg bg-blue-50 px-2 py-0.5 text-[10px] font-black text-blue-600 border border-blue-200 mb-1">
                     {b.id}
                   </span>
-                  <div className="text-sm font-black text-white group-hover:text-amber-400 transition-colors flex items-center gap-1.5">
+                  <div className="text-sm font-black text-slate-900 group-hover:text-blue-600 transition-colors flex items-center gap-1.5">
                     <User className="h-3.5 w-3.5 text-slate-400" />
                     <span>{b.guestName}</span>
                   </div>
@@ -111,41 +111,41 @@ export const RecentBookingsTable: React.FC = () => {
                 </td>
 
                 <td className="py-4 px-4">
-                  <div className="flex items-center gap-1.5 text-white">
-                    <MapPin className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                  <div className="flex items-center gap-1.5 text-slate-900">
+                    <MapPin className="h-3.5 w-3.5 text-blue-600 shrink-0" />
                     <span>{b.origin}</span>
                   </div>
-                  <div className="text-[11px] font-semibold text-slate-400 pl-5">
+                  <div className="text-[11px] font-semibold text-slate-500 pl-5">
                     ➔ {b.destination}
                   </div>
                 </td>
 
                 <td className="py-4 px-4">
-                  <div className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-amber-300 border border-slate-800">
-                    <Clock className="h-3.5 w-3.5" />
+                  <div className="inline-flex items-center gap-1.5 rounded-xl bg-slate-50 px-3 py-1.5 text-slate-700 border border-slate-200">
+                    <Clock className="h-3.5 w-3.5 text-blue-600" />
                     <span>{b.date}</span>
                   </div>
                 </td>
 
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-1.5">
-                    <Car className="h-4 w-4 text-amber-400" />
+                    <Car className="h-4 w-4 text-blue-600" />
                     <span>{b.vehicle}</span>
                   </div>
                 </td>
 
                 <td className="py-4 px-4 text-right">
-                  <span className="text-base font-black text-amber-400 font-serif">{b.price}</span>
+                  <span className="text-base font-black text-slate-900 font-sans">{b.price}</span>
                 </td>
 
                 <td className="py-4 px-4 text-center">
                   <span
-                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-black shadow-sm ${
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-black shadow-xs ${
                       b.status === "ASSIGNED"
-                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
                         : b.status === "APPROVED"
-                        ? "bg-amber-500/20 text-amber-300 border border-amber-500/40"
-                        : "bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                        ? "bg-blue-50 text-blue-700 border border-blue-200"
+                        : "bg-amber-50 text-amber-700 border border-amber-200"
                     }`}
                   >
                     {b.status === "ASSIGNED" ? (
@@ -160,7 +160,7 @@ export const RecentBookingsTable: React.FC = () => {
                 <td className="py-4 px-4 text-right">
                   <Link
                     href={`/admin/rezervasyonlar`}
-                    className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-amber-400 border border-amber-500/30 hover:bg-amber-500 hover:text-slate-950 transition-all"
+                    className="inline-flex items-center justify-center rounded-xl bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 border border-slate-200 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all"
                   >
                     Detay
                   </Link>
@@ -176,30 +176,30 @@ export const RecentBookingsTable: React.FC = () => {
         {sampleBookings.map((b) => (
           <div
             key={b.id}
-            className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 space-y-3 shadow-lg"
+            className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3 shadow-xs"
           >
             <div className="flex items-center justify-between">
-              <span className="rounded-lg bg-amber-500/15 px-2.5 py-0.5 text-xs font-black text-amber-400 border border-amber-500/30">
+              <span className="rounded-lg bg-blue-50 px-2.5 py-0.5 text-xs font-black text-blue-600 border border-blue-200">
                 {b.id}
               </span>
-              <span className="text-base font-black text-amber-400 font-serif">{b.price}</span>
+              <span className="text-base font-black text-slate-900">{b.price}</span>
             </div>
 
             <div>
-              <h4 className="text-sm font-black text-white">{b.guestName}</h4>
-              <p className="text-xs text-slate-400">{b.phone}</p>
+              <h4 className="text-sm font-black text-slate-900">{b.guestName}</h4>
+              <p className="text-xs text-slate-500">{b.phone}</p>
             </div>
 
-            <div className="text-xs space-y-1 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-              <p className="text-white font-bold">📍 {b.origin}</p>
-              <p className="text-slate-400">➔ {b.destination}</p>
+            <div className="text-xs space-y-1 bg-white p-3 rounded-xl border border-slate-200">
+              <p className="text-slate-900 font-bold">📍 {b.origin}</p>
+              <p className="text-slate-500">➔ {b.destination}</p>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-slate-800">
-              <span className="text-xs font-bold text-slate-300">⏰ {b.date}</span>
+            <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+              <span className="text-xs font-bold text-slate-600">⏰ {b.date}</span>
               <Link
                 href="/admin/rezervasyonlar"
-                className="rounded-xl bg-amber-500 px-3 py-1.5 text-xs font-black text-slate-950"
+                className="rounded-xl bg-blue-600 px-3.5 py-1.5 text-xs font-black text-white shadow-xs"
               >
                 Yönet
               </Link>
