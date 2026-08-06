@@ -17,7 +17,6 @@ import {
   Phone,
   Mail,
   Car,
-  Shield,
   X,
   Check,
   Copy,
@@ -330,7 +329,7 @@ export default function PersonelPage() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 relative">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-5">
         <div>
@@ -346,9 +345,13 @@ export default function PersonelPage() {
         </div>
 
         <button
-          onClick={loadData}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            loadData();
+          }}
           disabled={refreshing}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 hover:bg-slate-700 transition-all disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 hover:bg-slate-700 transition-all disabled:opacity-50 cursor-pointer"
         >
           <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin text-amber-400" : ""}`} />
           {refreshing ? "Yenileniyor..." : "Verileri Yenile"}
@@ -356,12 +359,12 @@ export default function PersonelPage() {
       </div>
 
       {actionSuccess && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm flex items-center justify-between animate-fadeIn">
+        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm flex items-center justify-between">
           <div className="flex items-center gap-2.5 font-semibold">
             <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-emerald-400" />
             <span>{actionSuccess}</span>
           </div>
-          <button onClick={() => setActionSuccess(null)} className="text-emerald-400 hover:text-white">
+          <button type="button" onClick={() => setActionSuccess(null)} className="text-emerald-400 hover:text-white cursor-pointer">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -373,7 +376,7 @@ export default function PersonelPage() {
             <AlertTriangle className="h-5 w-5 flex-shrink-0 text-rose-400" />
             <span>{error}</span>
           </div>
-          <button onClick={() => setError(null)} className="text-rose-400 hover:text-white">
+          <button type="button" onClick={() => setError(null)} className="text-rose-400 hover:text-white cursor-pointer">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -382,8 +385,9 @@ export default function PersonelPage() {
       {/* Tabs */}
       <div className="flex items-center gap-3 border-b border-slate-800">
         <button
+          type="button"
           onClick={() => setActiveTab("staff")}
-          className={`flex items-center gap-2 py-3 px-4 font-bold text-sm border-b-2 transition-all ${
+          className={`flex items-center gap-2 py-3 px-4 font-bold text-sm border-b-2 transition-all cursor-pointer ${
             activeTab === "staff"
               ? "border-amber-400 text-amber-400 bg-amber-500/5"
               : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900"
@@ -394,8 +398,9 @@ export default function PersonelPage() {
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveTab("applications")}
-          className={`flex items-center gap-2 py-3 px-4 font-bold text-sm border-b-2 transition-all relative ${
+          className={`flex items-center gap-2 py-3 px-4 font-bold text-sm border-b-2 transition-all relative cursor-pointer ${
             activeTab === "applications"
               ? "border-amber-400 text-amber-400 bg-amber-500/5"
               : "border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900"
@@ -561,10 +566,13 @@ export default function PersonelPage() {
                         )}
                       </td>
                       <td className="py-4 px-5 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1.5">
                           {/* Edit button */}
                           <button
-                            onClick={() => {
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                               setEditUserModal(u);
                               setEditFormData({
                                 name: u.name,
@@ -573,36 +581,47 @@ export default function PersonelPage() {
                                 supplierName: u.supplierName || "",
                               });
                             }}
-                            title="Bilgileri Düzenle"
-                            className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 hover:bg-slate-700 hover:text-white transition-all cursor-pointer"
                           >
-                            <Edit3 className="h-4 w-4" />
+                            <Edit3 className="h-3.5 w-3.5 text-amber-400" /> Düzenle
                           </button>
 
                           {/* Reset Password */}
                           <button
-                            onClick={() => handleResetPassword(u)}
-                            title="Şifre Sıfırla"
-                            className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 hover:bg-amber-500/20 transition-colors"
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleResetPassword(u);
+                            }}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs font-bold text-amber-400 hover:bg-amber-500/20 transition-all cursor-pointer"
                           >
-                            <KeyRound className="h-4 w-4" />
+                            <KeyRound className="h-3.5 w-3.5" /> Şifre Yenile
                           </button>
 
                           {/* Active / Deactivate toggle button */}
                           {u.active ? (
                             <button
-                              onClick={() => {
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 setDeactivateModal(u);
                                 setDeactivationReasonInput(u.deactivationReason || "");
                               }}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition-colors"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer"
                             >
                               <Power className="h-3.5 w-3.5" /> Pasife Al
                             </button>
                           ) : (
                             <button
-                              onClick={() => handleToggleActive(u, true)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleToggleActive(u, true);
+                              }}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 transition-all cursor-pointer"
                             >
                               <CheckCircle2 className="h-3.5 w-3.5" /> Aktifleştir
                             </button>
@@ -706,19 +725,27 @@ export default function PersonelPage() {
                         {a.status === "PENDING" ? (
                           <div className="flex items-center justify-end gap-2">
                             <button
-                              onClick={() => handleApproveApplication(a)}
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleApproveApplication(a);
+                              }}
                               disabled={actionLoading}
-                              className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 transition-all flex items-center gap-1"
+                              className="rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 text-xs font-bold text-emerald-400 hover:bg-emerald-500/20 transition-all flex items-center gap-1 cursor-pointer"
                             >
                               <Check className="h-3.5 w-3.5" /> Onayla
                             </button>
                             <button
-                              onClick={() => {
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
                                 setRejectAppModal(a);
                                 setRejectionReasonInput("");
                               }}
                               disabled={actionLoading}
-                              className="rounded-lg bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition-all flex items-center gap-1"
+                              className="rounded-lg bg-rose-500/10 border border-rose-500/30 px-3 py-1.5 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition-all flex items-center gap-1 cursor-pointer"
                             >
                               <X className="h-3.5 w-3.5" /> Reddet
                             </button>
@@ -738,13 +765,13 @@ export default function PersonelPage() {
 
       {/* MODAL 1: EDIT STAFF USER INFO */}
       {editUserModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-5 animate-fadeIn">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 <Edit3 className="h-5 w-5 text-amber-400" /> Personel Bilgilerini Düzenle
               </h3>
-              <button onClick={() => setEditUserModal(null)} className="text-slate-400 hover:text-white">
+              <button type="button" onClick={() => setEditUserModal(null)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -794,15 +821,17 @@ export default function PersonelPage() {
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
               <button
+                type="button"
                 onClick={() => setEditUserModal(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300 hover:bg-slate-700"
+                className="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300 hover:bg-slate-700 cursor-pointer"
               >
                 İptal
               </button>
               <button
+                type="button"
                 onClick={handleSaveEditInfo}
                 disabled={actionLoading}
-                className="px-4 py-2 rounded-xl bg-amber-500 text-xs font-bold text-slate-950 hover:bg-amber-400 transition-colors disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-amber-500 text-xs font-bold text-slate-950 hover:bg-amber-400 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {actionLoading ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
               </button>
@@ -813,13 +842,13 @@ export default function PersonelPage() {
 
       {/* MODAL 2: DEACTIVATE STAFF (PASİFE ALMA GEREKÇESİ) */}
       {deactivateModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-rose-900/50 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-5 animate-fadeIn">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-lg font-bold text-rose-400 flex items-center gap-2">
                 <Power className="h-5 w-5 text-rose-400" /> Personel Hesabını Pasife Al
               </h3>
-              <button onClick={() => setDeactivateModal(null)} className="text-slate-400 hover:text-white">
+              <button type="button" onClick={() => setDeactivateModal(null)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -845,15 +874,17 @@ export default function PersonelPage() {
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
               <button
+                type="button"
                 onClick={() => setDeactivateModal(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300 hover:bg-slate-700"
+                className="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300 hover:bg-slate-700 cursor-pointer"
               >
                 Vazgeç
               </button>
               <button
+                type="button"
                 onClick={() => handleToggleActive(deactivateModal, false)}
                 disabled={actionLoading || !deactivationReasonInput.trim()}
-                className="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold text-white hover:bg-rose-500 transition-colors disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold text-white hover:bg-rose-500 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {actionLoading ? "İşleniyor..." : "Hesabı Pasife Al"}
               </button>
@@ -864,13 +895,13 @@ export default function PersonelPage() {
 
       {/* MODAL 3: REJECT APPLICATION REASON */}
       {rejectAppModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-5 animate-fadeIn">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-lg font-bold text-rose-400 flex items-center gap-2">
                 <XCircle className="h-5 w-5" /> Başvuruyu Reddet
               </h3>
-              <button onClick={() => setRejectAppModal(null)} className="text-slate-400 hover:text-white">
+              <button type="button" onClick={() => setRejectAppModal(null)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -894,15 +925,17 @@ export default function PersonelPage() {
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
               <button
+                type="button"
                 onClick={() => setRejectAppModal(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300 hover:bg-slate-700"
+                className="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-300 hover:bg-slate-700 cursor-pointer"
               >
                 Vazgeç
               </button>
               <button
+                type="button"
                 onClick={handleRejectApplication}
                 disabled={actionLoading}
-                className="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold text-white hover:bg-rose-500 transition-colors disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-rose-600 text-xs font-bold text-white hover:bg-rose-500 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 {actionLoading ? "İşleniyor..." : "Başvuruyu Reddet"}
               </button>
@@ -913,13 +946,13 @@ export default function PersonelPage() {
 
       {/* MODAL 4: TEMP PASSWORD & WHATSAPP NOTIFICATION */}
       {tempPasswordModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[99999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-5 animate-fadeIn">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-lg font-bold text-amber-400 flex items-center gap-2">
                 <KeyRound className="h-5 w-5" /> Geçici Giriş Şifresi Üretildi
               </h3>
-              <button onClick={() => setTempPasswordModal(null)} className="text-slate-400 hover:text-white">
+              <button type="button" onClick={() => setTempPasswordModal(null)} className="text-slate-400 hover:text-white cursor-pointer">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -954,6 +987,7 @@ export default function PersonelPage() {
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
               <button
+                type="button"
                 onClick={() => {
                   navigator.clipboard.writeText(
                     tempPasswordModal.whatsappMessage ||
@@ -961,14 +995,15 @@ export default function PersonelPage() {
                   );
                   alert("Giriş bilgileri panoya kopyalandı!");
                 }}
-                className="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-200 hover:bg-slate-700 flex items-center gap-1.5"
+                className="px-4 py-2 rounded-xl bg-slate-800 text-xs font-bold text-slate-200 hover:bg-slate-700 flex items-center gap-1.5 cursor-pointer"
               >
                 <Copy className="h-3.5 w-3.5" /> Bilgileri Kopyala
               </button>
 
               <button
+                type="button"
                 onClick={() => setTempPasswordModal(null)}
-                className="px-4 py-2 rounded-xl bg-amber-500 text-xs font-bold text-slate-950 hover:bg-amber-400"
+                className="px-4 py-2 rounded-xl bg-amber-500 text-xs font-bold text-slate-950 hover:bg-amber-400 cursor-pointer"
               >
                 Tamam
               </button>
