@@ -10,9 +10,6 @@ import {
   Sun,
   Moon,
   ChevronDown,
-  ShieldCheck,
-  Globe,
-  ExternalLink,
   LayoutDashboard,
   FileText,
   ImageIcon,
@@ -21,7 +18,8 @@ import {
   Users,
   DollarSign,
   Settings,
-  Radio,
+  ShieldCheck,
+  Sparkles,
 } from "lucide-react";
 import { initTheme, setTheme, type Theme } from "@/lib/theme";
 
@@ -31,14 +29,14 @@ interface VercelHeaderProps {
 }
 
 const topNavTabs = [
-  { name: "Genel Bakış", href: "/admin/dashboard", icon: LayoutDashboard },
-  { name: "İçerik Yönetimi (CMS)", href: "/admin/cms/content", icon: FileText, badge: "CMS" },
-  { name: "Medya Kütüphanesi", href: "/admin/cms/media", icon: ImageIcon },
-  { name: "Rezervasyonlar", href: "/admin/rezervasyonlar", icon: CalendarCheck, badge: "CANLI" },
-  { name: "VIP Filo Araçları", href: "/admin/filo", icon: Car },
-  { name: "Sürücüler & Ekip", href: "/admin/personel", icon: Users },
-  { name: "Fiyat Tarifeleri", href: "/admin/fiyatlandirma", icon: DollarSign },
-  { name: "Ayarlar", href: "/admin/cms/settings", icon: Settings },
+  { name: "Genel Bakış", href: "/admin/dashboard", icon: LayoutDashboard, iconColor: "text-blue-400" },
+  { name: "İçerik Yönetimi (CMS)", href: "/admin/cms/content", icon: FileText, iconColor: "text-amber-400", badge: "CMS" },
+  { name: "Medya Kütüphanesi", href: "/admin/cms/media", icon: ImageIcon, iconColor: "text-purple-400" },
+  { name: "Rezervasyonlar", href: "/admin/rezervasyonlar", icon: CalendarCheck, iconColor: "text-emerald-400", badge: "CANLI" },
+  { name: "VIP Filo Araçları", href: "/admin/filo", icon: Car, iconColor: "text-indigo-400" },
+  { name: "Sürücüler & Ekip", href: "/admin/personel", icon: Users, iconColor: "text-rose-400" },
+  { name: "Fiyat Tarifeleri", href: "/admin/fiyatlandirma", icon: DollarSign, iconColor: "text-teal-400" },
+  { name: "Sistem Ayarları", href: "/admin/cms/settings", icon: Settings, iconColor: "text-zinc-400" },
 ];
 
 export const VercelHeader: React.FC<VercelHeaderProps> = ({
@@ -55,26 +53,24 @@ export const VercelHeader: React.FC<VercelHeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-md text-zinc-100">
-      {/* TOP ROW: BRAND & WORKSPACE & ACTIONS */}
-      <div className="flex h-13 items-center justify-between px-4 md:px-8 border-b border-zinc-900">
-        {/* LEFT: Logo & Project Scope */}
-        <div className="flex items-center gap-3">
-          <Link href="/admin/dashboard" className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-100 text-zinc-950 font-black">
-              <svg viewBox="0 0 76 65" fill="none" className="h-3 w-3 fill-current">
-                <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
-              </svg>
+    <header className="sticky top-0 z-50 w-full border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-md text-zinc-100 m-0 p-0 shadow-lg">
+      {/* ROW 1: TOP EXECUTIVE SCOPE BAR */}
+      <div className="flex h-12 items-center justify-between px-4 md:px-6 border-b border-zinc-900 bg-zinc-950">
+        {/* Left: Brand & Scope */}
+        <div className="flex items-center gap-2.5">
+          <Link href="/admin/dashboard" className="flex items-center gap-2 group">
+            <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-zinc-100 text-zinc-950 font-black group-hover:scale-105 transition-transform">
+              <ShieldCheck className="h-3.5 w-3.5 text-zinc-950" />
             </div>
             <span className="text-xs font-bold tracking-tight text-zinc-100 font-sans">
               EUROSIA VIP
             </span>
           </Link>
 
-          <span className="text-zinc-700">/</span>
+          <span className="text-zinc-800">/</span>
 
-          {/* Project & Scope Switcher */}
-          <div className="flex items-center gap-2 rounded-lg bg-zinc-900/80 px-2.5 py-1 border border-zinc-800 hover:border-zinc-700 cursor-pointer transition-colors group">
+          {/* Scope Switcher Pill */}
+          <div className="flex items-center gap-2 rounded-lg bg-zinc-900 px-2.5 py-1 border border-zinc-800 hover:border-zinc-700 cursor-pointer transition-colors group">
             <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-600/30 text-blue-400 text-[9px] font-bold">
               E
             </div>
@@ -89,21 +85,21 @@ export const VercelHeader: React.FC<VercelHeaderProps> = ({
           </div>
         </div>
 
-        {/* RIGHT: Search, Quick Add, Notifications & User */}
-        <div className="flex items-center gap-2.5">
-          {/* Cmd+K Search Trigger */}
+        {/* Right: Cmd+K, New Content, Theme, User Profile */}
+        <div className="flex items-center gap-2">
+          {/* Cmd+K Search Button */}
           <button
             onClick={onOpenCommandK}
-            className="flex items-center gap-2.5 rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 transition-all font-mono"
+            className="flex items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-400 hover:border-zinc-700 hover:text-zinc-200 transition-all font-mono"
           >
             <Search className="h-3.5 w-3.5 text-zinc-400" />
-            <span className="hidden sm:inline">Arama yap...</span>
+            <span className="hidden sm:inline">Arama (Cmd+K)</span>
             <kbd className="rounded bg-zinc-800 px-1.5 py-0.5 text-[9px] text-zinc-400 border border-zinc-700">
               ⌘K
             </kbd>
           </button>
 
-          {/* Quick Add Button */}
+          {/* New Content Drawer Button */}
           <button
             onClick={onOpenNewDrawer}
             className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-100 px-3 py-1.5 text-xs font-semibold text-zinc-950 shadow-sm hover:bg-zinc-200 active:scale-95 transition-all"
@@ -114,13 +110,7 @@ export const VercelHeader: React.FC<VercelHeaderProps> = ({
 
           <div className="h-4 w-px bg-zinc-800 hidden sm:block" />
 
-          {/* Notification Bell */}
-          <button className="relative rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 transition-colors">
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-emerald-400" />
-          </button>
-
-          {/* Theme Toggle */}
+          {/* Theme Switcher */}
           <button
             onClick={toggleTheme}
             className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 transition-colors"
@@ -129,7 +119,7 @@ export const VercelHeader: React.FC<VercelHeaderProps> = ({
             {currentTheme === "dark" ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4" />}
           </button>
 
-          {/* User Avatar */}
+          {/* User Profile Avatar */}
           <div className="flex items-center gap-2 pl-1">
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-zinc-800 to-zinc-700 border border-zinc-700 text-xs font-bold text-zinc-100 shadow-sm">
               EA
@@ -138,8 +128,8 @@ export const VercelHeader: React.FC<VercelHeaderProps> = ({
         </div>
       </div>
 
-      {/* BOTTOM ROW: VERCEL TOP NAVIGATION TABS */}
-      <div className="no-scrollbar flex items-center gap-1 overflow-x-auto px-4 md:px-8 text-xs font-medium pt-1">
+      {/* ROW 2: VERCEL GEIST TAB BUTTONS WITH DISTINCT ICONS & PILLS */}
+      <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto px-4 md:px-6 py-2 bg-zinc-950">
         {topNavTabs.map((tab, idx) => {
           const Icon = tab.icon;
           const isActive =
@@ -150,17 +140,18 @@ export const VercelHeader: React.FC<VercelHeaderProps> = ({
             <Link
               key={idx}
               href={tab.href}
-              className={`flex shrink-0 items-center gap-2 border-b-2 px-3 py-2.5 transition-all ${
+              className={`flex shrink-0 items-center gap-2 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
                 isActive
-                  ? "border-zinc-100 text-zinc-100 font-semibold"
-                  : "border-transparent text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                  ? "bg-zinc-800 text-zinc-100 border border-zinc-700 shadow-md font-bold"
+                  : "bg-zinc-900/60 text-zinc-400 border border-zinc-800/80 hover:bg-zinc-900 hover:text-zinc-200 hover:border-zinc-700"
               }`}
             >
-              <Icon className={`h-3.5 w-3.5 ${isActive ? "text-zinc-100" : "text-zinc-500"}`} />
+              <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-zinc-100" : tab.iconColor}`} />
               <span>{tab.name}</span>
+
               {tab.badge && (
                 <span
-                  className={`rounded-full px-1.5 py-0.2 text-[9px] font-mono font-semibold border ${
+                  className={`rounded-full px-1.5 py-0.2 text-[9px] font-mono font-bold border ${
                     isActive
                       ? "bg-zinc-100 text-zinc-950 border-zinc-100"
                       : "bg-zinc-900 text-zinc-400 border-zinc-800"
