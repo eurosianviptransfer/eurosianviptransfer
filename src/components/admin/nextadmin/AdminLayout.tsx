@@ -8,13 +8,13 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="dark bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+    <div className="bg-slate-100 text-slate-900 min-h-screen font-sans antialiased selection:bg-amber-500 selection:text-white">
       <div className="flex h-screen overflow-hidden">
         {/* SIDEBAR */}
         <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
         {/* CONTENT AREA */}
-        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden bg-slate-100">
           {/* HEADER */}
           <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
 
@@ -29,3 +29,4 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
     </div>
   );
 };
+
