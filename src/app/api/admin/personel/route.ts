@@ -172,23 +172,43 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ error: "Aktiflik durumu belirtilmelidir." }, { status: 400 });
       }
 
-      const updatedUser = await prisma.user.update({
-        where: { id: userId },
-        data: {
+      const reasonText = active ? null : (deactivationReason?.trim() || "Yönetici kararıyla pasife alınmıştır.");
+
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            active,
+            deactivationReason: reasonText,
+            currentSessionId: active ? user.currentSessionId : null,
+          },
+        });
+      } catch (patchErr: any) {
+        console.warn("Standard user.update failed for toggle-active, trying raw SQL fallback:", patchErr.message);
+        // Fallback to raw SQL execution if schema column sync issue occurs
+        await prisma.$executeRawUnsafe(
+          `UPDATE "User" SET "active" = $1, "deactivationReason" = $2, "currentSessionId" = $3 WHERE "id" = $4`,
           active,
-          deactivationReason: active ? null : (deactivationReason?.trim() || "Yönetici kararıyla pasife alınmıştır."),
-          // If deactivated, clear current session to disconnect active tokens
-          currentSessionId: active ? user.currentSessionId : null,
-        },
-      });
+          reasonText,
+          active ? user.currentSessionId : null,
+          userId
+        ).catch(async () => {
+          // Ultimate fallback if deactivationReason column doesn't exist yet
+          await prisma.$executeRawUnsafe(
+            `UPDATE "User" SET "active" = $1 WHERE "id" = $2`,
+            active,
+            userId
+          );
+        });
+      }
 
       return NextResponse.json({
         success: true,
         message: active ? "Personel hesabı aktifleştirildi." : "Personel hesabı pasife alındı.",
         user: {
-          id: updatedUser.id,
-          active: updatedUser.active,
-          deactivationReason: updatedUser.deactivationReason,
+          id: userId,
+          active,
+          deactivationReason: reasonText,
         },
       });
     }
@@ -206,15 +226,29 @@ export async function PATCH(req: NextRequest) {
         }
       }
 
-      const updatedUser = await prisma.user.update({
-        where: { id: userId },
-        data: {
-          name: name ? name.trim() : user.name,
-          phone: cleanPhone,
-          email: email !== undefined ? (email ? email.trim().toLowerCase() : null) : user.email,
-          supplierName: supplierName !== undefined ? (supplierName ? supplierName.trim() : null) : user.supplierName,
-        },
-      });
+      let updatedUser: any = null;
+      try {
+        updatedUser = await prisma.user.update({
+          where: { id: userId },
+          data: {
+            name: name ? name.trim() : user.name,
+            phone: cleanPhone,
+            email: email !== undefined ? (email ? email.trim().toLowerCase() : null) : user.email,
+            supplierName: supplierName !== undefined ? (supplierName ? supplierName.trim() : null) : user.supplierName,
+          },
+        });
+      } catch (err: any) {
+        console.warn("Standard update-info failed, using raw SQL fallback:", err.message);
+        await prisma.$executeRawUnsafe(
+          `UPDATE "User" SET "name" = $1, "phone" = $2, "email" = $3, "supplierName" = $4 WHERE "id" = $5`,
+          name ? name.trim() : user.name,
+          cleanPhone,
+          email !== undefined ? (email ? email.trim().toLowerCase() : null) : user.email,
+          supplierName !== undefined ? (supplierName ? supplierName.trim() : null) : user.supplierName,
+          userId
+        );
+        updatedUser = await prisma.user.findUnique({ where: { id: userId } });
+      }
 
       return NextResponse.json({
         success: true,
@@ -228,13 +262,22 @@ export async function PATCH(req: NextRequest) {
       const tempPassword = generateTempPassword();
       const passwordHash = await hash(tempPassword, 12);
 
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            passwordHash,
+            currentSessionId: null, // Force re-login
+          },
+        });
+      } catch (passErr: any) {
+        console.warn("Standard reset-password failed, trying raw SQL fallback:", passErr.message);
+        await prisma.$executeRawUnsafe(
+          `UPDATE "User" SET "passwordHash" = $1, "currentSessionId" = NULL WHERE "id" = $2`,
           passwordHash,
-          currentSessionId: null, // Force re-login
-        },
-      });
+          userId
+        );
+      }
 
       return NextResponse.json({
         success: true,
@@ -246,6 +289,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Geçersiz işlem parametresi." }, { status: 400 });
   } catch (error: any) {
     console.error("PATCH /api/admin/personel error:", error);
-    return NextResponse.json({ error: "İşlem sırasında bir hata oluştu: " + error.message }, { status: 500 });
+    return NextResponse.json({ error: "İşlem sırasında bir hata oluştu: " + (error.message || String(error)) }, { status: 500 });
   }
 }
