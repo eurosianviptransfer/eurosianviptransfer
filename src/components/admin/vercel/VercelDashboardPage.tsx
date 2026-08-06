@@ -3,18 +3,18 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Sparkles,
-  Plus,
-  Compass,
-  Euro,
-  CalendarCheck,
+  ArrowRight,
+  BarChart3,
+  CalendarRange,
   Car,
   CheckCircle2,
-  UserCheck,
-  ShieldCheck,
-  ArrowUpRight,
+  Clock3,
+  LayoutDashboard,
+  Plus,
+  Sparkles,
   TrendingUp,
-  Activity,
+  Users2,
+  Wallet2,
 } from "lucide-react";
 
 interface OverviewData {
@@ -58,195 +58,245 @@ export const VercelDashboardPage: React.FC = () => {
   const formatCurrency = (value: number) =>
     value.toLocaleString("tr-TR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 });
 
+  const stats = [
+    {
+      title: "Toplam Ciro",
+      value: formatCurrency(overview?.paidRevenue ?? 482500),
+      badge: "+18.4%",
+      icon: <Wallet2 className="admin-icon" />,
+      helper: "Nakit + Stripe",
+    },
+    {
+      title: "Bekleyen Rezervasyon",
+      value: `${overview?.pendingBookings ?? 14}`,
+      badge: "Live",
+      icon: <Clock3 className="admin-icon" />,
+      helper: "Bugün 6 yeni talep",
+    },
+    {
+      title: "Aktif Araç",
+      value: `${overview?.vehicleCount ?? 24}`,
+      badge: "%92 görevde",
+      icon: <Car className="admin-icon" />,
+      helper: "Vito, Sprinter, Maybach",
+    },
+    {
+      title: "Tamamlanan Sefer",
+      value: `${overview?.completedBookings ?? 1280}`,
+      badge: "4.9/5",
+      icon: <CheckCircle2 className="admin-icon" />,
+      helper: "Kusursuz karşılama",
+    },
+  ];
+
   return (
-    <div className="space-y-4 font-sans text-xs">
-      {/* VERCEL BANNER: SYSTEM STATUS & QUICK DEPLOYMENT INFO */}
-      <div className="relative overflow-hidden rounded-2xl border border-amber-500/40 bg-gradient-to-r from-[#0d152a] via-[#080d1a] to-[#0d152a] p-5 text-amber-400 shadow-xl shadow-amber-500/5">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-orange-500/40 bg-orange-500/15 px-3 py-0.5 text-[10px] font-mono font-black text-orange-400 shadow-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse" />
-              <span>SİSTEM DURUMU: KUSURSUZ (99.8% UPTIME)</span>
+    <div className="container-fluid p-0">
+      <div className="row g-3">
+        <div className="col-12">
+          <div className="card admin-hero shadow-sm border-0">
+            <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-start align-items-lg-center">
+              <div>
+                <span className="badge admin-badge mb-3">
+                  <Sparkles size={14} /> Yönetim Merkezi
+                </span>
+                <h1 className="admin-title mb-2">Eurosian VIP Executive Dashboard</h1>
+                <p className="admin-subtitle mb-0">
+                  Rezervasyonlar, filo durumu ve operasyonel hızın tek ekranda görüldüğü modern bir kontrol paneli.
+                </p>
+              </div>
+              <div className="d-flex flex-wrap gap-2">
+                <Link href="/admin/rezervasyonlar" className="btn btn-admin-primary">
+                  <Plus size={16} /> Yeni Rezervasyon
+                </Link>
+                <Link href="/admin/operasyon" className="btn btn-admin-secondary">
+                  <BarChart3 size={16} /> Canlı Operasyon
+                </Link>
+              </div>
             </div>
-            <h1 className="text-base md:text-xl font-black tracking-tight text-yellow-400 flex items-center gap-2 drop-shadow-sm">
-              Eurosian VIP Executive Dashboard
-              <Sparkles className="h-5 w-5 text-amber-400" />
-            </h1>
-            <p className="text-xs font-bold text-amber-300 max-w-xl leading-relaxed">
-              Bugün <span className="text-orange-400 font-extrabold">{loading ? "..." : overview?.pendingBookings ?? "0"} bekleyen rezervasyon</span> var. Filonuzun <span className="text-yellow-300 font-extrabold">{loading ? "..." : overview?.vehicleCount ?? "0"} araç</span> hazır durumda.
-            </p>
-            {error && (
-              <p className="text-xs font-semibold text-rose-300">Dashboard verileri yüklenemedi: {error}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="row g-3 mt-1">
+        {stats.map((item) => (
+          <div key={item.title} className="col-12 col-md-6 col-lg-3">
+            <div className="card h-100 admin-stat-card">
+              <div className="d-flex justify-content-between align-items-start">
+                <div>
+                  <p className="admin-stat-title">{item.title}</p>
+                  <h3 className="admin-stat-value">{item.value}</h3>
+                </div>
+                <div className="admin-stat-icon">{item.icon}</div>
+              </div>
+              <div className="d-flex justify-content-between align-items-center mt-3">
+                <span className="admin-helper">{item.helper}</span>
+                <span className="badge admin-chip">{item.badge}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="row g-3 mt-1">
+        <div className="col-12 col-xl-8">
+          <div className="card h-100 admin-panel">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h2 className="admin-panel-title">Bugünün performansı</h2>
+                <p className="admin-panel-subtitle">Bugün planlanan ve tamamlanan transferlerin akış durumu.</p>
+              </div>
+              <span className="badge admin-chip">{loading ? "Yükleniyor..." : "Canlı"}</span>
+            </div>
+
+            {error ? (
+              <div className="alert admin-alert" role="alert">{error}</div>
+            ) : (
+              <>
+                <div className="row g-3">
+                  <div className="col-12 col-lg-6">
+                    <div className="admin-progress-card">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <span className="admin-progress-label">Onay Bekleyen</span>
+                        <span className="admin-progress-value">{overview?.pendingBookings ?? 14}</span>
+                      </div>
+                      <div className="progress admin-progress">
+                        <div className="progress-bar" style={{ width: `${Math.min(100, (overview?.pendingBookings ?? 14) * 4)}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="col-12 col-lg-6">
+                    <div className="admin-progress-card">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <span className="admin-progress-label">Onaylı Rezervasyon</span>
+                        <span className="admin-progress-value">{overview?.approvedBookings ?? 76}</span>
+                      </div>
+                      <div className="progress admin-progress">
+                        <div className="progress-bar progress-bar-success" style={{ width: `${Math.min(100, (overview?.approvedBookings ?? 76) * 2)}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 admin-list">
+                  <div className="d-flex align-items-center justify-content-between py-2 border-bottom border-white-10">
+                    <div className="d-flex align-items-center gap-2">
+                      <LayoutDashboard size={16} className="text-primary" />
+                      <span>Operasyon odası</span>
+                    </div>
+                    <span className="admin-helper">12 görev aktif</span>
+                  </div>
+                  <div className="d-flex align-items-center justify-content-between py-2 border-bottom border-white-10">
+                    <div className="d-flex align-items-center gap-2">
+                      <CalendarRange size={16} className="text-primary" />
+                      <span>Akşam transferleri</span>
+                    </div>
+                    <span className="admin-helper">08:30 / 19:40</span>
+                  </div>
+                  <div className="d-flex align-items-center justify-content-between py-2">
+                    <div className="d-flex align-items-center gap-2">
+                      <Users2 size={16} className="text-primary" />
+                      <span>Yolcu ekibi güncellemesi</span>
+                    </div>
+                    <span className="admin-helper">Tamamlandı</span>
+                  </div>
+                </div>
+              </>
             )}
           </div>
+        </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <Link
-              href="/admin/rezervasyonlar"
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-2.5 text-xs font-black text-slate-950 shadow-md shadow-amber-500/20 hover:from-amber-400 hover:to-orange-400 active:scale-95 transition-all"
-            >
-              <Plus className="h-4 w-4 stroke-[3]" />
-              <span>Yeni Rezervasyon</span>
-            </Link>
+        <div className="col-12 col-xl-4">
+          <div className="card h-100 admin-panel">
+            <h2 className="admin-panel-title">Hızlı aksiyonlar</h2>
+            <p className="admin-panel-subtitle">En sık kullanılan yönetim işlemleri.</p>
+            <div className="d-grid gap-2">
+              <Link href="/admin/rezervasyonlar" className="btn btn-admin-primary justify-content-between">
+                <span>Rezervasyonları Gör</span>
+                <ArrowRight size={16} />
+              </Link>
+              <Link href="/admin/cms/content" className="btn btn-admin-secondary justify-content-between">
+                <span>CMS İçeriğini Düzenle</span>
+                <ArrowRight size={16} />
+              </Link>
+              <Link href="/admin/operasyon" className="btn btn-admin-secondary justify-content-between">
+                <span>Canlı Haritayı Aç</span>
+                <ArrowRight size={16} />
+              </Link>
+            </div>
 
-            <Link
-              href="/admin/operasyon"
-              className="inline-flex items-center gap-2 rounded-xl border border-amber-500/40 bg-[#0e162a] px-4 py-2.5 text-xs font-black text-amber-300 hover:bg-amber-500/10 hover:border-amber-400 active:scale-95 transition-all"
-            >
-              <Compass className="h-4 w-4 text-orange-400" />
-              <span>Canlı Harita</span>
-            </Link>
+            <div className="mt-4 admin-mini-card">
+              <div className="d-flex align-items-center gap-2 mb-2">
+                <TrendingUp size={16} className="text-primary" />
+                <span className="admin-panel-title">Haftalık trend</span>
+              </div>
+              <p className="admin-helper mb-2">Son 7 günde rezervasyon hacmi %14 arttı.</p>
+              <div className="progress admin-progress">
+                <div className="progress-bar" style={{ width: "74%" }} />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* METRIC STAT CARDS (VERCEL STYLE) */}
-      <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Card 1 */}
-        <div className="rounded-2xl border border-amber-500/30 bg-[#0c1222] p-4 space-y-2.5 hover:border-amber-400/70 transition-all shadow-lg shadow-amber-500/5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono font-black text-orange-400 uppercase tracking-wider">Toplam VIP Ciro</span>
-            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-500/20 text-yellow-300 border border-amber-500/40 shadow-sm">
-              <Euro className="h-4 w-4" />
+      <div className="row g-3 mt-1">
+        <div className="col-12">
+          <div className="card admin-panel">
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <div>
+                <h2 className="admin-panel-title">Son transferler</h2>
+                <p className="admin-panel-subtitle">En son güncellenen transfer kayıtları.</p>
+              </div>
+              <Link href="/admin/rezervasyonlar" className="btn btn-admin-secondary btn-sm">
+                Tümünü Gör
+              </Link>
+            </div>
+
+            <div className="table-responsive">
+              <table className="table admin-table">
+                <thead>
+                  <tr>
+                    <th>Yolcu</th>
+                    <th>Güzergah</th>
+                    <th>Araç</th>
+                    <th>Tarih</th>
+                    <th>Durum</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <div className="fw-semibold">Alexander Wright</div>
+                      <small className="admin-helper">TK2410 • AYT T1</small>
+                    </td>
+                    <td>AYT → Maxx Royal Belek</td>
+                    <td>Maybach VIP</td>
+                    <td>08:30 • Bugün</td>
+                    <td><span className="badge admin-chip">Karşılandı</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div className="fw-semibold">Elena Rostova</div>
+                      <small className="admin-helper">SU2142 • AYT T2</small>
+                    </td>
+                    <td>AYT → Rixos Tekirova</td>
+                    <td>Mercedes Vito</td>
+                    <td>19:40 • Bugün</td>
+                    <td><span className="badge admin-chip">Yolda</span></td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div className="fw-semibold">Michael Chen</div>
+                      <small className="admin-helper">BA1020 • AYT T3</small>
+                    </td>
+                    <td>AYT → Gloria Serenity</td>
+                    <td>Sprinter VIP</td>
+                    <td>22:15 • Bugün</td>
+                    <td><span className="badge admin-chip">Bekliyor</span></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="text-2xl font-black text-yellow-300 font-mono tracking-tight">€482,500</span>
-            <span className="inline-flex items-center gap-0.5 text-xs font-mono font-black text-orange-400 bg-orange-500/15 px-2 py-0.5 rounded-lg border border-orange-500/30">
-              <TrendingUp className="h-3.5 w-3.5" /> +18.4%
-            </span>
-          </div>
-          <p className="text-[10px] text-amber-400/80 font-mono font-bold">Stripe & Nakit Dahil</p>
-        </div>
-
-        {/* Card 2 */}
-        <div className="rounded-2xl border border-amber-500/30 bg-[#0c1222] p-4 space-y-2.5 hover:border-amber-400/70 transition-all shadow-lg shadow-amber-500/5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono font-black text-orange-400 uppercase tracking-wider">Aktif Rezervasyon</span>
-            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-500/20 text-yellow-300 border border-amber-500/40 shadow-sm">
-              <CalendarCheck className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="text-2xl font-black text-yellow-300 font-mono tracking-tight">142</span>
-            <span className="inline-flex items-center gap-0.5 text-xs font-mono font-black text-orange-400 bg-orange-500/15 px-2 py-0.5 rounded-lg border border-orange-500/30">
-              +12.5%
-            </span>
-          </div>
-          <p className="text-[10px] text-amber-400/80 font-mono font-bold">Bugün 18 Sefer</p>
-        </div>
-
-        {/* Card 3 */}
-        <div className="rounded-2xl border border-amber-500/30 bg-[#0c1222] p-4 space-y-2.5 hover:border-amber-400/70 transition-all shadow-lg shadow-amber-500/5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono font-black text-orange-400 uppercase tracking-wider">VIP Filo Durumu</span>
-            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-500/20 text-yellow-300 border border-amber-500/40 shadow-sm">
-              <Car className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="text-2xl font-black text-yellow-300 font-mono tracking-tight">24 Araç</span>
-            <span className="inline-flex items-center gap-0.5 text-xs font-mono font-black text-orange-400 bg-orange-500/15 px-2 py-0.5 rounded-lg border border-orange-500/30">
-              %92 Görevde
-            </span>
-          </div>
-          <p className="text-[10px] text-amber-400/80 font-mono font-bold">Sprinter, Vito & Maybach</p>
-        </div>
-
-        {/* Card 4 */}
-        <div className="rounded-2xl border border-amber-500/30 bg-[#0c1222] p-4 space-y-2.5 hover:border-amber-400/70 transition-all shadow-lg shadow-amber-500/5">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-mono font-black text-orange-400 uppercase tracking-wider">Tamamlanan Sefer</span>
-            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-amber-500/20 text-yellow-300 border border-amber-500/40 shadow-sm">
-              <CheckCircle2 className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline justify-between pt-1">
-            <span className="text-2xl font-black text-yellow-300 font-mono tracking-tight">1,280</span>
-            <span className="inline-flex items-center gap-0.5 text-xs font-mono font-black text-orange-400 bg-orange-500/15 px-2 py-0.5 rounded-lg border border-orange-500/30">
-              4.9/5 Puan
-            </span>
-          </div>
-          <p className="text-[10px] text-amber-400/80 font-mono font-bold">Kusursuz Karşılama</p>
-        </div>
-      </div>
-
-      {/* RECENT BOOKINGS TABLE */}
-      <div className="rounded-2xl border border-amber-500/30 bg-[#0c1222] p-5 space-y-4 shadow-xl shadow-amber-500/5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-base font-black text-yellow-400 tracking-tight">
-              Son VIP Transfer Seferleri
-            </h2>
-            <p className="text-xs text-amber-300/90 font-mono font-bold">
-              Bugün planlanan ve tamamlanan canlı VIP uçuş transferleri
-            </p>
-          </div>
-          <Link
-            href="/admin/rezervasyonlar"
-            className="text-xs font-black text-slate-950 font-mono flex items-center gap-1.5 bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1.5 rounded-xl shadow-md shadow-amber-500/20 hover:from-amber-400 hover:to-orange-400 transition-all"
-          >
-            <span>Tümünü Gör</span>
-            <ArrowUpRight className="h-4 w-4 stroke-[3]" />
-          </Link>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-amber-500/30 font-mono text-orange-400 uppercase bg-[#070b15] font-black">
-              <tr>
-                <th className="py-3 px-3.5">Yolcu & Uçuş No</th>
-                <th className="py-3 px-3.5">Güzergah</th>
-                <th className="py-3 px-3.5">Araç Türü</th>
-                <th className="py-3 px-3.5">Tutar</th>
-                <th className="py-3 px-3.5">Durum</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-amber-500/15 font-bold text-amber-300">
-              <tr className="hover:bg-amber-500/10 transition-colors">
-                <td className="py-3 px-3.5">
-                  <div className="font-extrabold text-yellow-300 text-xs">Alexander Wright</div>
-                  <div className="text-[10px] font-mono font-black text-orange-400">TK2410 • AYT T1</div>
-                </td>
-                <td className="py-3 px-3.5 text-amber-200 font-bold">
-                  AYT Havalimanı → Maxx Royal Belek
-                </td>
-                <td className="py-3 px-3.5 text-amber-400 font-mono font-bold">
-                  Mercedes Maybach VIP
-                </td>
-                <td className="py-3 px-3.5 font-mono font-black text-yellow-300 text-sm">
-                  €180
-                </td>
-                <td className="py-3 px-3.5">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-0.5 text-[10px] font-mono font-black text-orange-400 border border-orange-500/40">
-                    <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse" />
-                    Karşılandı
-                  </span>
-                </td>
-              </tr>
-
-              <tr className="hover:bg-amber-500/10 transition-colors">
-                <td className="py-3 px-3.5">
-                  <div className="font-extrabold text-yellow-300 text-xs">Elena Rostova</div>
-                  <div className="text-[10px] font-mono font-black text-orange-400">SU2142 • AYT T2</div>
-                </td>
-                <td className="py-3 px-3.5 text-amber-200 font-bold">
-                  AYT Havalimanı → Rixos Premium Tekirova
-                </td>
-                <td className="py-3 px-3.5 text-amber-400 font-mono font-bold">
-                  Mercedes Vito VIP (6 Kişi)
-                </td>
-                <td className="py-3 px-3.5 font-mono font-black text-yellow-300 text-sm">
-                  €140
-                </td>
-                <td className="py-3 px-3.5">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/20 px-3 py-0.5 text-[10px] font-mono font-black text-yellow-400 border border-amber-500/40">
-                    Yolda
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </div>
     </div>
