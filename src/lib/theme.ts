@@ -3,11 +3,11 @@ export type Theme = "dark" | "light";
 export const STORAGE_KEY = "admin-theme";
 
 export function getPreferredTheme(): Theme {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
 
   const saved = window.localStorage.getItem(STORAGE_KEY);
-  if (saved === "light") return "light";
-  return "dark";
+  if (saved === "dark") return "dark";
+  return "light";
 }
 
 export function setTheme(theme: Theme): Theme {
@@ -15,9 +15,18 @@ export function setTheme(theme: Theme): Theme {
     window.localStorage.setItem(STORAGE_KEY, theme);
   }
 
-  if (typeof document !== "undefined") {
+  if (typeof document !== "undefined" && document.documentElement) {
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
+    if (document.documentElement.classList) {
+      if (theme === "light") {
+        document.documentElement.classList.remove("dark");
+        document.documentElement.classList.add("light");
+      } else {
+        document.documentElement.classList.remove("light");
+        document.documentElement.classList.add("dark");
+      }
+    }
   }
 
   return theme;

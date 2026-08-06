@@ -14,16 +14,16 @@ export const VercelAdminLayout: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans antialiased selection:bg-zinc-800 selection:text-zinc-100 m-0 p-0">
-      {/* VERCEL HEADER STUCK DIRECTLY AT TOP-0 */}
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans antialiased selection:bg-blue-500 selection:text-white m-0 p-0 transition-colors">
+      {/* VERCEL HEADER STUCK AT TOP-0 */}
       <VercelHeader
         onOpenCommandK={() => setCommandKOpen(true)}
         onOpenNewDrawer={() => setCmsDrawerOpen(true)}
       />
 
       {/* FULL-WIDTH MAIN CONTENT AREA DIRECTLY BELOW HEADER */}
-      <main className="px-4 py-4 md:px-6">
-        <div className="mx-auto max-w-7xl space-y-4">
+      <main className="px-3 py-3 md:px-5">
+        <div className="mx-auto max-w-7xl space-y-3">
           {children}
         </div>
       </main>
