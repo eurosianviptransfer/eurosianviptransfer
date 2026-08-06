@@ -23,20 +23,53 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const [driverApps, greeterApps, staffUsers] = await Promise.all([
-      prisma.driverApplication.findMany({
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.greeterApplication.findMany({
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.user.findMany({
+    let staffUsers: any[] = [];
+    try {
+      staffUsers = await prisma.user.findMany({
         where: {
           role: { in: ["DRIVER", "GREETER"] },
         },
         include: {
           vehicle: true,
         },
+        orderBy: { createdAt: "desc" },
+      });
+    } catch (dbErr: any) {
+      console.warn("User.findMany with deactivationReason failed, falling back to select query:", dbErr.message);
+      // Fallback query selecting only explicit columns if deactivationReason is missing in DB schema cache
+      const usersRaw = await prisma.user.findMany({
+        where: {
+          role: { in: ["DRIVER", "GREETER"] },
+        },
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          email: true,
+          role: true,
+          active: true,
+          supplierName: true,
+          createdAt: true,
+          lastSeen: true,
+          vehicle: {
+            select: {
+              id: true,
+              plate: true,
+              model: true,
+              size: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      staffUsers = usersRaw.map((u) => ({ ...u, deactivationReason: null }));
+    }
+
+    const [driverApps, greeterApps] = await Promise.all([
+      prisma.driverApplication.findMany({
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.greeterApplication.findMany({
         orderBy: { createdAt: "desc" },
       }),
     ]);
