@@ -35,27 +35,47 @@ export default function FiloPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-        <div>
-          <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
-              <Car className="h-6 w-6" />
+      <div className="rounded-3xl border border-slate-800 bg-[linear-gradient(135deg,rgba(8,16,31,0.96),rgba(15,23,42,0.96))] p-5 shadow-2xl shadow-black/20">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              <Car className="h-3.5 w-3.5" /> Filo kontrol merkezi
             </div>
-            Araç Filosu & Sürücü Yönetimi
-          </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            VIP transfer araçlarınızı, plakaları ve sürücü/karşılamacı atamalarınızı yönetin.
-          </p>
+            <h1 className="mt-3 flex items-center gap-3 text-2xl font-black tracking-tight text-white">
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-2.5 text-amber-400">
+                <Car className="h-6 w-6" />
+              </div>
+              Araç Filosu & Sürücü Yönetimi
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-400">
+              VIP transfer araçlarınızı, plakaları ve sürücü/karşılamacı atamalarınızı yönetin.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={fetchFleet}
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-200 transition-all hover:bg-slate-700"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin text-amber-400" : ""}`} />
+            Yenile
+          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={fetchFleet}
-          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-slate-200 hover:bg-slate-700 transition-all cursor-pointer"
-        >
-          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin text-amber-400" : ""}`} />
-          Yenile
-        </button>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-3">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Araç sayısı</p>
+            <p className="mt-1 text-xl font-black text-white">{vehicles.length}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-3">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Sürücü</p>
+            <p className="mt-1 text-xl font-black text-white">{drivers.length}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-3">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Karşılamacı</p>
+            <p className="mt-1 text-xl font-black text-white">{greeters.length}</p>
+          </div>
+        </div>
       </div>
 
       {error && (

@@ -50,25 +50,43 @@ export default function CMSMediaPage() {
       {/* CMS pill menu */}
       <CmsNav />
 
-      {/* HEADER */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
-            <ImageIcon className="h-7 w-7 text-amber-400" />
-            Medya Kütüphanesi
-          </h1>
-          <p className="text-xs font-semibold text-slate-300 mt-1">
-            Araç görselleri, bannerlar ve promosyon fotoğraflarını yönetin ve CDN bağlantılarını kopyalayın.
-          </p>
+      <div className="rounded-3xl border border-slate-800 bg-[linear-gradient(135deg,rgba(8,16,31,0.96),rgba(15,23,42,0.96))] p-5 shadow-2xl shadow-black/20">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              <ImageIcon className="h-3.5 w-3.5" /> Medya yönetimi
+            </div>
+            <h1 className="mt-3 flex items-center gap-2.5 text-2xl font-black tracking-tight text-white">
+              <ImageIcon className="h-7 w-7 text-amber-400" />
+              Medya Kütüphanesi
+            </h1>
+            <p className="mt-2 text-sm text-slate-400">
+              Araç görselleri, bannerlar ve promosyon fotoğraflarını yönetin ve CDN bağlantılarını kopyalayın.
+            </p>
+          </div>
+
+          <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 px-4 py-2.5 text-xs font-black text-slate-950 shadow-lg shadow-amber-500/20 transition-all hover:scale-105">
+            <Upload className="h-4 w-4 stroke-[2.5]" />
+            <span>Yeni Dosya Yükle</span>
+          </button>
         </div>
 
-        <button className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 px-4 py-2.5 text-xs font-black text-slate-950 shadow-lg shadow-amber-500/20 hover:scale-105 transition-all">
-          <Upload className="h-4 w-4 stroke-[2.5]" />
-          <span>Yeni Dosya Yükle</span>
-        </button>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-3">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Toplam dosya</p>
+            <p className="mt-1 text-xl font-black text-white">{mockMediaList.length}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-3">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Yükleme hacmi</p>
+            <p className="mt-1 text-xl font-black text-white">4.3 MB</p>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-3">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Aktif asset</p>
+            <p className="mt-1 text-xl font-black text-white">12</p>
+          </div>
+        </div>
       </div>
 
-      {/* MEDIA GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
         {mockMediaList.map((m) => (
           <div

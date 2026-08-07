@@ -110,7 +110,6 @@ function RezervasyonlarContent() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* TOAST NOTIFICATION */}
       {toastMessage && (
         <div className="fixed top-6 right-6 z-50 flex items-center gap-3 rounded-2xl bg-emerald-500/90 text-slate-950 px-5 py-3 font-bold text-xs shadow-2xl backdrop-blur-md animate-bounce">
           <CheckCircle2 className="h-5 w-5" />
@@ -118,38 +117,56 @@ function RezervasyonlarContent() {
         </div>
       )}
 
-      {/* PAGE HEADER */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight flex items-center gap-2.5">
-            <CalendarCheck className="h-7 w-7 text-amber-400" />
-            VIP Transfer Rezervasyonları
-          </h1>
-          <p className="text-xs font-semibold text-slate-300 mt-1">
-            Tüm transfer taleplerini yönetin, durumlarını güncelleyin ve detaylı işlemler gerçekleştirin.
-          </p>
+      <div className="rounded-3xl border border-slate-800 bg-[linear-gradient(135deg,rgba(8,16,31,0.96),rgba(15,23,42,0.96))] p-5 shadow-2xl shadow-black/20">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              <CalendarCheck className="h-3.5 w-3.5" /> Rezervasyon takibi
+            </div>
+            <h1 className="mt-3 flex items-center gap-2.5 text-2xl font-black tracking-tight text-white">
+              <CalendarCheck className="h-7 w-7 text-amber-400" />
+              VIP Transfer Rezervasyonları
+            </h1>
+            <p className="mt-2 text-sm text-slate-400">
+              Tüm transfer taleplerini yönetin, durumlarını güncelleyin ve detaylı işlemler gerçekleştirin.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => showNotification("Rezervasyon listesi Excel (CSV) formatında indirildi.")}
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-900 px-4 py-2.5 text-xs font-bold text-slate-200 transition-all hover:bg-slate-800 hover:text-white"
+            >
+              <Download className="h-4 w-4 text-amber-400" />
+              <span>Excel'e Aktar</span>
+            </button>
+
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 px-4 py-2.5 text-xs font-black text-slate-950 shadow-lg shadow-amber-500/25 transition-all hover:scale-105"
+            >
+              <Plus className="h-4 w-4 stroke-[3]" />
+              <span>Manuel Rezervasyon Ekle</span>
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => showNotification("Rezervasyon listesi Excel (CSV) formatında indirildi.")}
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-700/80 bg-slate-900 px-4 py-2.5 text-xs font-bold text-slate-200 hover:bg-slate-800 hover:text-white transition-all shadow-sm active:scale-95"
-          >
-            <Download className="h-4 w-4 text-amber-400" />
-            <span>Excel'e Aktar</span>
-          </button>
-
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 px-4 py-2.5 text-xs font-black text-slate-950 shadow-lg shadow-amber-500/25 hover:scale-105 active:scale-95 transition-all"
-          >
-            <Plus className="h-4 w-4 stroke-[3]" />
-            <span>Manuel Rezervasyon Ekle</span>
-          </button>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-3">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Toplam rezervasyon</p>
+            <p className="mt-1 text-xl font-black text-white">{bookings.length}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-3">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Bekleyen</p>
+            <p className="mt-1 text-xl font-black text-white">{bookings.filter((b) => b.status === "PENDING").length}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-3">
+            <p className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Onaylanan</p>
+            <p className="mt-1 text-xl font-black text-white">{bookings.filter((b) => b.status === "CONFIRMED").length}</p>
+          </div>
         </div>
       </div>
 
-      {/* FILTER & SEARCH BAR */}
       <div className="rounded-2xl border border-slate-800 bg-slate-900/90 p-4 shadow-xl backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* SEARCH */}
         <div className="relative flex-1">

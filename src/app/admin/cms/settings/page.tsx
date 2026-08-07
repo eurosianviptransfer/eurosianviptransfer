@@ -145,30 +145,33 @@ export default function CMSSettingsPage() {
       {/* CMS Pill Nav */}
       <CmsNav />
 
-      {/* HEADER SECTION WITH TOP SAVE BUTTON */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-800 pb-4">
-        <div>
-          <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
-            <Settings className="h-7 w-7 text-amber-400" />
-            Site Ayarları & Kurumsal Logo Yönetimi
-          </h1>
-          <p className="text-xs font-semibold text-slate-400 mt-1">
-            Canlı sitenizde görünen kurumsal logoyu, iletişim numaralarını ve genel adres bilgilerini buradan yönetebilirsiniz.
-          </p>
-        </div>
+      <div className="rounded-3xl border border-slate-800 bg-[linear-gradient(135deg,rgba(8,16,31,0.96),rgba(15,23,42,0.96))] p-5 shadow-2xl shadow-black/20">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/25 bg-amber-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-amber-400">
+              <Settings className="h-3.5 w-3.5" /> Site ayarları
+            </div>
+            <h1 className="mt-3 flex items-center gap-2.5 text-2xl font-black tracking-tight text-white">
+              <Settings className="h-7 w-7 text-amber-400" />
+              Site Ayarları & Kurumsal Logo Yönetimi
+            </h1>
+            <p className="mt-2 text-sm text-slate-400">
+              Canlı sitenizde görünen kurumsal logoyu, iletişim numaralarını ve genel adres bilgilerini buradan yönetebilirsiniz.
+            </p>
+          </div>
 
-        <button
-          type="button"
-          onClick={() => handleSave()}
-          disabled={saving || loading}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-500 px-6 py-3 text-xs font-black text-slate-950 shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
-        >
-          <Save className="h-4 w-4 stroke-[2.5]" />
-          <span>{saving ? "Kaydediliyor..." : "Ayarları Kaydet"}</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => handleSave()}
+            disabled={saving || loading}
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-tr from-amber-500 via-amber-400 to-amber-500 px-6 py-3 text-xs font-black text-slate-950 shadow-lg shadow-amber-500/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+          >
+            <Save className="h-4 w-4 stroke-[2.5]" />
+            <span>{saving ? "Kaydediliyor..." : "Ayarları Kaydet"}</span>
+          </button>
+        </div>
       </div>
 
-      {/* SUCCESS NOTIFICATION */}
       {savedSuccess && (
         <div className="flex items-center gap-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 p-4 text-xs font-bold text-emerald-300 shadow-md animate-fadeIn">
           <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
