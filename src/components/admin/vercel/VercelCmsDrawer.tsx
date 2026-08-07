@@ -16,7 +16,7 @@ export interface CmsEntry {
 interface VercelCmsDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (entry: CmsEntry) => void;
+  onSave: (entry: CmsEntry) => Promise<boolean>;
   initialData?: CmsEntry | null;
 }
 
@@ -55,18 +55,23 @@ export const VercelCmsDrawer: React.FC<VercelCmsDrawerProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    setTimeout(() => {
-      onSave(formData);
+    try {
+      const success = await onSave(formData);
+      if (success) {
+        setSuccessMsg(true);
+        setTimeout(() => {
+          setSuccessMsg(false);
+          onClose();
+        }, 500);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
       setSaving(false);
-      setSuccessMsg(true);
-      setTimeout(() => {
-        setSuccessMsg(false);
-        onClose();
-      }, 500);
-    }, 300);
+    }
   };
 
   return (
