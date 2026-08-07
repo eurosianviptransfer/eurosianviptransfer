@@ -51,6 +51,20 @@ async function loginGreeter(phone) {
 before(async () => {
   if (fs.existsSync(DATA_FILE)) fs.unlinkSync(DATA_FILE); // temiz test için sıfırdan seed
 
+  // Prefer in-process server start when available to avoid sandbox bind/EPERM issues.
+  try {
+    const { createRequire } = await import("module");
+    const require = createRequire(import.meta.url);
+    const srv = require(path.join(__dirname, "..", "runnable", "server.js"));
+    if (srv && typeof srv.startServer === "function") {
+      // store instance globally for after() cleanup
+      global.__TEST_SERVER_INSTANCE = await srv.startServer({ port: PORT, host: "127.0.0.1" });
+      return;
+    }
+  } catch (e) {
+    // fall through to spawn fallback
+  }
+
   serverProcess = spawn("node", [path.join(__dirname, "..", "runnable", "server.js")], {
     env: { ...process.env, PORT: String(PORT) },
     stdio: "pipe",
@@ -67,7 +81,16 @@ before(async () => {
 });
 
 after(() => {
-  serverProcess.kill();
+  if (serverProcess) {
+    serverProcess.kill();
+  }
+  if (global.__TEST_SERVER_INSTANCE && typeof global.__TEST_SERVER_INSTANCE.close === "function") {
+    try {
+      global.__TEST_SERVER_INSTANCE.close();
+    } catch (e) {
+      /* ignore */
+    }
+  }
   if (fs.existsSync(DATA_FILE)) fs.unlinkSync(DATA_FILE); // test artığı bırakma
 });
 

@@ -457,11 +457,33 @@ const server = http.createServer((req, res) => {
   res.end(JSON.stringify({ error: "Not found" }));
 });
 
-const PORT = process.env.PORT || 4000;
-server.listen(PORT, () => {
-  console.log(`Eurosian VIP Transfer sunucusu çalışıyor: http://localhost:${PORT}`);
-  console.log("Giriş bilgileri (ilk kurulumda seed edildi):");
-  console.log("  Admin:       kullanıcı adı 'admin', şifre 'Eurosian2026!'");
-  console.log("  Şoför:       +905551110001 / +905551110002 / +905551110003, PIN 1234");
-  console.log("  Karşılamacı: +905551110011 / +905551110012, PIN 1234");
-});
+const DEFAULT_PORT = 4000;
+
+function startServer({ port = process.env.PORT ? Number(process.env.PORT) : DEFAULT_PORT, host = process.env.HOST || "127.0.0.1" } = {}) {
+  return new Promise((resolve, reject) => {
+    function onError(err) {
+      reject(err);
+    }
+    server.once("error", onError);
+    server.listen(port, host, () => {
+      server.removeListener("error", onError);
+      const addr = server.address();
+      const boundPort = typeof addr === "object" && addr ? addr.port : port;
+      console.log(`Eurosian VIP Transfer sunucusu çalışıyor: http://${host}:${boundPort}`);
+      console.log("Giriş bilgileri (ilk kurulumda seed edildi):");
+      console.log("  Admin:       kullanıcı adı 'admin', şifre 'Eurosian2026\!'");
+      console.log("  Şoför:       +905551110001 / +905551110002 / +905551110003, PIN 1234");
+      console.log("  Karşılamacı: +905551110011 / +905551110012, PIN 1234");
+      resolve(server);
+    });
+  });
+}
+
+if (require.main === module) {
+  startServer().catch((err) => {
+    console.error("Sunucu başlatılamadı:", err.message);
+    process.exit(1);
+  });
+}
+
+module.exports = { startServer };
