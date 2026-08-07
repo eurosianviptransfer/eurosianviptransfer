@@ -1,9 +1,0 @@
-import type { Metadata } from "next";
-import { SeoCollection, SeoCards } from "@/components/seo/SeoCollection";
-import { allSeoKeywords } from "@/lib/seo-keywords";
-import { seoAirports, seoLocales, type SeoLocale } from "@/lib/site-content";
-import { languageAlternates, localizedCopy, localeOpenGraph, SITE_NAME } from "@/lib/seo";
-
-export function generateStaticParams() { return seoLocales.map(lang => ({ lang })); }
-export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> { const { lang } = await params; const locale = seoLocales.includes(lang as SeoLocale) ? lang as SeoLocale : "en"; return { title: `Airport VIP Transfer Turkey | ${SITE_NAME}`, description: "Airport VIP transfer from Istanbul, Antalya, Bodrum, Dalaman, Izmir, Ankara, Cappadocia and all major Turkey airports.", keywords: allSeoKeywords.filter(key => key.includes("airport") || key.includes("havalimani")), alternates: { canonical: `/${locale}/havalimani-transferi`, languages: languageAlternates("havalimani-transferi") }, openGraph: { title: `Airport VIP Transfer Turkey | ${SITE_NAME}`, description: "Nationwide airport chauffeur service in Turkey.", locale: localeOpenGraph[locale], type: "website" } }; }
-export default async function AirportsPage({ params }: { params: Promise<{ lang: string }> }) { const { lang } = await params; const locale = seoLocales.includes(lang as SeoLocale) ? lang as SeoLocale : "en"; return <SeoCollection locale={locale} breadcrumb={localizedCopy(locale).airports} title="Airport VIP Transfer Across Turkey" description="Private airport transfers from all major Turkish airports to hotels, resorts, clinics and city centres."><SeoCards locale={locale} hrefBase="havalimani-transferi" items={seoAirports.map(item => ({ slug: item.slug, title: `${item.city} Airport VIP Transfer`, description: item.description, meta: `${item.name} · ${item.code}` }))} /></SeoCollection>; }

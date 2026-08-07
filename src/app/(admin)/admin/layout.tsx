@@ -1,0 +1,23 @@
+import { Sidebar } from "@/components/admin/sidebar";
+import { Header } from "@/components/admin/header";
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex min-h-screen bg-slate-100 dark:bg-slate-900">
+      {/* Sabit Sol Menü */}
+      <Sidebar />
+
+      {/* Ana İçerik Alanı */}
+      <div className="flex-1 flex flex-col">
+        <Header />
+        <main className="flex-1 p-6 overflow-y-auto">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}

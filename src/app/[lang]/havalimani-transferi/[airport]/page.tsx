@@ -1,9 +1,0 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { SeoDetail } from "@/components/seo/SeoDetail";
-import { findAirport, seoAirports, seoLocales, type SeoLocale } from "@/lib/site-content";
-import { allSeoKeywords } from "@/lib/seo-keywords";
-
-export function generateStaticParams() { return seoLocales.flatMap(lang => seoAirports.map(airport => ({ lang, airport: airport.slug }))); }
-export async function generateMetadata({ params }: { params: Promise<{ lang: string; airport: string }> }): Promise<Metadata> { const { lang, airport: slug } = await params; const airport = findAirport(slug); if (!airport) return {}; const title = `${airport.city} Airport VIP Transfer | Eurasian VIP Transfer`; return { title, description: airport.description, keywords: allSeoKeywords.filter(key => key.toLowerCase().includes(airport.city.toLowerCase()) || key.includes("airport")), alternates: { canonical: `/${lang}/havalimani-transferi/${slug}` } }; }
-export default async function AirportDetailPage({ params }: { params: Promise<{ lang: string; airport: string }> }) { const { lang, airport: slug } = await params; const airport = findAirport(slug); if (!airport) notFound(); return <SeoDetail locale={lang} parentPath="havalimani-transferi" parentLabel="Airports" title={`${airport.city} Airport VIP Transfer`} description={airport.description}><h2>Private transfer from {airport.name}</h2><p className="ev-muted">Meet your professional chauffeur at arrivals and travel directly to your hotel, villa, clinic or city destination. Flight delay tracking and child seats are available on request.</p><div className="ev-card-row" style={{ marginTop: 18, gap: 8, flexWrap: "wrap" }}><span className="ev-badge">{airport.code} airport pickup</span><span className="ev-badge">Fixed quote</span><span className="ev-badge">24/7 support</span></div></SeoDetail>; }

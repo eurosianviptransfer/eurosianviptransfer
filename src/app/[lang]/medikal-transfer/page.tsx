@@ -1,8 +1,0 @@
-import type { Metadata } from "next";
-import { SeoCollection } from "@/components/seo/SeoCollection";
-import { seoLocales, type SeoLocale } from "@/lib/site-content";
-import { keywordMatrix } from "@/lib/seo-keywords";
-
-export function generateStaticParams() { return seoLocales.map(lang => ({ lang })); }
-export const metadata: Metadata = { title: "Medical Tourism VIP Transfer Turkey | Eurasian VIP Transfer", description: "Discreet, punctual airport and clinic transfers for hair transplant, dental and aesthetic treatments in Turkey.", keywords: [...keywordMatrix.niche] };
-export default async function MedicalPage({ params }: { params: Promise<{ lang: string }> }) { const { lang } = await params; const locale = seoLocales.includes(lang as SeoLocale) ? lang as SeoLocale : "en"; return <SeoCollection locale={locale} breadcrumb="Medical transfer" title="Medical Tourism VIP Transfers" description="A discreet and reliable chauffeur service for international patients travelling to Turkish clinics."><div className="ev-grid ev-grid--3"><article className="ev-card"><h2>Hair transplant transfer Istanbul</h2><p className="ev-muted">Airport pickup, hotel and clinic transfers planned around your treatment schedule.</p></article><article className="ev-card"><h2>Dental clinic transfer Antalya</h2><p className="ev-muted">Comfortable, punctual transport between Antalya Airport, hotels and dental clinics.</p></article><article className="ev-card"><h2>Private patient support</h2><p className="ev-muted">Flight monitoring, luggage assistance and multilingual coordination.</p></article></div></SeoCollection>; }
