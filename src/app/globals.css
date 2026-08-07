@@ -32,6 +32,12 @@
 :root {
   --ink: #020814;
   --ink2: #07121f;
+  /* Admin-specific tokens */
+  --admin-primary: var(--gold);
+  --admin-primary-contrast: #07111f;
+  --admin-bg: rgba(8, 16, 31, 0.96);
+  --admin-surface: rgba(12, 22, 38, 0.9);
+  --admin-focus: rgba(245, 158, 11, 0.18);
   --panel: rgba(9, 18, 33, 0.92);
   --panel-soft: rgba(12, 21, 38, 0.82);
   --surface: rgba(8, 16, 31, 0.88);
@@ -58,6 +64,12 @@
 :root[data-theme="light"] {
   --ink: #111827;
   --ink2: #f8fafc;
+  /* Admin-specific tokens (light) */
+  --admin-primary: var(--gold);
+  --admin-primary-contrast: #02101c;
+  --admin-bg: rgba(255, 255, 255, 0.98);
+  --admin-surface: rgba(248, 250, 252, 0.92);
+  --admin-focus: rgba(245, 158, 11, 0.12);
   --panel: rgba(255, 255, 255, 0.95);
   --panel-soft: rgba(248, 250, 252, 0.92);
   --surface: rgba(255, 255, 255, 0.96);
@@ -499,6 +511,49 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .ev-hero .ev-text-link, .ev-hero .ev-hero-note {
   color: #e6f7ff;
 }
+
+/* Additional readable styles for homepage content */
+.ev-landing-hero .ev-eyebrow,
+.ev-landing-hero .ev-card-kicker {
+  color: #cfeeff;
+  letter-spacing: 0.02em;
+}
+
+.ev-booking-card h2,
+.ev-landing-hero h2,
+.ev-landing-hero h3 {
+  color: #ffffff;
+  text-shadow: 0 6px 30px rgba(0,0,0,0.55);
+}
+
+.ev-booking-card label,
+.ev-route-field label,
+.ev-field label,
+.ev-hero-copy label {
+  color: #e6f7ff;
+  font-weight: 600;
+}
+
+.ev-booking-card input,
+.ev-booking-card select,
+.ev-origin-select,
+.ev-guest-select,
+.ev-route-field input {
+  color: #eaf6ff;
+}
+.ev-booking-card input::placeholder,
+.ev-route-field input::placeholder {
+  color: #bcdcee;
+}
+
+.ev-card-foot,
+.ev-hero-note {
+  color: #dff6ff;
+}
+
+/* Improve contrast for feature blocks */
+.ev-feature h3 { color: #ffffff; }
+.ev-feature p { color: #d6ecf6; }
 .ev-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .ev-grid { display: grid; gap: 14px; }
 .ev-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
