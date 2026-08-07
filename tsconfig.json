@@ -39,6 +39,7 @@
     "node_modules",
     "test-smoke",
     "runnable",
-    "admin-deprecated-legacy-*"
+    "admin-deprecated-legacy-*",
+    "scripts"
   ]
 }
