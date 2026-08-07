@@ -472,6 +472,33 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 .ev-hero > * { position: relative; z-index: 1; }
 .ev-lead { max-width: 560px; color: var(--text-muted); line-height: 1.65; }
+
+/* Homepage readability improvements: subtle overlay + stronger text contrast */
+.ev-landing-hero { position: relative; }
+.ev-landing-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(2,6,17,0.6), rgba(2,6,17,0.15) 50%, rgba(2,6,17,0.6));
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ev-hero-copy { position: relative; z-index: 1; }
+.ev-hero-copy h1 {
+  color: #ffffff;
+  text-shadow: 0 6px 30px rgba(0,0,0,0.55);
+  line-height: 1.02;
+}
+.ev-hero-copy p {
+  color: #dceff7; /* slightly brighter than --text-muted */
+  text-shadow: 0 3px 18px rgba(0,0,0,0.45);
+}
+
+/* Ensure links and small text inside hero are clearly visible */
+.ev-hero .ev-text-link, .ev-hero .ev-hero-note {
+  color: #e6f7ff;
+}
 .ev-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 .ev-grid { display: grid; gap: 14px; }
 .ev-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
